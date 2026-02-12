@@ -1,0 +1,130 @@
+{
+  "clusters": [
+    {
+      "id": 1,
+      "title": "Healthcare Cluster",
+      "image": "/medicine-uniform-healthcare-medical-workers-day-concept.jpg",
+      "secondImage": "/male-female-african-american-medical-staff-discussing-diagnostic-results.jpg",
+      "description": "C-Care International Ltd is a registered private limited company which owns, operates and manages assets in the healthcare sector in Mauritius and across Uganda.",
+      "logos": [
+        {
+          "name": "Hodling Med",
+          "image": "/HoldingLogo.png",
+          "link": "/clients/holding-med"
+        }
+      ],
+      "stats": {
+        "hospitals": "4",
+        "clinics": "18",
+        "medicalStaff": "2,700",
+        "countries": "3"
+      },
+      "details": "C-Care owns, operates and manages assets in the healthcare sector in Mauritius and across Uganda. The group currently owns and operates 2 main private healthcare facilities, namely C-Care Darné and C-Care Wellkin. C-Care also proposes medical laboratory services through C-Lab and has 2 satellite clinics across the island, C-Care Grand Baie and C-Care Tamarin. It also owns and manages C-Care Health (Uganda) Limited, the largest provider of private healthcare services in Uganda. C-Care recently expanded its activities through the acquisition of the Centre Technique Biomédical in Madagascar and the launch of a C-Care office in Kenya. Our healthcare cluster focuses on delivering quality medical care through state-of-the-art facilities, advanced diagnostic services, and comprehensive healthcare solutions that meet international standards while remaining accessible to local communities across our operational regions."
+    },
+    {
+      "id": 2,
+      "title": "Energy Cluster",
+      "image": "/sun-setting-silhouette-electricity-pylons.jpg",
+      "secondImage": "/african-american-technician-checks-maintenance-solar-panels-group-three-black-engineers-meeting-solar-station.jpg",
+      "description": "Our energy investments focus on sustainable power generation and distribution across Africa.",
+      "logos": [
+        {
+          "name": "Holding Energgy",
+          "image": "/HoldingLogo.png",
+          "link": "/clients/holding-energgy"
+        }
+      ],
+      "stats": {
+        "powerPlants": "15",
+        "renewableCapacity": "800 MW",
+        "employees": "18,000",
+        "countries": "6"
+      },
+      "details": "Our Energy Cluster represents a comprehensive portfolio of sustainable power generation and distribution assets strategically positioned across the African continent. We operate renewable energy facilities including solar farms, wind power installations, and hydroelectric plants that collectively generate over 500 MW of clean energy. Our grid infrastructure spans multiple countries, providing reliable electricity to urban centers, industrial zones, and remote communities alike. Through strategic partnerships and continuous innovation, we're developing next-generation energy storage solutions and smart grid technologies to enhance energy security and reduce carbon emissions. Our commitment extends beyond generation to include energy efficiency consulting, electric vehicle infrastructure development, and community-based renewable energy projects that empower local economies while contributing to Africa's energy independence and sustainable development goals."
+    },
+    {
+      "id": 3,
+      "title": "Banking Cluster",
+      "image": "/close-up-shot-business-study-essentials-white-desk-work-study-aesthetics.jpg",
+      "secondImage": "/black-businessman-using-computer-laptop.jpg",
+      "description": "Strategic investments in financial institutions driving economic growth.",
+      "logos": [
+        {
+          "name": "Holding Finance",
+          "image": "/HoldingLogo.png",
+          "link": "/clients/holding-finance"
+        }
+      ],
+      "stats": {
+        "branches": "210",
+        "customers": "2.5M",
+        "employees": "15,000",
+        "countries": "4"
+      },
+      "details": "Our Banking Cluster comprises strategic investments in leading financial institutions that form the backbone of economic development across multiple African markets. We operate commercial banks serving over 2 million customers through more than 200 branches, offering comprehensive retail and corporate banking services. Our investment portfolio includes digital banking platforms that have revolutionized financial inclusion, reaching previously unbanked populations through mobile banking solutions. We provide specialized services including trade finance, project financing for infrastructure development, SME lending programs, and wealth management services. Through our banking operations, we facilitate cross-border trade, support entrepreneurship, and provide capital for large-scale development projects. Our institutions maintain strong capital adequacy ratios and consistently deliver competitive returns while adhering to the highest standards of corporate governance and regulatory compliance across all operating jurisdictions."
+    },
+    {
+      "id": 4,
+      "title": "Technology Cluster",
+      "image": "/ai-nuclear-energy-future-innovation-disruptive-technology.jpg",
+      "secondImage": "/data-center-developer-uses-vr-headset-ai-technology-machine-learning.jpg",
+      "description": "Innovative tech solutions transforming African industries and communities.",
+      "logos": [
+        {
+          "name": "holding Tech",
+          "image": "/HoldingLogo.png",
+          "link": "/clients/holding-tech"
+        }
+      ],
+      "stats": {
+        "dataCenters": "8",
+        "techStartups": "45",
+        "employees": "12,000",
+        "countries": "3"
+      },
+      "details": "The Technology Cluster represents our investment in cutting-edge digital solutions that are driving Africa's Fourth Industrial Revolution. We operate data centers across key markets, providing cloud computing infrastructure and cybersecurity services to governments and corporations. Our portfolio includes fintech platforms processing over $5 billion in transactions annually, agritech solutions improving agricultural productivity for 500,000 farmers, and healthtech applications serving 3 million patients. We're developing artificial intelligence solutions for predictive maintenance in industrial applications, machine learning algorithms for financial risk assessment, and blockchain platforms for supply chain transparency. Through our innovation hubs and venture capital arm, we're incubating the next generation of African tech entrepreneurs and supporting research partnerships with leading academic institutions. Our focus extends to smart city infrastructure, IoT applications for resource management, and digital literacy programs that are bridging the technology gap across the continent."
+    },
+    {
+      "id": 5,
+      "title": "Real Estate & Hospitality Cluster",
+      "image": "/beautiful-aerial-shot-city.jpg",
+      "secondImage": "/high-view-toy-model-house-keys.jpg",
+      "description": "Premium developments that redefine urban landscapes and tourism.",
+      "logos": [
+        {
+          "name": "holding Hospitality",
+          "image": "/HoldingLogo.png",
+          "link": "/clients/holding"
+        }
+      ],
+      "stats": {
+        "properties": "25",
+        "hotels": "15",
+        "employees": "10,000",
+        "countries": "5"
+      },
+      "details": "Our Real Estate & Hospitality Cluster encompasses premium developments that are transforming urban landscapes and redefining luxury experiences across Africa. We own and operate a portfolio of 25 commercial properties including Grade A office towers, shopping malls, and mixed-use developments in prime locations. Our hospitality division manages 15 luxury hotels and resorts featuring world-class amenities, convention facilities, and fine dining establishments. We're currently developing sustainable residential communities incorporating green building technologies, smart home systems, and community-centric designs. Our projects emphasize environmental sustainability with LEED-certified buildings, water recycling systems, and energy-efficient designs. The cluster also includes specialized assets such as medical tourism facilities, conference centers, and boutique hotels that showcase local culture and craftsmanship. Through strategic partnerships with international brands and local artisans, we're creating destinations that attract global travelers while serving the needs of local communities and contributing to urban regeneration and economic diversification."
+    },
+    {
+      "id": 6,
+      "title": "Power Cluster",
+      "image": "/medium-shot-smiley-engineer-holding-tablet.jpg",
+      "secondImage": "/engineer-electric-woman-checking-maintenance-solar-cells.jpg",
+      "description": "Our Power investments focus on sustainable power generation and distribution across Africa.",
+      "logos": [
+        {
+          "name": "Holding Company",
+          "image": "/HoldingLogo.png",
+          "link": "/clients/holding"
+        }
+      ],
+      "stats": {
+        "totalCapacity": "1,500 MW",
+        "transmissionLines": "5,000 km",
+        "employees": "25,000",
+        "countries": "8"
+      },
+      "details": "The Power Cluster represents our comprehensive approach to Africa's energy transformation through diversified power generation, transmission, and distribution assets. We operate thermal power plants with combined capacity exceeding 1,500 MW, renewable energy facilities generating 800 MW from solar, wind, and hydro sources, and strategic gas-fired power stations ensuring grid stability. Our transmission infrastructure spans over 5,000 kilometers of high-voltage lines, connecting energy resources to consumption centers across multiple countries. We're implementing smart grid technologies that improve efficiency by 30% and reduce transmission losses. The cluster includes innovative microgrid solutions for rural electrification, serving 500 remote communities with reliable, affordable power. Our investments extend to energy storage systems, electric vehicle charging networks, and power trading platforms that optimize energy markets. Through capacity building programs and community partnerships, we're training the next generation of energy professionals while ensuring that our operations contribute to energy access, industrial development, and climate resilience across the regions we serve."
+    }
+  ]
+}
