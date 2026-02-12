@@ -1,0 +1,91 @@
+import React from 'react';
+
+const HeroSection = () => {
+  const backgroundImage = "/modern-business-buildings.jpg";
+  
+  const sectors = [
+    "Energy",
+    "Power", 
+    "Banking",
+    "Insurance & Financial Services",
+    "Technology",
+    "Real Estate & Hospitality",
+    "Healthcare"
+  ];
+
+  return (
+    <section className="relative flex items-center min-h-screen">
+      <div 
+        className="absolute inset-0 z-0 bg-center bg-no-repeat bg-cover mb-9"
+        style={{ backgroundImage: `url(${backgroundImage})` }}
+      />
+      <div className="absolute inset-0 z-0 bg-black bg-opacity-60"></div>
+      
+      <div className="relative z-10 w-full">
+        <div className="grid w-full grid-cols-12 mx-auto max-w-screen-3xl">
+          <div className="hidden col-span-1 lg:block"></div>
+          
+          <div className="col-span-12 lg:col-span-10">
+            <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8">
+              <div className="w-full py-12 lg:py-20 xl:py-32">
+                
+                {/* Main heading - left aligned */}
+                <div className="max-w-5xl mb-6 lg:mb-8">
+                  <h1 className="mb-4 text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl">
+                    Strategic  Investments
+                  </h1>
+                </div>
+                
+                {/* Subheading - left aligned */}
+                <h2 className="max-w-3xl mb-8 text-2xl font-semibold tracking-wider text-white sm:text-3xl md:text-4xl lg:text-5xl lg:mb-12">
+                  Across Africa
+                </h2>
+                
+                {/* Divider - left aligned */}
+                <div className="w-32 h-1 mb-8 bg-white lg:mb-12"></div>
+                
+                {/* Sectors - left aligned horizontal layout */}
+                <div className="hidden max-w-5xl sm:block">
+                  <div className="flex items-center gap-x-4 lg:gap-x-6 gap-y-3">
+                    {sectors.map((sector, index) => (
+                      <React.Fragment key={index}>
+                        <span className="text-base font-medium text-white sm:text-lg md:text-xl lg:text-2xl whitespace-nowrap">
+                          {sector}
+                        </span>
+                        {index < sectors.length - 1 && (
+                          <span className="text-xl font-light text-white lg:text-2xl">|</span>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Sectors - left aligned mobile layout */}
+                <div className="sm:hidden">
+                  <div className="max-w-xs space-y-3">
+                    {sectors.map((sector, index) => (
+                      <div key={index} className="text-lg font-medium text-white">
+                        {sector}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* CTA Button - left aligned */}
+                <div className="mt-12 lg:mt-16">
+                  <button className="px-8 py-3 text-lg font-semibold text-gray-900 transition-all duration-300 transform bg-white rounded-full shadow-lg hover:bg-gray-100 lg:py-4 lg:px-12 lg:text-xl hover:scale-105 hover:shadow-xl">
+                    Explore Our Portfolio
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="hidden col-span-1 lg:block"></div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default HeroSection;
