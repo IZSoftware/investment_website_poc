@@ -7,27 +7,27 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const PortfolioHighlights = () => {
-  const [activeSector, setActiveSector] = useState("highlights");
+  const [activeSector, setActiveSector] = useState("HIGHLIGHTS");
 
+  // Updated sectors with only the specified ones
   const sectors = [
     { id: 1, name: "HIGHLIGHTS", href: "#highlights" },
-    { id: 2, name: "FINANCIAL SERVICES", href: "#financial" },
-    { id: 3, name: "POWER", href: "#power" },
-    { id: 4, name: "ENERGY", href: "#energy" },
-    { id: 5, name: "REAL ESTATE & HOSPITALITY", href: "#hospitality" },
-    { id: 6, name: "HEALTH CARE", href: "#healthcare" },
-    { id: 7, name: "TECHNOLOGY", href: "#technology" }
+    { id: 2, name: "FINANCE", href: "#finance" },
+    { id: 3, name: "TECHNOLOGY", href: "#technology" },
+    { id: 4, name: "HOSPITALITY", href: "#hospitality" },
+    { id: 5, name: "POWER", href: "#power" },
+    { id: 6, name: "ENERGY", href: "#energy" },
+    { id: 7, name: "REAL ESTATE", href: "#realestate" }
   ];
 
-  // Portfolio percentages data from the image
+  // Updated portfolio data to match the sectors
   const portfolioData = [
-    { category: "Banking", percentage: 8, color: "#338BBA" },
-    { category: "Healthcare", percentage: 0.1, color: "#FF6B6B" },
-    { category: "Insurance & Non-Bank Financial Services", percentage: 5, color: "#4ECDC4" },
-    { category: "Real Estate & Hospitality", percentage: 16, color: "#FFD166" },
-    { category: "Oil & Gas", percentage: 22, color: "#06D6A0" },
-    { category: "Power", percentage: 32.9, color: "#118AB2" },
-    { category: "Technology", percentage: 16, color: "#073B4C" }
+    { category: "Finance", percentage: 25, color: "#338BBA" },
+    { category: "Technology", percentage: 20, color: "#FF6B6B" },
+    { category: "Hospitality", percentage: 10, color: "#4ECDC4" },
+    { category: "Power", percentage: 18, color: "#FFD166" },
+    { category: "Energy", percentage: 15, color: "#06D6A0" },
+    { category: "Real Estate", percentage: 12, color: "#118AB2" }
   ];
 
   // Format data for Chart.js Pie chart
@@ -133,7 +133,7 @@ const PortfolioHighlights = () => {
           <div className="col-span-12 lg:col-span-10">
             <div className="px-4 sm:px-6 lg:px-8">
               
-              {/* Navigation Tabs */}
+              {/* Navigation Tabs - Updated with new sectors */}
               <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
                 {sectors.map((sector) => (
                   <a
@@ -159,7 +159,7 @@ const PortfolioHighlights = () => {
                 </h6>
                 {/* Main Description */}
                 <h2 className="mb-8 text-xl font-normal leading-relaxed text-gray-800 md:text-2xl">
-                  We invest in sectors that provide strong long-term returns and have the ability to transform Africa's economy. The value of our existing portfolio as at 28 November 2025 is N17.92 trillion ($12.39 billion).
+                  We invest in sectors that provide strong long-term returns and have the ability to transform Africa's economy. The value of our existing portfolio as at 28 November 2025 is KES 17.92 trillion ($12.39 billion).
                 </h2>
 
                 {/* Highlights Grid - Only if we're on HIGHLIGHTS tab */}
@@ -167,7 +167,7 @@ const PortfolioHighlights = () => {
                   <div className="grid grid-cols-2 gap-8 mt-12 md:grid-cols-4">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-[#1C1F26] md:text-4xl">
-                        9
+                        6
                       </div>
                       <div className="mt-2 text-xs font-medium tracking-wide text-gray-600 uppercase">
                         Sectors
@@ -224,8 +224,8 @@ const PortfolioHighlights = () => {
                 </div>
               </div>
 
-              {/* Small Pie Charts at Bottom */}
-              <div className="grid grid-cols-2 gap-6 mb-16 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
+              {/* Small Pie Charts at Bottom - Updated to 6 sectors */}
+              <div className="grid grid-cols-2 gap-6 mb-16 sm:grid-cols-3 md:grid-cols-6">
                 {portfolioData.map((item, index) => {
                   // Create mini pie chart data for each sector
                   const miniPieData = {

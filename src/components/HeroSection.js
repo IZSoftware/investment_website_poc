@@ -6,11 +6,10 @@ const HeroSection = () => {
   const sectors = [
     "Energy",
     "Power", 
-    "Banking",
-    "Insurance & Financial Services",
+    "Finance",
     "Technology",
-    "Real Estate & Hospitality",
-    "Healthcare"
+    "Real Estate",
+    "Hospitality",
   ];
 
   return (

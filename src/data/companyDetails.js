@@ -33,7 +33,7 @@ export const companyDetails = {
     ],
     
     votingShare: "1.36%",
-    ticker: "HOLDFIN",
+    ticker: "HOLDING",
     
     votingMeetings: [
       { date: "12/05/2025", meetingType: "Annual" },
@@ -76,7 +76,7 @@ export const companyDetails = {
     ],
     
     votingShare: "2.15%",
-    ticker: "HLDPWR",
+    ticker: "HOLDING",
     
     votingMeetings: [
       { date: "12/05/2025", meetingType: "Annual" },
@@ -112,7 +112,7 @@ export const companyDetails = {
     ],
     
     votingShare: "1.75%",
-    ticker: "HLDENG",
+    ticker: "HOLDING",
     
     votingMeetings: [
       { date: "12/05/2025", meetingType: "Annual" },
@@ -148,7 +148,7 @@ export const companyDetails = {
     ],
     
     votingShare: "2.25%",
-    ticker: "HLDHOT",
+    ticker: "HOLDING",
     
     votingMeetings: [
       { date: "12/05/2025", meetingType: "Annual" },
