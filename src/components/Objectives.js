@@ -114,73 +114,8 @@ const Objectives = () => {
                 </div>
               </div>
             </div>
-            
-            {/* Leadership Section - in a row layout */}
-            <div className="py-16">
-              {/* Leadership Title */}
-              <div className="mb-12">
-                <h3 className="text-4xl font-bold text-gray-900 md:text-5xl">
-                  Leadership
-                </h3>
-              </div>
-              
-              {/* Leadership Grid - Images and text in a row */}
-              <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:gap-12">
-                {/* Leader 1 */}
-                <div className="text-center">
-                  {/* Image Placeholder */}
-                  <div className="relative w-40 h-40 mx-auto mb-6 overflow-hidden rounded-full shadow-md">
-                    <img 
-                      src="/confident-business-woman-portrait-smiling-face.jpg" 
-                      alt="Juliet Tremblay"
-                      className="absolute inset-0 object-cover w-full h-full"
-                    />
-                  </div>
-                  <h4 className="text-2xl font-bold text-gray-900">
-                    Philippe Wanjiku
-                  </h4>
-                  <p className="mt-2 text-lg text-gray-700">
-                    Executive Vice-President, Depositories and Total Portfolio
-                  </p>
-                </div>
-                
-                {/* Leader 2 */}
-                <div className="text-center">
-                  {/* Image Placeholder */}
-                  <div className="relative w-40 h-40 mx-auto mb-6 overflow-hidden rounded-full shadow-md">
-                    <img 
-                      src="/african-woman-successful-entrepreneur-wearing-glasses-face-portrait.jpg" 
-                      alt="Jacques Demers"
-                      className="absolute inset-0 object-cover w-full h-full"
-                    />
-                  </div>
-                  <h4 className="text-2xl font-bold text-gray-900">
-                    Jacques Achieng
-                  </h4>
-                  <p className="mt-2 text-lg text-gray-700">
-                    Senior Vice-President, Depositor Advisory Services
-                  </p>
-                </div>
-                
-                {/* Leader 3 */}
-                <div className="text-center">
-                  {/* Image Placeholder */}
-                  <div className="relative w-40 h-40 mx-auto mb-6 overflow-hidden rounded-full shadow-md">
-                    <img 
-                      src="/businessman-executive-professional-entrepreneur-concept.jpg" 
-                      alt="Alexandre Châteauneuf"
-                      className="absolute inset-0 object-cover w-full h-full"
-                    />
-                  </div>
-                  <h4 className="text-2xl font-bold text-gray-900">
-                    Alexandre Mwangi
-                  </h4>
-                  <p className="mt-2 text-lg text-gray-700">
-                    Managing Director, Portfolio Construction and Currencies
-                  </p>
-                </div>
-              </div>
-            </div>
+          
+
           </div>
         </div>
         
