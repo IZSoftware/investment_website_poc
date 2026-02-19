@@ -97,7 +97,7 @@ const Objectives = () => {
                     </h4>
                   </div>
                   <p className="text-gray-600">
-                    Manage holdings exposure to foreign currencies to ensure optimal positioning and provide the total portfolio with a diversification effect.
+                    Manage NF Holding s exposure to foreign currencies to ensure optimal positioning and provide the total portfolio with a diversification effect.
                   </p>
                 </div>
                 
@@ -137,7 +137,7 @@ const Objectives = () => {
                     />
                   </div>
                   <h4 className="text-2xl font-bold text-gray-900">
-                    Philippe Tremblay
+                    Philippe Wanjiku
                   </h4>
                   <p className="mt-2 text-lg text-gray-700">
                     Executive Vice-President, Depositories and Total Portfolio
@@ -155,7 +155,7 @@ const Objectives = () => {
                     />
                   </div>
                   <h4 className="text-2xl font-bold text-gray-900">
-                    Jacques Demers
+                    Jacques Achieng
                   </h4>
                   <p className="mt-2 text-lg text-gray-700">
                     Senior Vice-President, Depositor Advisory Services
@@ -173,7 +173,7 @@ const Objectives = () => {
                     />
                   </div>
                   <h4 className="text-2xl font-bold text-gray-900">
-                    Alexandre Châteauneuf
+                    Alexandre Mwangi
                   </h4>
                   <p className="mt-2 text-lg text-gray-700">
                     Managing Director, Portfolio Construction and Currencies

@@ -11,8 +11,8 @@ const LatestNews = () => {
     {
       id: 1,
       image: "/closeup-business-people-shaking-hands-outdoor-cafe.jpg",
-      title: "Holdings Leadership Engages European Investors to Advance Africa-Europe Investment Partnerships",
-      description: "Holdings executives participated in high-level meetings with institutional investors and business leaders in Germany, aimed at strengthening Africa-Europe investment collaboration. The engagements focused on long-term capital deployment, sustainable infrastructure, and private sector growth across key African markets.",
+      title: "NF Holding s Leadership Engages European Investors to Advance Africa-Europe Investment Partnerships",
+      description: "NF Holding s executives participated in high-level meetings with institutional investors and business leaders in Germany, aimed at strengthening Africa-Europe investment collaboration. The engagements focused on long-term capital deployment, sustainable infrastructure, and private sector growth across key African markets.",
       date: "December 12, 2025",
       category: "Investor Relations",
       featured: true
@@ -20,14 +20,14 @@ const LatestNews = () => {
     {
       id: 2,
       image: "/male-business-executive-giving-speech.jpg",
-      title: "Holdings CEO Honored for Excellence in Investment Leadership",
+      title: "NF Holding s CEO Honored for Excellence in Investment Leadership",
       date: "December 14, 2025",
       category: "Awards"
     },
     {
       id: 3,
       image: "/corporate-employees-review-transactional-info-improve-customer-satisfaction.jpg",
-      title: "Holdings Executives Engage in Portfolio Review Discussions",
+      title: "NF Holding s Executives Engage in Portfolio Review Discussions",
       date: "December 16, 2025",
       category: "Corporate"
     }
@@ -154,7 +154,7 @@ const LatestNews = () => {
                             required
                           />
                           <label className="text-xs">
-                           By clicking Subscribe, I agree that Heirs Holdings may use my contact details to send me communications and I consent to the Terms as provided in the Privacy Policy and Data Collection Clause.
+                           By clicking Subscribe, I agree that Heirs NF Holding s may use my contact details to send me communications and I consent to the Terms as provided in the Privacy Policy and Data Collection Clause.
                           </label>
                         </div>
                         

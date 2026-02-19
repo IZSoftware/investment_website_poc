@@ -21,7 +21,7 @@ const LeadershipPhilanthropy = () => {
                   </div>
                   <div className="text-gray-600 border-l-4 border-[#0A2540] pl-4">
                     <div className="text-lg font-semibold">- Victor Edwards, CEO</div>
-                    <div className="mt-1 text-gray-500">FOUNDER & CHAIRMAN, HOLDINGS</div>
+                    <div className="mt-1 text-gray-500">FOUNDER & CHAIRMAN, NF Holding S</div>
                   </div>
                 </div>
               </div>
@@ -72,7 +72,7 @@ const LeadershipPhilanthropy = () => {
                 </h2>
                 
                 <p className="mb-8 text-lg leading-relaxed text-gray-700">
-                  Holdings is committed to improving lives and transforming Africa. We are focused on driving Africa's economic transformation by investing in critical sectors that matter most to the continent's development. Watch the video to discover how we are investing in Africa's future.
+                  NF Holding s is committed to improving lives and transforming Africa. We are focused on driving Africa's economic transformation by investing in critical sectors that matter most to the continent's development. Watch the video to discover how we are investing in Africa's future.
                 </p>
                 
                 {!videoPlaying ? (
@@ -103,7 +103,7 @@ const LeadershipPhilanthropy = () => {
                       <iframe
                         className="absolute top-0 left-0 w-full h-full rounded-2xl"
                         src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0`}
-                        title="Holdings Television Commercial"
+                        title="NF Holding s Television Commercial"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen

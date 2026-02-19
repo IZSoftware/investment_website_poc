@@ -5,9 +5,9 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const navItems = [
-    { name: "ABOUT US", path: "/about" },
+    { name: "ABOUT US", path: "/about-us" },
     { name: "CLUSTERS", path: "/clusters" },
-    { name: "NEWS", path: "/news" },
+    { name: "INVESTMENT APPROACH", path: "/investment-approach" },
     { name: "CONTACT", path: "/contact" }
   ];
 
@@ -21,7 +21,7 @@ const Navbar = () => {
               <div className="flex items-center flex-shrink-0">
                 <Link to="/">
                   <img 
-                    src="/HoldingLogo.png" 
+                    src="/NF Holding Logo.png" 
                     alt="Company Logo" 
                     className="w-auto transition-all duration-300 cursor-pointer h-14 sm:h-20 lg:h-18 xl:h-22 2xl:h-26 hover:opacity-90"
                   />

@@ -6,9 +6,9 @@ export const sectorsData = [
     description: "We are addressing Africa's infrastructure deficit by mobilising global capital and allocating it to sectors that will power Africa to prosperity. Strong economic fundamentals and technological innovation have enabled us to build one of the largest pan-African banking networks, providing commercial and investment banking, asset management, and insurance services across the continent.",
     partnerships: [
       {
-        id: "holding-finance",  // STRING ID
-        name: "HOLDING FINANCE",
-        logo: "/holding company logo.png",
+        id: "NF Holding -finance",
+        name: "NF Holding  FINANCE",
+        logo: "/NF Holding  company logo.png",
         description: "Leading African investment and securities company"
       },
     ]
@@ -20,9 +20,9 @@ export const sectorsData = [
     description: "With an installed capacity of 2,000 megawatts, we supply 13-15% of Nigeria's national grid powering millions of homes. Our 120,000-kilometer power distribution network extends our reach to over 1.8 million customers including Nigeria's Federal Capital Territory, businesses, hospitals, and schools—empowering communities in Nigeria and beyond. As a member of the West African Power pool, we are further strengthening regional energy security and economic growth as we drive the continent's industrialisation.",
     partnerships: [
       {
-        id: "holding-power",  // STRING ID
-        name: "HOLDING POWER",
-        logo: "/holding company logo.png",
+        id: "NF Holding -power",
+        name: "NF Holding  POWER",
+        logo: "/NF Holding  company logo.png",
         description: "Leading power generation company in Nigeria"
       },
     ]
@@ -34,9 +34,9 @@ export const sectorsData = [
     description: "Our energy portfolio focuses on sustainable energy solutions across Africa. We invest in oil, gas, and renewable energy projects that drive economic growth while ensuring environmental sustainability. Through strategic partnerships and innovative technologies, we're powering Africa's energy transition.",
     partnerships: [
       {
-        id: "holding-energy",  // STRING ID
-        name: "HOLDINGS ENERGY",
-        logo: "/holding company logo.png",
+        id: "NF Holding -energy",
+        name: "NF Holding S ENERGY",
+        logo: "/NF Holding  company logo.png",
         description: "Integrated energy company"
       },
     ]
@@ -48,9 +48,9 @@ export const sectorsData = [
     description: "We develop and manage premium real estate and hospitality assets that redefine urban landscapes and tourism experiences across Africa. Our portfolio includes luxury hotels, commercial properties, and residential developments that combine world-class amenities with local cultural authenticity.",
     partnerships: [
       {
-        id: "holding-hotels",  // STRING ID
-        name: "HOLDING HOTELS PLC",
-        logo: "/holding company logo.png",
+        id: "NF Holding -hotels", 
+        name: "NF Holding  HOTELS PLC",
+        logo: "/NF Holding  company logo.png",
         description: "Luxury hospitality group with properties across Nigeria"
       },
     ]
@@ -62,9 +62,9 @@ export const sectorsData = [
     description: "We're transforming healthcare delivery in Africa through investments in hospitals, clinics, pharmaceutical manufacturing, and health technology. Our focus is on improving access to quality healthcare while building sustainable medical infrastructure across the continent.",
     partnerships: [
       {
-        id: "holding-health",  // STRING ID
-        name: "HOLDING HEALTH",
-        logo: "/holding company logo.png",
+        id: "NF Holding -health",
+        name: "NF Holding  HEALTH",
+        logo: "/NF Holding  company logo.png",
         description: "Integrated healthcare services provider"
       },
     ]
@@ -76,9 +76,9 @@ export const sectorsData = [
     description: "We invest in innovative technology solutions that transform African industries and communities. From fintech to agritech, healthtech to edutech, our technology portfolio drives digital transformation across the continent, creating new opportunities and improving lives.",
     partnerships: [
       {
-        id: "holding-digital",  // STRING ID
-        name: "HOLDING DIGITAL",
-        logo: "/holding company logo.png",
+        id: "NF Holding -digital",
+        name: "NF Holding  DIGITAL",
+        logo: "/NF Holding  company logo.png",
         description: "Digital solutions and technology investments"
       },
     ]

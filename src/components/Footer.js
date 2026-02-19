@@ -1,26 +1,29 @@
 import React from 'react';
-import { FaTwitter, FaFacebookF, FaInstagram, FaLinkedinIn } from 'react-icons/fa';
+import { FaTwitter, FaLinkedinIn } from 'react-icons/fa';
 import { FaPhone, FaEnvelope, FaLocationDot } from 'react-icons/fa6';
+import { useNavigate } from 'react-router-dom';
 
 const Footer = () => {
+  const navigate = useNavigate();
+
   const quickLinks = [
-    "About Us",
-    "Clusters",
-    "Investment Approach",
-    "Portfolio Performance"
+    { name: "About Us", path: "/about-us" },
+    { name: "Clusters", path: "/clusters" },
+    { name: "Investment Approach", path: "/investment-approach" },
+    { name: "Portfolio Performance", path: "/portfolio-performance" }
   ];
 
   const socialMedia = [
-    { name: "Twitter", icon: <FaTwitter />, url: "#" },
-    { name: "Facebook", icon: <FaFacebookF />, url: "#" },
-    { name: "Instagram", icon: <FaInstagram />, url: "#" },
-    { name: "LinkedIn", icon: <FaLinkedinIn />, url: "#" }
+    { name: "Twitter", icon: <FaTwitter />, url: "https://twitter.com/NF Holding sgroup" },
+    { name: "LinkedIn", icon: <FaLinkedinIn />, url: "https://linkedin.com/company/NF Holding sgroup" }
   ];
 
-  // Handle link clicks to prevent errors
-  const handleLinkClick = (e) => {
-    e.preventDefault();
-    console.log("Link clicked");
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+
+  const handleExternalLink = (url) => {
+    window.open(url, '_blank', 'noopener noreferrer');
   };
 
   return (
@@ -38,8 +41,8 @@ const Footer = () => {
                 <div>
                   <div className="mb-8">
                     <img
-                      src="/HoldingLogo.png"
-                      alt="Holdings Logo"
+                      src="/NF Holding Logo.png"
+                      alt="NF Holding s Logo"
                       className="w-auto h-24 lg:h-26"
                     />
                   </div>
@@ -48,9 +51,9 @@ const Footer = () => {
                     {socialMedia.map((social) => (
                       <button
                         key={social.name}
-                        onClick={handleLinkClick}
-                        className="flex items-center justify-center w-10 h-10 transition-colors duration-300 bg-[#1C1F26] rounded-full hover:bg-[#1C1F26]"
-                        aria-label={`Visit our ${social.name} page`}
+                        onClick={() => handleExternalLink(social.url)}
+                        className="flex items-center justify-center w-10 h-10 transition-colors duration-300 bg-[#1C1F26] rounded-full hover:bg-[#0A2540]"
+                        aria-label={`Visit our ${social.name} page (opens in new tab)`}
                       >
                         <span className="text-lg text-white">{social.icon}</span>
                       </button>
@@ -78,7 +81,7 @@ const Footer = () => {
                       <span className="mr-3 text-lg text-[#1C1F26]">
                         <FaEnvelope />
                       </span>
-                      <span>info@holdings.com</span>
+                      <span>investor@nf-holding.com</span>
                     </div>
                     <div className="flex items-center text-gray-700">
                       <span className="mr-3 text-lg text-[#1C1F26]">
@@ -101,12 +104,12 @@ const Footer = () => {
                   <div className="space-y-2">
                     {quickLinks.map((link) => (
                       <button
-                        key={link}
-                        onClick={handleLinkClick}
+                        key={link.name}
+                        onClick={() => handleNavigation(link.path)}
                         className="block w-full py-1 text-left text-gray-700 transition-colors duration-300 hover:text-gray-900 group"
                       >
                         <span className="text-[#1C1F26] mr-2 group-hover:text-[#0A2540]">&gt;</span>
-                        {link}
+                        {link.name}
                       </button>
                     ))}
                   </div>
@@ -130,7 +133,7 @@ const Footer = () => {
               <div className="flex flex-col items-center justify-between md:flex-row">
                 {/* Left: Copyright */}
                 <div className="mb-4 text-white md:mb-0">
-                  © 2026 Holdings
+                  © 2026 NF Holding s
                 </div>
                 
                 {/* Center: Empty for 3-column alignment */}
@@ -139,14 +142,14 @@ const Footer = () => {
                 {/* Right: Legal Links */}
                 <div className="text-white">
                   <button
-                    onClick={handleLinkClick}
+                    onClick={() => handleNavigation('/privacy-policy')}
                     className="mr-4 hover:underline focus:outline-none"
                   >
                     Privacy Policy
                   </button>
                   <span className="mr-4">|</span>
                   <button
-                    onClick={handleLinkClick}
+                    onClick={() => handleNavigation('/terms')}
                     className="hover:underline focus:outline-none"
                   >
                     Terms & Conditions
