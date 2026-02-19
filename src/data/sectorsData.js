@@ -16,7 +16,7 @@ export const sectorsData = [
   {
     id: "power",
     title: "POWER",
-    heroImage: "/medium-shot-smiley-engineer-NF Holding -tablet.jpg",
+    heroImage: "/medium-shot-smiley-engineer-holding-tablet.jpg",
     description: "With an installed capacity of 2,000 megawatts, we supply 13-15% of Nigeria's national grid powering millions of homes. Our 120,000-kilometer power distribution network extends our reach to over 1.8 million customers including Nigeria's Federal Capital Territory, businesses, hospitals, and schools—empowering communities in Nigeria and beyond. As a member of the West African Power pool, we are further strengthening regional energy security and economic growth as we drive the continent's industrialisation.",
     partnerships: [
       {

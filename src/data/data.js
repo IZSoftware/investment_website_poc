@@ -456,7 +456,7 @@ export const sectorsData = [
     color: '#7FBC4D',
     portfolioValue: '$0.9 B',
     portfolioPct: 18,
-    heroImage: '/medium-shot-smiley-engineer-NF Holding -tablet.jpg',
+    heroImage: '/medium-shot-smiley-engineer-holding-tablet.jpg',
     date: 'AS AT DECEMBER 31, 2025',
     description: "With an installed capacity of 2,000 megawatts, we supply 13–15% of national grid powering millions of homes. Our 120,000-kilometer power distribution network extends our reach to over 1.8 million customers including businesses, hospitals, and schools—empowering communities across Africa.",
     partnerships: [
@@ -735,7 +735,7 @@ export const learnAboutUs = {
     { id: 1, clusterId: 1, image: '/close-up-shot-business-study-essentials-white-desk-work-study-aesthetics.jpg', title: 'Finance',     category: 'Finance',     description: 'Strategic investments in financial institutions driving economic growth across Africa.' },
     { id: 2, clusterId: 2, image: '/ai-nuclear-energy-future-innovation-disruptive-technology.jpg',                title: 'Technology',  category: 'Technology',  description: 'Innovative tech solutions transforming African industries and communities.' },
     { id: 3, clusterId: 3, image: '/beautiful-aerial-shot-city.jpg',                                              title: 'Hospitality', category: 'Hospitality', description: 'Premium hospitality assets redefining tourism experiences across Africa.' },
-    { id: 4, clusterId: 4, image: '/medium-shot-smiley-engineer-NF Holding -tablet.jpg',                         title: 'Power',       category: 'Power',       description: 'Our Power investments focus on sustainable power generation and distribution across Africa.' },
+    { id: 4, clusterId: 4, image: '/medium-shot-smiley-engineer-holding-tablet.jpg',                         title: 'Power',       category: 'Power',       description: 'Our Power investments focus on sustainable power generation and distribution across Africa.' },
     { id: 5, clusterId: 5, image: '/sun-setting-silhouette-electricity-pylons.jpg',                               title: 'Energy',      category: 'Energy',      description: 'Our energy investments focus on sustainable power generation and distribution across Africa.' },
     { id: 6, clusterId: 6, image: '/beautiful-aerial-shot-city.jpg',                                              title: 'Real Estate', category: 'Real Estate', description: 'Premium developments that redefine urban landscapes across Africa.' },
   ],
