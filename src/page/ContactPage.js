@@ -386,7 +386,7 @@ export default function ContactPage() {
         <div className="hero">
           <img 
             src="/contact hero img.jpg" 
-            alt="NF Holding s Group Office" 
+            alt="NF Holding Group Office" 
             className="hero-image"
             onError={(e) => {
               e.target.onerror = null;
@@ -397,7 +397,7 @@ export default function ContactPage() {
           <div className="hero-inner">
             <div className="hero-spacer" />
             <div className="hero-content">
-              <p className="hero-tag">NF Holding s Group</p>
+              <p className="hero-tag">NF Holding Group</p>
               <h1 className="hero-title">
                 Contact & Connect
               </h1>
@@ -435,7 +435,7 @@ export default function ContactPage() {
                 {/* Follow us - Twitter and LinkedIn only */}
                 <div className="social-icons">
                   <button
-                    onClick={() => window.open('https://twitter.com/NF Holding sgroup', '_blank')}
+                    onClick={() => window.open('https://twitter.com/NF Holdinggroup', '_blank')}
                     className="social-icon"
                     aria-label="Twitter (opens in new tab)"
                   >
@@ -444,7 +444,7 @@ export default function ContactPage() {
                     </svg>
                   </button>
                   <button
-                    onClick={() => window.open('https://linkedin.com/company/NF Holding sgroup', '_blank')}
+                    onClick={() => window.open('https://linkedin.com/company/NF Holdinggroup', '_blank')}
                     className="social-icon"
                     aria-label="LinkedIn (opens in new tab)"
                   >
@@ -459,7 +459,7 @@ export default function ContactPage() {
               <div>
                 <div className="map-container">
                   <iframe
-                    title="NF Holding s Group Office - Westlands Nairobi"
+                    title="NF Holding Group Office - Westlands Nairobi"
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.819426671786!2d36.80518007496582!3d-1.2676399356488635!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f173c0a1f9de7%3A0x48e78bcd06478e71!2sWestgate%20Shopping%20Mall!5e0!3m2!1sen!2ske!4v1708000000000!5m2!1sen!2ske"
                     allowFullScreen=""
                     loading="lazy"
@@ -469,7 +469,7 @@ export default function ContactPage() {
                   <div className="map-overlay-badge">
                     <div className="map-overlay-dot" />
                     <div>
-                      <div className="map-overlay-text">NF Holding s Group</div>
+                      <div className="map-overlay-text">NF Holding Group</div>
                       <div className="map-overlay-sub">Westgate Mall, Westlands · Nairobi</div>
                     </div>
                   </div>
@@ -573,7 +573,7 @@ export default function ContactPage() {
                 <div className="image-main">
                   <img 
                     src="/contact us.jpg" 
-                    alt="Our team at NF Holding s Group" 
+                    alt="Our team at NF Holding Group" 
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80';

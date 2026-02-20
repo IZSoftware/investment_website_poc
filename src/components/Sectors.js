@@ -11,13 +11,8 @@ const Sectors = () => {
         <div className="col-span-12 lg:col-span-10">
           <div className="px-4 sm:px-6 lg:px-8">
             {sectorsData.map(sector => {
-              // Match the cluster that belongs to this sector
               const cluster = clusters.find(c => c.sectorId === sector.id);
-
-              // Use cluster image if available, fall back to sector heroImage
               const heroImage = cluster?.image || sector.heroImage;
-
-              // Use cluster logos (multiple supported) — fall back to sector partnerships
               const logos = cluster?.logos?.length
                 ? cluster.logos
                 : (sector.partnerships ?? []);
@@ -29,43 +24,43 @@ const Sectors = () => {
                   <div className="mb-12">
                     <div
                       className="relative w-full bg-center bg-cover rounded-2xl"
-                      style={{ backgroundImage: `url('${heroImage}')`, height: '600px' }}
+                      style={{ backgroundImage: `url('${heroImage}')` }}
                     >
-                      <div className="absolute inset-0 bg-black bg-opacity-40 rounded-2xl" />
-                      <div className="absolute inset-0 flex items-end p-8">
-                        <h2 className="text-4xl font-bold text-white md:text-5xl lg:text-6xl">
-                          {sector.title}
-                        </h2>
+                      {/*
+                        Height: 280px on mobile/sm, 420px on md, 600px on lg+
+                        Only the height utility changes — nothing else is touched.
+                      */}
+                      <div className="h-[280px] sm:h-[340px] md:h-[420px] lg:h-[600px]">
+                        <div className="absolute inset-0 bg-black bg-opacity-40 rounded-2xl" />
+                        <div className="absolute inset-0 flex items-end p-8">
+                          <h2 className="text-4xl font-bold text-white md:text-5xl lg:text-6xl">
+                            {sector.title}
+                          </h2>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* ── Description ── */}
+                  {/* ── Description — justified text ── */}
                   <div className="mb-12">
-                    <p className="text-lg leading-relaxed text-gray-700 md:text-xl">
+                    <p className="text-lg leading-relaxed text-justify text-gray-700 md:text-xl">
                       {sector.description}
                     </p>
                   </div>
 
-                  {/* ── Partnerships / Logos ── */}
+                  {/* ── Partnerships / Logos — top line only ── */}
                   {logos.length > 0 && (
                     <div>
-                      <h3 className="mb-8 text-2xl font-bold text-gray-900">Partnerships</h3>
-                      {/*
-                        To add more logos: just push another object into the cluster's
-                        logos array in data.js — this grid will expand automatically.
-                      */}
                       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                         {logos.map((company, index) => (
                           <div
                             key={company.id ?? `${sector.id}-logo-${index}`}
                             className="flex flex-col"
                           >
-                            {/* Top line */}
+                            {/* Top line only — bottom line removed */}
                             <div className="w-full h-0.5 bg-black mb-4" />
 
                             <div className="flex items-center gap-4">
-                              {/* Logo card — supports both 'image' (clusters) and 'logo' (partnerships) keys */}
                               <Link
                                 to={company.link ?? `/company/${company.id}`}
                                 className="flex-shrink-0 block"
@@ -87,12 +82,8 @@ const Sectors = () => {
                                 </div>
                               </Link>
 
-                              {/* Company name */}
                               <h4 className="text-xl font-semibold text-gray-900">{company.name}</h4>
                             </div>
-
-                            {/* Bottom line */}
-                            <div className="w-full h-0.5 bg-black mt-4" />
                           </div>
                         ))}
                       </div>

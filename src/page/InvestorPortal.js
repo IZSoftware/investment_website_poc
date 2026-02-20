@@ -16,40 +16,40 @@ const InvestorPortal = () => {
   };
 
   const Card = ({ icon, title, description, amount, amountDescription, manageText = "Manage", navigateTo }) => (
-    <div className="flex flex-col h-full p-6 transition-shadow duration-300 bg-white border border-gray-200 shadow-lg hover:shadow-xl">
+    <div className="flex flex-col h-full p-4 transition-shadow duration-300 bg-white border border-gray-200 shadow-lg sm:p-5 lg:p-6 hover:shadow-xl">
       {/* Icon and Title */}
-      <div className="flex items-start mb-4">
-        <img src={icon} alt={title} className="flex-shrink-0 w-10 h-10 mr-4" />
-        <h2 className="text-xl font-bold text-gray-900">
+      <div className="flex items-start mb-3 lg:mb-4">
+        <img src={icon} alt={title} className="flex-shrink-0 w-8 h-8 mr-3 sm:w-9 sm:h-9 lg:w-10 lg:h-10 lg:mr-4" />
+        <h2 className="text-lg font-bold text-gray-900 sm:text-xl lg:text-xl">
           {title}
         </h2>
       </div>
       
       {/* Description */}
-      <p className="mb-6 text-sm leading-relaxed text-gray-600">
+      <p className="mb-4 text-xs leading-relaxed text-gray-600 lg:mb-6 sm:text-sm lg:text-sm">
         {description}
       </p>
       
       {/* Amount */}
       <div className="mb-1">
-        <span className="text-5xl font-bold text-gray-900">
+        <span className="text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
           {amount}
         </span>
       </div>
       
       {/* Amount Description */}
-      <p className="mb-6 text-sm text-gray-500">
+      <p className="mb-4 text-xs text-gray-500 lg:mb-6 sm:text-sm lg:text-sm">
         {amountDescription}
       </p>
       
       {/* Horizontal Line */}
-      <hr className="mb-4 border-t border-gray-200" />
+      <hr className="mb-3 border-t border-gray-200 lg:mb-4" />
       
       {/* Manage Button */}
       <div className="mt-auto">
         <button 
           onClick={() => handleManageClick(navigateTo)}
-          className="bg-black hover:bg-black text-white font-medium py-2.5 px-8 rounded-md transition-colors duration-200 text-sm tracking-wide"
+          className="bg-black hover:bg-black text-white font-medium py-2 sm:py-2.5 px-6 sm:px-8 rounded-md transition-colors duration-200 text-xs sm:text-sm tracking-wide"
         >
           {manageText}
         </button>
@@ -64,17 +64,17 @@ const InvestorPortal = () => {
         <div className="col-span-12 lg:col-span-10">
           
           {/* Header Section */}
-          <div className="pt-16 pb-12">
-            <h1 className="mb-4 text-5xl font-bold tracking-tight text-gray-900 md:text-6xl">
+          <div className="px-4 pt-10 pb-8 sm:pt-12 lg:pt-16 sm:pb-10 lg:pb-12 sm:px-6 lg:px-0">
+            <h1 className="mb-2 text-3xl font-bold tracking-tight text-gray-900 sm:mb-3 lg:mb-4 sm:text-4xl md:text-5xl lg:text-6xl">
               CLUSTER OVERVIEW
             </h1>
-            <p className="text-2xl font-light text-gray-500">
+            <p className="text-lg font-light text-gray-500 sm:text-xl lg:text-2xl">
               Portfolio management dashboard
             </p>
           </div>
 
           {/* Three Column Grid */}
-          <div className="grid grid-cols-1 gap-8 pb-16 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 px-4 pb-10 sm:gap-6 lg:gap-8 sm:pb-12 lg:pb-16 sm:px-6 lg:px-0 md:grid-cols-3">
             
             {/* Portfolio Investment Card */}
             <Card 

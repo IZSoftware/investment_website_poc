@@ -90,13 +90,13 @@ export default function AssetSubEntities() {
 
   if (!currentAsset) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="flex items-center justify-center min-h-screen px-4 bg-white">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-[#1D1D1F] mb-2">Asset Not Found</h2>
-          <p className="text-[#6E6E73] mb-6">The requested asset could not be found.</p>
+          <h2 className="text-xl sm:text-2xl font-semibold text-[#1D1D1F] mb-2">Asset Not Found</h2>
+          <p className="text-sm sm:text-base text-[#6E6E73] mb-6">The requested asset could not be found.</p>
           <button
             onClick={() => navigate('/investor-portal/net-assets')}
-            className="px-6 py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all text-sm sm:text-base"
           >
             Back to Net Assets
           </button>
@@ -110,23 +110,25 @@ export default function AssetSubEntities() {
       <div className="grid w-full grid-cols-12 mx-auto max-w-screen-3xl">
         <div className="hidden col-span-1 lg:block"></div>
         <div className="col-span-12 lg:col-span-10">
-          <div className="px-4 py-12 sm:px-6 lg:px-8">
+          <div className="px-4 py-8 sm:px-6 lg:px-8 sm:py-10 lg:py-12">
             
+            {/* Back Button */}
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 mb-6 text-[#6E6E73] hover:text-[#1D1D1F] transition-colors group"
+              className="flex items-center gap-1.5 lg:gap-2 mb-4 lg:mb-6 text-[#6E6E73] hover:text-[#1D1D1F] transition-colors group"
             >
-              <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
-              <span className="text-sm font-medium">Back</span>
+              <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
+              <span className="text-xs font-medium sm:text-sm">Back</span>
             </button>
 
-            <div className="flex items-center gap-2 mb-8 text-sm">
+            {/* Breadcrumbs */}
+            <div className="flex flex-wrap items-center gap-1.5 lg:gap-2 mb-6 lg:mb-8 text-xs sm:text-sm">
               {breadcrumbs.map((crumb, index) => (
                 <React.Fragment key={crumb.path}>
                   <button
                     onClick={() => handleBreadcrumbClick(crumb.path)}
                     className={`
-                      transition-colors
+                      transition-colors whitespace-nowrap max-w-[120px] sm:max-w-[200px] truncate
                       ${index === breadcrumbs.length - 1 
                         ? 'text-[#1D1D1F] font-medium' 
                         : 'text-[#6E6E73] hover:text-[#1D1D1F]'
@@ -135,77 +137,82 @@ export default function AssetSubEntities() {
                   >
                     {crumb.title}
                   </button>
-                  {index < breadcrumbs.length - 1 && <ChevronRight size={16} className="text-[#D2D2D7]" />}
+                  {index < breadcrumbs.length - 1 && (
+                    <ChevronRight size={14} className="flex-shrink-0 text-[#D2D2D7]" />
+                  )}
                 </React.Fragment>
               ))}
             </div>
 
-            <div className="flex items-center justify-between mb-12">
-              <div>
-                <h1 className="text-4xl font-semibold text-[#1D1D1F] tracking-tight mb-2">
+            {/* Header */}
+            <div className="flex flex-col items-start justify-between gap-4 mb-8 sm:flex-row sm:items-center lg:mb-12">
+              <div className="w-full sm:w-auto">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#1D1D1F] tracking-tight mb-1 lg:mb-2">
                   {currentAsset.title.toUpperCase()}
                 </h1>
-                <p className="text-sm text-[#6E6E73]">
+                <p className="text-xs sm:text-sm text-[#6E6E73]">
                   {currentAsset.description}
                 </p>
               </div>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all duration-200 shadow-sm hover:shadow-md"
+                className="inline-flex items-center gap-1.5 lg:gap-2 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all duration-200 shadow-sm hover:shadow-md text-sm sm:text-base w-full sm:w-auto justify-center"
               >
-                <Plus size={20} />
+                <Plus size={16} className="sm:w-[18px] sm:h-[18px] lg:w-5 lg:h-5" />
                 <span className="font-medium">Add Sub-Entity</span>
               </button>
             </div>
 
-            <div className="mb-12 p-8 bg-[#F5F5F7] rounded-2xl border-l-4 border-[#1D1D1F]">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {/* Asset Details Card */}
+            <div className="mb-8 lg:mb-12 p-4 sm:p-6 lg:p-8 bg-[#F5F5F7] rounded-xl lg:rounded-2xl border-l-4 border-[#1D1D1F]">
+              <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6 md:grid-cols-3">
                 <div>
-                  <p className="text-xs text-[#6E6E73] uppercase tracking-wider mb-2 font-medium">
+                  <p className="text-xs text-[#6E6E73] uppercase tracking-wider mb-1 lg:mb-2 font-medium">
                     Total Valuation
                   </p>
-                  <p className="text-3xl font-semibold text-[#1D1D1F]">
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-semibold text-[#1D1D1F]">
                     {currentAsset.value}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-[#6E6E73] uppercase tracking-wider mb-2 font-medium">
+                  <p className="text-xs text-[#6E6E73] uppercase tracking-wider mb-1 lg:mb-2 font-medium">
                     Status
                   </p>
                   <div className={`
-                    inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium
+                    inline-flex items-center gap-1.5 lg:gap-2 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full text-xs lg:text-sm font-medium
                     ${currentAsset.enabled 
                       ? 'bg-emerald-100 text-emerald-700' 
                       : 'bg-red-100 text-red-700'
                     }
                   `}>
-                    <div className={`w-2 h-2 rounded-full ${currentAsset.enabled ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                    <div className={`w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full ${currentAsset.enabled ? 'bg-emerald-500' : 'bg-red-500'}`} />
                     {currentAsset.enabled ? 'Enabled' : 'Disabled'}
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-[#6E6E73] uppercase tracking-wider mb-2 font-medium">
+                  <p className="text-xs text-[#6E6E73] uppercase tracking-wider mb-1 lg:mb-2 font-medium">
                     As At Date
                   </p>
-                  <p className="text-sm text-[#1D1D1F] font-medium">
+                  <p className="text-xs lg:text-sm text-[#1D1D1F] font-medium">
                     {currentAsset.date}
                   </p>
                 </div>
               </div>
             </div>
 
+            {/* Sub-Entities Section */}
             {subEntities.length > 0 ? (
               <>
-                <div className="mb-8">
-                  <h2 className="text-2xl font-semibold text-[#1D1D1F] mb-2">
+                <div className="mb-4 lg:mb-8">
+                  <h2 className="text-xl lg:text-2xl font-semibold text-[#1D1D1F] mb-1 lg:mb-2">
                     Sub-Entities
                   </h2>
-                  <p className="text-[#6E6E73]">
-                    Detailed breakdown of {currentAsset.title.toLowerCase()} NF Holding s
+                  <p className="text-xs sm:text-sm text-[#6E6E73]">
+                    Detailed breakdown of {currentAsset.title.toLowerCase()} NF Holding
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 mb-16 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 mb-12 sm:gap-5 lg:gap-6 lg:mb-16 md:grid-cols-2 lg:grid-cols-3">
                   {subEntities.map((entity) => (
                     <AssetCard
                       key={entity.id}
@@ -219,22 +226,22 @@ export default function AssetSubEntities() {
                 </div>
               </>
             ) : (
-              <div className="py-16 text-center">
-                <div className="max-w-md mx-auto">
-                  <div className="w-16 h-16 bg-[#F5F5F7] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Plus size={32} className="text-[#6E6E73]" />
+              <div className="py-10 text-center lg:py-16">
+                <div className="max-w-md px-4 mx-auto">
+                  <div className="w-12 h-12 lg:w-16 lg:h-16 bg-[#F5F5F7] rounded-xl lg:rounded-2xl flex items-center justify-center mx-auto mb-3 lg:mb-4">
+                    <Plus size={24} className="lg:w-8 lg:h-8 text-[#6E6E73]" />
                   </div>
-                  <h3 className="text-xl font-semibold text-[#1D1D1F] mb-2">
+                  <h3 className="text-lg lg:text-xl font-semibold text-[#1D1D1F] mb-2">
                     No Sub-Entities Yet
                   </h3>
-                  <p className="text-[#6E6E73] mb-6">
+                  <p className="text-xs sm:text-sm text-[#6E6E73] mb-4 lg:mb-6">
                     Start by adding sub-entities to break down {currentAsset.title.toLowerCase()}
                   </p>
                   <button
                     onClick={() => setShowAddModal(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all"
+                    className="inline-flex items-center gap-1.5 lg:gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all text-sm sm:text-base w-full sm:w-auto justify-center"
                   >
-                    <Plus size={20} />
+                    <Plus size={16} className="lg:w-5 lg:h-5" />
                     <span>Add First Sub-Entity</span>
                   </button>
                 </div>
