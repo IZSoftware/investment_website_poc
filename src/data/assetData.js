@@ -58,7 +58,7 @@ export const assetData = {
   'equities': {
     id: 'equities',
     title: 'Equities',
-    description: 'Private equity positions and public equity market NF Holding s.',
+    description: 'Private equity positions and public equity market NF Holding.',
     value: '$219.4 B',
     date: 'AS AT DECEMBER 31, 2025',
     enabled: true,
@@ -114,7 +114,7 @@ export const assetData = {
   'real-estate': {
     id: 'real-estate',
     title: 'Real Estate',
-    description: 'Real estate NF Holding s and infrastructure investments.',
+    description: 'Real estate NF Holding and infrastructure investments.',
     value: '$105.9 B',
     date: 'AS AT DECEMBER 31, 2025',
     enabled: true,
@@ -122,7 +122,7 @@ export const assetData = {
       {
         id: 'residential',
         title: 'Residential',
-        description: 'Residential property NF Holding s and developments.',
+        description: 'Residential property NF Holding and developments.',
         value: '$48.3 B',
         date: 'AS AT DECEMBER 31, 2025',
         enabled: true,
@@ -131,7 +131,7 @@ export const assetData = {
       {
         id: 'land',
         title: 'Land',
-        description: 'Undeveloped land NF Holding s and strategic parcels.',
+        description: 'Undeveloped land NF Holding and strategic parcels.',
         value: '$22.1 B',
         date: 'AS AT DECEMBER 31, 2025',
         enabled: true,

@@ -14,8 +14,8 @@ const Footer = () => {
   ];
 
   const socialMedia = [
-    { name: "Twitter", icon: <FaTwitter />, url: "https://twitter.com/NF Holding sgroup" },
-    { name: "LinkedIn", icon: <FaLinkedinIn />, url: "https://linkedin.com/company/NF Holding sgroup" }
+    { name: "Twitter", icon: <FaTwitter />, url: "https://twitter.com/NF Holdinggroup" },
+    { name: "LinkedIn", icon: <FaLinkedinIn />, url: "https://linkedin.com/company/NF Holdinggroup" }
   ];
 
   const handleNavigation = (path) => {
@@ -42,7 +42,7 @@ const Footer = () => {
                   <div className="mb-8">
                     <img
                       src="/NF Holding Logo.png"
-                      alt="NF Holding s Logo"
+                      alt="NF Holding Logo"
                       className="w-auto h-24 lg:h-26"
                     />
                   </div>
@@ -133,7 +133,7 @@ const Footer = () => {
               <div className="flex flex-col items-center justify-between md:flex-row">
                 {/* Left: Copyright */}
                 <div className="mb-4 text-white md:mb-0">
-                  © 2026 NF Holding s
+                  © 2026 NF Holding
                 </div>
                 
                 {/* Center: Empty for 3-column alignment */}

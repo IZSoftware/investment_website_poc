@@ -36,21 +36,24 @@ const LearnAboutUs = () => {
             {/* ── Horizontal image accordion ── */}
             <div className="mb-12 lg:mb-16">
               <div
-                className="flex h-[500px] gap-0 overflow-hidden rounded-lg"
+                className="flex flex-col lg:flex-row h-auto lg:h-[500px] gap-4 lg:gap-0 overflow-hidden rounded-lg"
                 onMouseLeave={() => setHoveredId(null)}
               >
                 {investmentCards.map(item => {
                   const isHovered  = hoveredId === item.id;
                   const anyHovered = hoveredId !== null;
 
-                  const widthStyle = anyHovered
-                    ? { flex: isHovered ? '0 0 45%' : '0 0 11%' }
-                    : { flex: '1 1 0%' };
+                  // For small devices, use different styling
+                  const widthStyle = window.innerWidth < 1024 
+                    ? { width: '100%', height: '300px' }
+                    : anyHovered
+                      ? { flex: isHovered ? '0 0 45%' : '0 0 11%' }
+                      : { flex: '1 1 0%' };
 
                   return (
                     <div
                       key={item.id}
-                      className="relative overflow-hidden transition-all duration-700 ease-in-out cursor-pointer"
+                      className="relative w-full overflow-hidden transition-all duration-700 ease-in-out cursor-pointer lg:w-auto"
                       style={widthStyle}
                       onMouseEnter={() => setHoveredId(item.id)}
                       onClick={() => navigate(`/cluster/${item.clusterId}`)}
@@ -70,8 +73,23 @@ const LearnAboutUs = () => {
                         />
                       </div>
 
-                      {/* Expanded content (bottom, fades in on hover) */}
-                      <div className="absolute inset-0 flex items-end p-6 lg:p-8">
+                      {/* Content for small devices - always visible */}
+                      <div className="absolute inset-0 flex items-end p-4 lg:hidden">
+                        <div className="w-full">
+                          <div className="mb-1 text-xs font-semibold tracking-wider text-white uppercase">
+                            {item.category}
+                          </div>
+                          <h4 className="mb-2 text-xl font-bold text-white">
+                            {item.title}
+                          </h4>
+                          <p className="text-sm leading-relaxed text-gray-200 line-clamp-2">
+                            {item.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Expanded content for large screens (bottom, fades in on hover) */}
+                      <div className="absolute inset-0 items-end hidden p-6 lg:flex lg:p-8">
                         <div
                           className={`transition-all duration-700 ${
                             isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
@@ -93,9 +111,9 @@ const LearnAboutUs = () => {
                         </div>
                       </div>
 
-                      {/* Vertical title (shows when collapsed) */}
+                      {/* Vertical title for large screens (shows when collapsed) */}
                       <div
-                        className={`absolute transition-all duration-700 transform -translate-x-1/2 -translate-y-1/2 ${
+                        className={`absolute transition-all duration-700 transform -translate-x-1/2 -translate-y-1/2 hidden lg:block ${
                           isHovered ? 'opacity-0' : 'opacity-100'
                         } top-1/2 left-1/2`}
                       >
@@ -122,14 +140,14 @@ const LearnAboutUs = () => {
                 {portfolioStatement}
               </h3>
 
-              <div className="grid grid-cols-2 gap-8 mt-16 sm:grid-cols-3 lg:grid-cols-5">
+              <div className="grid grid-cols-2 gap-4 mt-8 sm:gap-8 sm:mt-16 sm:grid-cols-3 lg:grid-cols-5">
                 {stats.map((stat, idx) => (
                   <div key={idx} className="relative text-center">
-                    <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#0A2540] mb-4">
+                    <div className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#0A2540] mb-2 sm:mb-4">
                       {stat.value}
                     </div>
-                    <div className="w-24 h-0.5 bg-[#0A2540] mx-auto mb-4" />
-                    <div className="text-sm font-medium tracking-wide text-gray-600 uppercase sm:text-base">
+                    <div className="w-16 sm:w-20 lg:w-24 h-0.5 bg-[#0A2540] mx-auto mb-2 sm:mb-4" />
+                    <div className="text-xs font-medium tracking-wide text-gray-600 uppercase sm:text-sm">
                       {stat.label}
                     </div>
                   </div>

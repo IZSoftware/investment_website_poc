@@ -1,7 +1,6 @@
 import React from 'react';
 import { Quote } from 'lucide-react';
 
-// Investment approach data in JSON format
 const investmentData = {
   hero: {
     title: "Investment Approach",
@@ -10,8 +9,8 @@ const investmentData = {
   quotes: [
     {
       id: 1,
-      text: "NF Holding  manages the fund transparently and responsibly with the aim of achieving the highest possible return after costs.",
-      author: "NF Holding "
+      text: "NF Holding manages the fund transparently and responsibly with the aim of achieving the highest possible return after costs.",
+      author: "NF Holding"
     },
     {
       id: 2,
@@ -59,19 +58,19 @@ export default function InvestmentApproach() {
         <div className="col-span-12 lg:col-span-10">
           <div className="px-4 py-12 sm:px-6 lg:px-8">
             
-            {/* Hero Section - Light Gray Background */}
+            {/* Hero Section */}
             <div className="bg-[#F5F5F7] rounded-2xl p-8 mb-16">
               <h1 className="text-5xl font-semibold text-[#1D1D1F] tracking-tight mb-6 lg:text-6xl">
                 {investmentData.hero.title}
               </h1>
-              <p className="text-xl text-[#6E6E73] leading-relaxed max-w-4xl">
+              <p className="text-xl text-[#6E6E73] leading-relaxed max-w-4xl text-justify">
                 {investmentData.hero.description}
               </p>
             </div>
 
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-              {/* Left Column - Main Content (7 columns) */}
+              {/* Left Column - Main Content */}
               <div className="lg:col-span-7">
                 <div className="space-y-12">
                   {investmentData.sections.map((section, index) => (
@@ -80,7 +79,7 @@ export default function InvestmentApproach() {
                         {section.title}
                       </h2>
                       {section.content.split('\n\n').map((paragraph, pIndex) => (
-                        <p key={pIndex} className="text-base text-[#6E6E73] leading-relaxed mb-4">
+                        <p key={pIndex} className="text-base text-[#6E6E73] leading-relaxed mb-4 text-justify">
                           {paragraph}
                         </p>
                       ))}
@@ -92,19 +91,13 @@ export default function InvestmentApproach() {
                 </div>
               </div>
 
-              {/* Right Column - Quotes (5 columns) */}
+              {/* Right Column - Quotes */}
               <div className="lg:col-span-4 lg:col-start-9">
                 <div className="space-y-8 lg:sticky lg:top-24">
                   {investmentData.quotes.map((quote) => (
-                    <div
-                      key={quote.id}
-                      className="bg-[#F5F5F7] rounded-2xl p-8 relative"
-                    >
-                      <Quote 
-                        className="absolute top-6 right-6 text-[#D2D2D7]" 
-                        size={32}
-                      />
-                      <p className="text-lg text-[#1D1D1F] leading-relaxed mb-4">
+                    <div key={quote.id} className="bg-[#F5F5F7] rounded-2xl p-8 relative">
+                      <Quote className="absolute top-6 right-6 text-[#D2D2D7]" size={32} />
+                      <p className="text-lg text-[#1D1D1F] leading-relaxed mb-4 text-justify">
                         "{quote.text}"
                       </p>
                       <p className="text-sm font-medium text-[#6E6E73]">
@@ -122,26 +115,10 @@ export default function InvestmentApproach() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
-        * {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-
-        .prose h2 {
-          font-family: 'Inter', sans-serif;
-          font-weight: 600;
-          color: #1D1D1F;
-        }
-
-        .prose p {
-          font-family: 'Inter', sans-serif;
-          color: #6E6E73;
-          line-height: 1.7;
-        }
-
-        .prose hr {
-          border-color: #D2D2D7;
-        }
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .prose h2 { font-family: 'Inter', sans-serif; font-weight: 600; color: #1D1D1F; }
+        .prose p  { font-family: 'Inter', sans-serif; color: #6E6E73; line-height: 1.7; }
+        .prose hr { border-color: #D2D2D7; }
       `}</style>
     </div>
   );

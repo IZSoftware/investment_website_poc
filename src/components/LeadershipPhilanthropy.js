@@ -21,7 +21,7 @@ const LeadershipPhilanthropy = () => {
                   </div>
                   <div className="text-gray-600 border-l-4 border-[#0A2540] pl-4">
                     <div className="text-lg font-semibold">- Victor Edwards, CEO</div>
-                    <div className="mt-1 text-gray-500">FOUNDER & CHAIRMAN, NF Holding S</div>
+                    <div className="mt-1 text-gray-500">FOUNDER & CHAIRMAN, NF Holding</div>
                   </div>
                 </div>
               </div>
@@ -54,7 +54,7 @@ const LeadershipPhilanthropy = () => {
                   The Victor Edwards Foundation
                 </h2>
                 
-                <p className="mb-8 text-lg leading-relaxed text-gray-700">
+                <p className="mb-8 text-lg leading-relaxed text-justify text-gray-700">
                   Empowering entrepreneurship as a catalyst for economic growth: Our philosophy of 'doing well and doing good' drives both our business and philanthropic initiatives, reflecting our belief that sustainable impact begins with opportunity.
                 </p>
                 
@@ -64,15 +64,15 @@ const LeadershipPhilanthropy = () => {
               </div>
             </div>
             
-            {/* SECTION 3: VIDEO - Embedded YouTube Player */}
+            {/* SECTION 3: VIDEO */}
             <div className="grid items-center grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
               <div>
                 <h2 className="mb-6 text-3xl font-bold text-gray-900 lg:text-4xl">
                   Investing in Africa's Future
                 </h2>
                 
-                <p className="mb-8 text-lg leading-relaxed text-gray-700">
-                  NF Holding s is committed to improving lives and transforming Africa. We are focused on driving Africa's economic transformation by investing in critical sectors that matter most to the continent's development. Watch the video to discover how we are investing in Africa's future.
+                <p className="mb-8 text-lg leading-relaxed text-justify text-gray-700">
+                  NF Holding is committed to improving lives and transforming Africa. We are focused on driving Africa's economic transformation by investing in critical sectors that matter most to the continent's development. Watch the video to discover how we are investing in Africa's future.
                 </p>
                 
                 {!videoPlaying ? (
@@ -98,12 +98,11 @@ const LeadershipPhilanthropy = () => {
               <div>
                 {videoPlaying ? (
                   <div className="relative overflow-hidden shadow-2xl rounded-2xl">
-                    {/* Embedded YouTube Player */}
                     <div className="relative pt-[56.25%]">
                       <iframe
                         className="absolute top-0 left-0 w-full h-full rounded-2xl"
                         src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0`}
-                        title="NF Holding s Television Commercial"
+                        title="NF Holding Television Commercial"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen

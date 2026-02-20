@@ -21,10 +21,9 @@ const Objectives = () => {
             
             {/* Objective Section with Image */}
             <div className="py-16 border-b border-gray-200">
-              {/* Hero Section with Image */}
               <div className="mb-12">
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-                  {/* Left: Image - Increased Height */}
+                  {/* Left: Image */}
                   <div className="relative w-full overflow-hidden shadow-lg h-96 lg:h-[500px] rounded-2xl">
                     <img 
                       src={heroImage} 
@@ -42,10 +41,10 @@ const Objectives = () => {
                     </div>
                     
                     <div className="space-y-6">
-                      <p className="text-lg leading-relaxed text-gray-700 md:text-xl">
+                      <p className="text-lg leading-relaxed text-justify text-gray-700 md:text-xl">
                         We seek to contribute to the financial soundness of our depositors' plans and ensure the prosperity of the funds they entrust to us.
                       </p>
-                      <p className="text-lg leading-relaxed text-gray-700 md:text-xl">
+                      <p className="text-lg leading-relaxed text-justify text-gray-700 md:text-xl">
                         To that end, we offer them top-tier advisory services and work to continuously improve the risk-return profile of La Caisse portfolios.
                       </p>
                     </div>
@@ -56,65 +55,58 @@ const Objectives = () => {
             
             {/* Activities Section */}
             <div className="py-16 border-b border-gray-200">
-              {/* Activities Title */}
               <div className="mb-12">
                 <h3 className="text-4xl font-bold text-gray-900 md:text-5xl">
                   Our activities
                 </h3>
               </div>
               
-              {/* Activities Grid with Drop Shadow */}
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                {/* Activity 1 */}
                 <div className="p-6 transition-all duration-300 bg-white shadow-md rounded-xl hover:bg-gray-50 hover:shadow-lg">
                   <div className="mb-6">
                     <h4 className="text-xl font-semibold text-gray-900 md:text-2xl">
                       DEPOSITOR ADVISORY SERVICES
                     </h4>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="text-justify text-gray-600">
                     Help our clients establish their investment policies by thoroughly understanding their needs and leveraging our long investment track record.
                   </p>
                 </div>
                 
-                {/* Activity 2 */}
                 <div className="p-6 transition-all duration-300 bg-white shadow-md rounded-xl hover:bg-gray-50 hover:shadow-lg">
                   <div className="mb-6">
                     <h4 className="text-xl font-semibold text-gray-900 md:text-2xl">
                       PORTFOLIO CONSTRUCTION
                     </h4>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="text-justify text-gray-600">
                     Optimize the strategic allocation of long-term assets to improve the risk-return profile of the total portfolio, while conducting integrated monitoring of the portfolio.
                   </p>
                 </div>
                 
-                {/* Activity 3 */}
                 <div className="p-6 transition-all duration-300 bg-white shadow-md rounded-xl hover:bg-gray-50 hover:shadow-lg">
                   <div className="mb-6">
                     <h4 className="text-xl font-semibold text-gray-900 md:text-2xl">
                       CURRENCY MANAGEMENT
                     </h4>
                   </div>
-                  <p className="text-gray-600">
-                    Manage NF Holding s exposure to foreign currencies to ensure optimal positioning and provide the total portfolio with a diversification effect.
+                  <p className="text-justify text-gray-600">
+                    Manage NF Holding exposure to foreign currencies to ensure optimal positioning and provide the total portfolio with a diversification effect.
                   </p>
                 </div>
                 
-                {/* Activity 4 */}
                 <div className="p-6 transition-all duration-300 bg-white shadow-md rounded-xl hover:bg-gray-50 hover:shadow-lg">
                   <div className="mb-6">
                     <h4 className="text-xl font-semibold text-gray-900 md:text-2xl">
                       ECONOMIC AND FINANCIAL ANALYSIS
                     </h4>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="text-justify text-gray-600">
                     Analyze global macroeconomic conditions and financial market developments to support investment activities.
                   </p>
                 </div>
               </div>
             </div>
-          
 
           </div>
         </div>

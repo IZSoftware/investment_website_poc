@@ -47,7 +47,7 @@ const Navbar = () => {
               {/* Hamburger — mobile only */}
               <div className="flex items-center md:hidden">
                 <button
-                  className="flex items-center p-2 text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+                  className="flex items-center p-2 text-gray-700 transition-colors rounded-md hover:bg-gray-100"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   aria-label={isMenuOpen ? "Close menu" : "Open menu"}
                 >
@@ -75,16 +75,16 @@ const Navbar = () => {
           style={{ top: 0 }}
         >
           {/* Top bar — mirrors the navbar so close button sits in same spot */}
-          <div className="flex items-center justify-between px-4 py-4 shadow-md sm:px-6 flex-shrink-0">
+          <div className="flex items-center justify-between flex-shrink-0 px-4 py-4 shadow-md sm:px-6">
             <Link to="/" onClick={() => setIsMenuOpen(false)}>
               <img
                 src="/NF Holding Logo.png"
                 alt="Company Logo"
-                className="w-auto h-14 sm:h-20 hover:opacity-90 transition-opacity"
+                className="w-auto transition-opacity h-14 sm:h-20 hover:opacity-90"
               />
             </Link>
             <button
-              className="flex items-center p-2 text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+              className="flex items-center p-2 text-gray-700 transition-colors rounded-md hover:bg-gray-100"
               onClick={() => setIsMenuOpen(false)}
               aria-label="Close menu"
             >
@@ -95,7 +95,7 @@ const Navbar = () => {
           </div>
 
           {/* Nav links — centred vertically in the remaining space */}
-          <div className="flex flex-col items-start justify-center flex-1 px-8 gap-2">
+          <div className="flex flex-col items-start justify-center flex-1 gap-2 px-8">
             {navItems.map((item, index) => (
               <Link
                 key={index}

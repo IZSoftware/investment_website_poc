@@ -80,91 +80,91 @@ export default function Market() {
       <div className="grid w-full grid-cols-12 mx-auto max-w-screen-3xl">
         <div className="hidden col-span-1 lg:block" />
         <div className="col-span-12 lg:col-span-10">
-          <div className="px-4 py-12 sm:px-6 lg:px-8">
+          <div className="px-4 py-8 sm:px-6 lg:px-8 sm:py-10 lg:py-12">
 
             {/* Back */}
             <button
               onClick={() => navigate('/investor-portal/dashboard')}
-              className="flex items-center gap-2 mb-8 text-[#6E6E73] hover:text-[#1D1D1F] transition-colors group"
+              className="flex items-center gap-1.5 lg:gap-2 mb-6 lg:mb-8 text-[#6E6E73] hover:text-[#1D1D1F] transition-colors group"
             >
-              <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
-              <span className="text-sm font-medium">Back to Dashboard</span>
+              <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
+              <span className="text-xs font-medium sm:text-sm">Back to Dashboard</span>
             </button>
 
             {/* Header */}
-            <div className="flex items-center justify-between mb-12">
-              <h1 className="text-4xl font-semibold text-[#1D1D1F] tracking-tight">SETTINGS</h1>
+            <div className="flex flex-col items-start justify-between gap-4 mb-8 sm:flex-row sm:items-center lg:mb-12">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#1D1D1F] tracking-tight">SETTINGS</h1>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="inline-flex items-center gap-1.5 lg:gap-2 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
               >
-                <Plus size={20} />
+                <Plus size={16} className="sm:w-[18px] sm:h-[18px] lg:w-5 lg:h-5" />
                 <span className="font-medium">Add Country</span>
               </button>
             </div>
 
             {/* Description — from data.js */}
-            <div className="max-w-4xl mb-16">
-              <p className="text-lg text-[#6E6E73] leading-relaxed">{marketsData.description}</p>
+            <div className="max-w-4xl mb-12 lg:mb-16">
+              <p className="text-sm sm:text-base lg:text-lg text-[#6E6E73] leading-relaxed">{marketsData.description}</p>
             </div>
 
             {/* ── Company Overview Cards ── */}
-            <div className="mb-12">
-              <h2 className="text-2xl font-semibold text-[#1D1D1F] mb-6">Company Overview</h2>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="mb-10 lg:mb-12">
+              <h2 className="text-xl sm:text-2xl font-semibold text-[#1D1D1F] mb-4 lg:mb-6">Company Overview</h2>
+              <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6 md:grid-cols-3">
 
                 {/* Years — editable */}
-                <div className="bg-[#F5F5F7] rounded-2xl p-8 relative group shadow-lg hover:shadow-xl transition-shadow border-l-4 border-emerald-500">
+                <div className="bg-[#F5F5F7] rounded-xl lg:rounded-2xl p-6 sm:p-7 lg:p-8 relative group shadow-lg hover:shadow-xl transition-shadow border-l-4 border-emerald-500">
                   <button
                     onClick={() => setShowYearsEditModal(true)}
-                    className="absolute p-2 text-white transition-all bg-black rounded-lg opacity-0 top-4 right-4 group-hover:opacity-100 hover:bg-gray-800"
+                    className="absolute p-1.5 lg:p-2 text-white transition-all bg-black rounded-lg opacity-0 top-3 right-3 lg:top-4 lg:right-4 group-hover:opacity-100 hover:bg-gray-800"
                   >
-                    <Edit2 size={18} />
+                    <Edit2 size={14} className="lg:w-[18px] lg:h-[18px]" />
                   </button>
-                  <h3 className="text-lg font-medium text-[#6E6E73] mb-4">Years</h3>
-                  <div className="text-5xl font-semibold text-[#1D1D1F] mb-2">{totalYears.value}</div>
-                  <p className="text-sm text-[#6E6E73]">{totalYears.description}</p>
+                  <h3 className="text-base sm:text-lg font-medium text-[#6E6E73] mb-2 lg:mb-4">Years</h3>
+                  <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1D1D1F] mb-1 lg:mb-2">{totalYears.value}</div>
+                  <p className="text-xs sm:text-sm text-[#6E6E73]">{totalYears.description}</p>
                 </div>
 
                 {/* Total Countries — auto-computed */}
-                <div className="bg-[#F5F5F7] rounded-2xl p-8 shadow-lg border-l-4 border-emerald-500">
-                  <h3 className="text-lg font-medium text-[#6E6E73] mb-4">Total Countries</h3>
-                  <div className="text-5xl font-semibold text-[#1D1D1F] mb-2">{countries.length}</div>
-                  <p className="text-sm text-[#6E6E73]">active countries</p>
+                <div className="bg-[#F5F5F7] rounded-xl lg:rounded-2xl p-6 sm:p-7 lg:p-8 shadow-lg border-l-4 border-emerald-500">
+                  <h3 className="text-base sm:text-lg font-medium text-[#6E6E73] mb-2 lg:mb-4">Total Countries</h3>
+                  <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1D1D1F] mb-1 lg:mb-2">{countries.length}</div>
+                  <p className="text-xs sm:text-sm text-[#6E6E73]">active countries</p>
                 </div>
 
                 {/* Total Value — auto-computed */}
-                <div className="bg-[#F5F5F7] rounded-2xl p-8 shadow-lg border-l-4 border-emerald-500">
-                  <h3 className="text-lg font-medium text-[#6E6E73] mb-4">Total Value</h3>
-                  <div className="text-5xl font-semibold text-[#1D1D1F] mb-2">{totalValue}</div>
-                  <p className="text-sm text-[#6E6E73]">across all countries</p>
+                <div className="bg-[#F5F5F7] rounded-xl lg:rounded-2xl p-6 sm:p-7 lg:p-8 shadow-lg border-l-4 border-emerald-500">
+                  <h3 className="text-base sm:text-lg font-medium text-[#6E6E73] mb-2 lg:mb-4">Total Value</h3>
+                  <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1D1D1F] mb-1 lg:mb-2">{totalValue}</div>
+                  <p className="text-xs sm:text-sm text-[#6E6E73]">across all countries</p>
                 </div>
               </div>
             </div>
 
             {/* ── Countries Grid ── */}
-            <h2 className="text-2xl font-semibold text-[#1D1D1F] mb-8">Choose a Country</h2>
-            <div className="grid grid-cols-1 gap-6 mb-16 md:grid-cols-2 lg:grid-cols-3">
+            <h2 className="text-xl sm:text-2xl font-semibold text-[#1D1D1F] mb-4 lg:mb-8">Choose a Country</h2>
+            <div className="grid grid-cols-1 gap-4 mb-12 sm:gap-5 lg:gap-6 lg:mb-16 md:grid-cols-2 lg:grid-cols-3">
               {countries.map(country => (
                 <div
                   key={country.id}
-                  className="bg-[#F5F5F7] rounded-2xl p-8 relative group shadow-lg hover:shadow-xl transition-shadow flex flex-col h-full"
+                  className="bg-[#F5F5F7] rounded-xl lg:rounded-2xl p-6 sm:p-7 lg:p-8 relative group shadow-lg hover:shadow-xl transition-shadow flex flex-col h-full"
                 >
-                  <div className="absolute flex items-center gap-2 transition-all opacity-0 top-4 right-4 group-hover:opacity-100">
-                    <button onClick={() => handleEdit(country)} className="p-2 text-white transition-all bg-black rounded-lg hover:bg-gray-800">
-                      <Edit2 size={18} />
+                  <div className="absolute flex items-center gap-1.5 lg:gap-2 transition-all opacity-0 top-3 right-3 lg:top-4 lg:right-4 group-hover:opacity-100">
+                    <button onClick={() => handleEdit(country)} className="p-1.5 lg:p-2 text-white transition-all bg-black rounded-lg hover:bg-gray-800">
+                      <Edit2 size={14} className="lg:w-[18px] lg:h-[18px]" />
                     </button>
-                    <button onClick={() => handleDelete(country.id)} className="p-2 text-white transition-all bg-red-600 rounded-lg hover:bg-red-700">
-                      <X size={18} />
+                    <button onClick={() => handleDelete(country.id)} className="p-1.5 lg:p-2 text-white transition-all bg-red-600 rounded-lg hover:bg-red-700">
+                      <X size={14} className="lg:w-[18px] lg:h-[18px]" />
                     </button>
                   </div>
-                  <div className="flex items-start gap-2 mb-4">
-                    <h3 className="text-xl font-semibold text-[#1D1D1F]">{country.name}</h3>
-                    <ChevronRight size={20} className="text-[#6E6E73] mt-1" />
+                  <div className="flex items-start gap-1.5 lg:gap-2 mb-3 lg:mb-4">
+                    <h3 className="text-lg lg:text-xl font-semibold text-[#1D1D1F]">{country.name}</h3>
+                    <ChevronRight size={16} className="lg:w-5 lg:h-5 text-[#6E6E73] mt-0.5 lg:mt-1" />
                   </div>
-                  <p className="text-sm text-[#6E6E73] mb-6 flex-grow">{country.years}</p>
+                  <p className="text-xs sm:text-sm text-[#6E6E73] mb-4 lg:mb-6 flex-grow">{country.years}</p>
                   <div>
-                    <div className="text-2xl font-semibold text-[#1D1D1F]">{country.value}</div>
+                    <div className="text-xl lg:text-2xl font-semibold text-[#1D1D1F]">{country.value}</div>
                     <p className="text-xs text-[#6E6E73] mt-1 tracking-wide">{country.date}</p>
                   </div>
                 </div>
@@ -178,23 +178,23 @@ export default function Market() {
 
       {/* ── Edit Country Modal ── */}
       {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="absolute inset-0 bg-[#1D1D1F]/40 backdrop-blur-sm" onClick={() => setShowEditModal(false)} />
-          <div className="relative w-full max-w-2xl bg-white shadow-2xl rounded-2xl">
-            <div className="flex items-center justify-between p-6 border-b border-[#D2D2D7]">
-              <h3 className="text-xl font-semibold text-[#1D1D1F]">Edit Country</h3>
-              <button onClick={() => setShowEditModal(false)} className="p-2 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-all">
-                <X size={20} />
+          <div className="relative w-full max-w-2xl bg-white shadow-2xl rounded-xl lg:rounded-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 sm:p-5 lg:p-6 border-b border-[#D2D2D7]">
+              <h3 className="text-lg sm:text-xl font-semibold text-[#1D1D1F]">Edit Country</h3>
+              <button onClick={() => setShowEditModal(false)} className="p-1.5 lg:p-2 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-all">
+                <X size={16} className="lg:w-5 lg:h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-6">
+            <div className="p-4 space-y-4 sm:p-5 lg:p-6 lg:space-y-6">
               {/* Country Name */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[#1D1D1F] block">Country Name</label>
+              <div className="space-y-1.5 lg:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">Country Name</label>
                 <select
                   value={formData.name}
                   onChange={e => handleInputChange('name', e.target.value)}
-                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-3 text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all appearance-none"
+                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all appearance-none"
                   style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236E6E73' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
                 >
                   <option value="">Select Country</option>
@@ -202,49 +202,49 @@ export default function Market() {
                 </select>
               </div>
               {/* Years */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[#1D1D1F] block">Number of Years <span className="text-red-500">*</span></label>
+              <div className="space-y-1.5 lg:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">Number of Years <span className="text-red-500">*</span></label>
                 <input
                   type="number" min="1" max="100"
                   value={formData.years}
                   onChange={e => handleInputChange('years', e.target.value)}
                   placeholder="Enter number of years"
-                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-3 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
+                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
                 />
                 <p className="text-xs text-[#6E6E73]">Number of years operating in this country</p>
               </div>
               {/* Value */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[#1D1D1F] block">Valuation <span className="text-red-500">*</span></label>
+              <div className="space-y-1.5 lg:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">Valuation <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   value={formData.value}
                   onChange={e => handleInputChange('value', e.target.value)}
                   placeholder="e.g., $219.4 B"
-                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-3 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
+                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
                 />
               </div>
               {/* Date */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[#1D1D1F] block">As At Date</label>
+              <div className="space-y-1.5 lg:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">As At Date</label>
                 <input
                   type="text"
                   value={formData.date}
                   onChange={e => handleInputChange('date', e.target.value)}
                   placeholder="AS AT DECEMBER 31, 2025"
-                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-3 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
+                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between p-6 border-t border-[#D2D2D7]">
-              <button onClick={() => handleDelete(editingItem?.id)} className="px-6 py-3 text-sm font-medium text-red-600 transition-all hover:text-red-700 hover:bg-red-50 rounded-xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-5 lg:p-6 border-t border-[#D2D2D7]">
+              <button onClick={() => handleDelete(editingItem?.id)} className="px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 text-xs sm:text-sm font-medium text-red-600 transition-all hover:text-red-700 hover:bg-red-50 rounded-xl w-full sm:w-auto">
                 Delete Country
               </button>
-              <div className="flex gap-3">
-                <button onClick={() => setShowEditModal(false)} className="px-6 py-3 text-sm font-medium text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-xl transition-all">
+              <div className="flex flex-col w-full gap-2 sm:flex-row sm:gap-3 sm:w-auto">
+                <button onClick={() => setShowEditModal(false)} className="px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 text-xs sm:text-sm font-medium text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-xl transition-all">
                   Cancel
                 </button>
-                <button onClick={handleSaveEdit} className="px-6 py-3 bg-[#1D1D1F] text-white font-medium rounded-xl hover:bg-[#2D2D2F] transition-all">
+                <button onClick={handleSaveEdit} className="px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-[#1D1D1F] text-white font-medium rounded-xl hover:bg-[#2D2D2F] transition-all text-xs sm:text-sm">
                   Save Changes
                 </button>
               </div>
@@ -255,18 +255,18 @@ export default function Market() {
 
       {/* ── Edit Total Years Modal ── */}
       {showYearsEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
           <div className="absolute inset-0 bg-[#1D1D1F]/40 backdrop-blur-sm" onClick={() => setShowYearsEditModal(false)} />
-          <div className="relative w-full max-w-md bg-white shadow-2xl rounded-2xl">
-            <div className="flex items-center justify-between p-6 border-b border-[#D2D2D7]">
-              <h3 className="text-xl font-semibold text-[#1D1D1F]">Edit Total Years</h3>
-              <button onClick={() => setShowYearsEditModal(false)} className="p-2 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-all">
-                <X size={20} />
+          <div className="relative w-full max-w-md bg-white shadow-2xl rounded-xl lg:rounded-2xl">
+            <div className="flex items-center justify-between p-4 sm:p-5 lg:p-6 border-b border-[#D2D2D7]">
+              <h3 className="text-lg sm:text-xl font-semibold text-[#1D1D1F]">Edit Total Years</h3>
+              <button onClick={() => setShowYearsEditModal(false)} className="p-1.5 lg:p-2 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-all">
+                <X size={16} className="lg:w-5 lg:h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[#1D1D1F] block">
+            <div className="p-4 space-y-4 sm:p-5 lg:p-6 lg:space-y-6">
+              <div className="space-y-1.5 lg:space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">
                   Number of Years <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -274,13 +274,13 @@ export default function Market() {
                   id="totalYearsInput"
                   defaultValue={totalYears.value}
                   placeholder="Enter total years"
-                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-3 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
+                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
                 />
                 <p className="text-xs text-[#6E6E73]">Total number of years the company has been investing</p>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-[#D2D2D7]">
-              <button onClick={() => setShowYearsEditModal(false)} className="px-6 py-3 text-sm font-medium text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-xl transition-all">
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-2 sm:gap-3 p-4 sm:p-5 lg:p-6 border-t border-[#D2D2D7]">
+              <button onClick={() => setShowYearsEditModal(false)} className="w-full sm:w-auto px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 text-xs sm:text-sm font-medium text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-xl transition-all">
                 Cancel
               </button>
               <button
@@ -288,7 +288,7 @@ export default function Market() {
                   const val = document.getElementById('totalYearsInput').value;
                   if (val) handleSaveTotalYears(val);
                 }}
-                className="px-6 py-3 bg-[#1D1D1F] text-white font-medium rounded-xl hover:bg-[#2D2D2F] transition-all"
+                className="w-full sm:w-auto px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-[#1D1D1F] text-white font-medium rounded-xl hover:bg-[#2D2D2F] transition-all text-xs sm:text-sm"
               >
                 Save
               </button>

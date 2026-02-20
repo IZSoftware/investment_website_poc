@@ -35,7 +35,7 @@ export const sectorsData = [
     partnerships: [
       {
         id: "NF Holding -energy",
-        name: "NF Holding S ENERGY",
+        name: "NF Holding ENERGY",
         logo: "/NF Holding  company logo.png",
         description: "Integrated energy company"
       },

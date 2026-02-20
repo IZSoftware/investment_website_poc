@@ -11,8 +11,8 @@ const LatestNews = () => {
     {
       id: 1,
       image: "/closeup-business-people-shaking-hands-outdoor-cafe.jpg",
-      title: "NF Holding s Leadership Engages European Investors to Advance Africa-Europe Investment Partnerships",
-      description: "NF Holding s executives participated in high-level meetings with institutional investors and business leaders in Germany, aimed at strengthening Africa-Europe investment collaboration. The engagements focused on long-term capital deployment, sustainable infrastructure, and private sector growth across key African markets.",
+      title: "NF Holding Leadership Engages European Investors to Advance Africa-Europe Investment Partnerships",
+      description: "NF Holding executives participated in high-level meetings with institutional investors and business leaders in Germany, aimed at strengthening Africa-Europe investment collaboration. The engagements focused on long-term capital deployment, sustainable infrastructure, and private sector growth across key African markets.",
       date: "December 12, 2025",
       category: "Investor Relations",
       featured: true
@@ -20,14 +20,14 @@ const LatestNews = () => {
     {
       id: 2,
       image: "/male-business-executive-giving-speech.jpg",
-      title: "NF Holding s CEO Honored for Excellence in Investment Leadership",
+      title: "NF Holding CEO Honored for Excellence in Investment Leadership",
       date: "December 14, 2025",
       category: "Awards"
     },
     {
       id: 3,
       image: "/corporate-employees-review-transactional-info-improve-customer-satisfaction.jpg",
-      title: "NF Holding s Executives Engage in Portfolio Review Discussions",
+      title: "NF Holding Executives Engage in Portfolio Review Discussions",
       date: "December 16, 2025",
       category: "Corporate"
     }
@@ -45,7 +45,6 @@ const LatestNews = () => {
               Latest News
             </h2>
 
-            {/* TWO COLUMNS LAYOUT */}
             <div className="grid items-stretch grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
               
               {/* LEFT: NEWS ARTICLES */}
@@ -70,7 +69,7 @@ const LatestNews = () => {
                   <h3 className="mb-4 text-2xl font-bold text-gray-900 lg:text-3xl">
                     {newsArticles[0].title}
                   </h3>
-                  <p className="mb-6 leading-relaxed text-gray-600">
+                  <p className="mb-6 leading-relaxed text-justify text-gray-600">
                     {newsArticles[0].description}
                   </p>
                   <button className="text-[#0A2540] font-semibold hover:text-blue-700 transition-colors duration-300">
@@ -92,7 +91,7 @@ const LatestNews = () => {
                       <div className="mb-2 text-sm font-medium text-gray-500">
                         {article.date}
                       </div>
-                      <h4 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-[#0A2540] transition-colors duration-300">
+                      <h4 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-[#0A2540] transition-colors duration-300 text-justify">
                         {article.title}
                       </h4>
                     </div>
@@ -100,13 +99,12 @@ const LatestNews = () => {
                 </div>
               </div>
               
-              {/* RIGHT: NEWSLETTER - VERTICALLY CENTERED */}
+              {/* RIGHT: NEWSLETTER */}
               <div className="lg:col-span-5">
                 <div className="bg-[#1C1F26] text-white rounded-2xl h-full">
                   <div className="flex flex-col h-full p-8 lg:p-10">
                     <div className="mb-auto"></div>
                     
-                    {/* Centered content */}
                     <div className="my-auto">
                       <h3 className="text-2xl font-bold mb-9 lg:text-3xl">
                         Stay in touch to get exclusive news and insights from across our investment portfolio.
@@ -153,8 +151,8 @@ const LatestNews = () => {
                             className="mt-1 mr-3"
                             required
                           />
-                          <label className="text-xs">
-                           By clicking Subscribe, I agree that Heirs NF Holding s may use my contact details to send me communications and I consent to the Terms as provided in the Privacy Policy and Data Collection Clause.
+                          <label className="text-xs text-justify">
+                            By clicking Subscribe, I agree that Heirs NF Holding may use my contact details to send me communications and I consent to the Terms as provided in the Privacy Policy and Data Collection Clause.
                           </label>
                         </div>
                         

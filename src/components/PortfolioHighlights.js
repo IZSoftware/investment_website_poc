@@ -3,295 +3,206 @@ import { FaFacebook, FaTwitter, FaLinkedin } from 'react-icons/fa';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
-// Register Chart.js components
+import {
+  portfolioHighlights,
+  getPortfolioHighlightsTabs,
+  getHighlightsPieData,
+} from '../data/data';
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const PortfolioHighlights = () => {
-  const [activeSector, setActiveSector] = useState("HIGHLIGHTS");
+  const [activeTab, setActiveTab] = useState(portfolioHighlights.highlightsTabLabel);
 
-  // Updated sectors with only the specified ones
-  const sectors = [
-    { id: 1, name: "HIGHLIGHTS", href: "#highlights" },
-    { id: 2, name: "FINANCE", href: "#finance" },
-    { id: 3, name: "TECHNOLOGY", href: "#technology" },
-    { id: 4, name: "HOSPITALITY", href: "#hospitality" },
-    { id: 5, name: "POWER", href: "#power" },
-    { id: 6, name: "ENERGY", href: "#energy" },
-    { id: 7, name: "REAL ESTATE", href: "#realestate" }
-  ];
+  // ── Data from the single source of truth ──────────────────────────────────
+  const tabs        = getPortfolioHighlightsTabs();   // [{id, name, href}]
+  const pieData     = getHighlightsPieData();          // [{category, percentage, color}]
+  const { hero, summaryText, highlightStats, philosophyTitle, philosophyText } = portfolioHighlights;
 
-  // Updated portfolio data to match the sectors
-  const portfolioData = [
-    { category: "Finance", percentage: 25, color: "#338BBA" },
-    { category: "Technology", percentage: 20, color: "#FF6B6B" },
-    { category: "Hospitality", percentage: 10, color: "#4ECDC4" },
-    { category: "Power", percentage: 18, color: "#FFD166" },
-    { category: "Energy", percentage: 15, color: "#06D6A0" },
-    { category: "Real Estate", percentage: 12, color: "#118AB2" }
-  ];
-
-  // Format data for Chart.js Pie chart
-  const pieChartData = {
-    labels: portfolioData.map(item => item.category),
-    datasets: [
-      {
-        data: portfolioData.map(item => item.percentage),
-        backgroundColor: portfolioData.map(item => item.color),
-        borderColor: '#fff',
-        borderWidth: 2,
-        hoverBorderWidth: 3,
-      }
-    ]
+  // ── Chart.js config ───────────────────────────────────────────────────────
+  const bigPieChartData = {
+    labels: pieData.map(d => d.category),
+    datasets: [{
+      data: pieData.map(d => d.percentage),
+      backgroundColor: pieData.map(d => d.color),
+      borderColor: '#fff',
+      borderWidth: 2,
+      hoverBorderWidth: 3,
+    }],
   };
 
-  // Options for the big pie chart
-  const pieOptions = {
+  const bigPieOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
-        callbacks: {
-          label: function(context) {
-            const label = context.label || '';
-            const value = context.parsed || 0;
-            return `${label}: ${value}%`;
-          }
-        }
-      }
-    }
-  };
-
-  const handleSectorClick = (e, sectorName, href) => {
-    e.preventDefault();
-    setActiveSector(sectorName);
-    console.log(`Clicked on: ${sectorName}`);
+        callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed}%` },
+      },
+    },
   };
 
   return (
     <>
-      {/* HERO SECTION WITH BACKGROUND IMAGE */}
-      <section 
-        className="relative w-full h-screen min-h-[600px] bg-cover bg-center"
-        style={{ 
-          backgroundImage: "url('/businessman-is-using-computer-laptop.jpg')",
-        }}
+      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      <section
+        className="relative w-full h-[50vh] sm:h-[60vh] lg:h-screen min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] bg-cover bg-center"
+        style={{ backgroundImage: `url('${hero.backgroundImage}')` }}
       >
-        {/* Background Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        
-        {/* Content Container with same grid layout as navbar */}
+        <div className="absolute inset-0 bg-black bg-opacity-40" />
+
         <div className="grid w-full h-full grid-cols-12 mx-auto max-w-screen-3xl">
-          <div className="hidden col-span-1 lg:block"></div>
-          
+          <div className="hidden col-span-1 lg:block" />
           <div className="relative col-span-12 lg:col-span-10">
             <div className="h-full px-4 sm:px-6 lg:px-8">
-              {/* Main Title - Positioned at bottom left */}
-              <div className="absolute z-10 bottom-8 left-8">
-                <h1 className="text-4xl font-bold text-white md:text-5xl lg:text-6xl">
-                  Investment Portfolio
+
+              {/* Title — bottom left */}
+              <div className="absolute z-10 bottom-4 sm:bottom-6 lg:bottom-8 left-4 sm:left-6 lg:left-8">
+                <h1 className="text-2xl font-bold text-white sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+                  {hero.title}
                 </h1>
               </div>
-              
-              {/* Social Share Buttons - Positioned absolutely on the right */}
-              <div className="absolute hidden transform -translate-y-1/2 right-8 top-1/2 md:block">
-                <div className="flex flex-col space-y-4">
-                  <button 
-                    className="flex items-center justify-center w-10 h-10 text-white transition bg-white rounded-full bg-opacity-20 hover:bg-opacity-30"
-                    aria-label="Share on facebook"
-                  >
-                    <FaFacebook className="w-5 h-5" />
-                  </button>
-                  <button 
-                    className="flex items-center justify-center w-10 h-10 text-white transition bg-white rounded-full bg-opacity-20 hover:bg-opacity-30"
-                    aria-label="Share on twitter"
-                  >
-                    <FaTwitter className="w-5 h-5" />
-                  </button>
-                  <button 
-                    className="flex items-center justify-center w-10 h-10 text-white transition bg-white rounded-full bg-opacity-20 hover:bg-opacity-30"
-                    aria-label="Share on linkedin"
-                  >
-                    <FaLinkedin className="w-5 h-5" />
-                  </button>
+
+              {/* Social share — right centre (hidden on mobile) */}
+              <div className="absolute hidden transform -translate-y-1/2 right-4 sm:right-6 lg:right-8 top-1/2 md:block">
+                <div className="flex flex-col space-y-3 lg:space-y-4">
+                  {[FaFacebook, FaTwitter, FaLinkedin].map((Icon, i) => (
+                    <button
+                      key={i}
+                      className="flex items-center justify-center w-8 h-8 text-white transition bg-white rounded-full lg:w-10 lg:h-10 bg-opacity-20 hover:bg-opacity-30"
+                    >
+                      <Icon className="w-4 h-4 lg:w-5 lg:h-5" />
+                    </button>
+                  ))}
                 </div>
               </div>
+
             </div>
           </div>
-          
-          <div className="hidden col-span-1 lg:block"></div>
+          <div className="hidden col-span-1 lg:block" />
         </div>
       </section>
 
-      {/* PORTFOLIO HIGHLIGHTS SECTION */}
-      <section className="py-12 bg-white">
+      {/* ── PORTFOLIO HIGHLIGHTS ─────────────────────────────────────────── */}
+      <section className="py-8 bg-white sm:py-10 lg:py-12">
         <div className="grid w-full grid-cols-12 mx-auto max-w-screen-3xl">
-          <div className="hidden col-span-1 lg:block"></div>
-          
+          <div className="hidden col-span-1 lg:block" />
           <div className="col-span-12 lg:col-span-10">
             <div className="px-4 sm:px-6 lg:px-8">
-              
-              {/* Navigation Tabs - Updated with new sectors */}
-              <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
-                {sectors.map((sector) => (
+
+              {/* Tab navigation — built from data, no hardcoding */}
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-8 sm:gap-3 lg:mb-12">
+                {tabs.map(tab => (
                   <a
-                    key={sector.id}
-                    href={sector.href}
-                    onClick={(e) => handleSectorClick(e, sector.name, sector.href)}
-                    className={`text-sm font-medium uppercase tracking-wider px-4 py-2 rounded-full transition-all duration-300 ${
-                      activeSector === sector.name
+                    key={tab.id}
+                    href={tab.href}
+                    onClick={e => { e.preventDefault(); setActiveTab(tab.name); }}
+                    className={`text-xs sm:text-sm font-medium uppercase tracking-wider px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 ${
+                      activeTab === tab.name
                         ? 'bg-[#338BBA] text-white'
                         : 'text-gray-700 hover:text-blue-600 hover:bg-gray-100'
                     }`}
                   >
-                    {sector.name}
+                    {tab.name}
                   </a>
                 ))}
               </div>
 
-              {/* Portfolio Highlights Content */}
+              {/* Summary text */}
               <div className="max-w-4xl mx-auto text-center">
-                {/* PORTFOLIO HIGHLIGHTS Title */}
-                <h6 className="mb-6 text-sm font-bold tracking-widest text-gray-500 uppercase">
+                <h6 className="mb-4 text-xs font-bold tracking-widest text-gray-500 uppercase lg:mb-6 sm:text-sm">
                   PORTFOLIO HIGHLIGHTS
                 </h6>
-                {/* Main Description */}
-                <h2 className="mb-8 text-xl font-normal leading-relaxed text-gray-800 md:text-2xl">
-                  We invest in sectors that provide strong long-term returns and have the ability to transform Africa's economy. The value of our existing portfolio as at 28 November 2025 is KES 17.92 trillion ($12.39 billion).
+                <h2 className="mb-6 text-base font-normal leading-relaxed text-gray-800 lg:mb-8 sm:text-lg md:text-xl lg:text-2xl">
+                  {summaryText}
                 </h2>
 
-                {/* Highlights Grid - Only if we're on HIGHLIGHTS tab */}
-                {activeSector === "HIGHLIGHTS" && (
-                  <div className="grid grid-cols-2 gap-8 mt-12 md:grid-cols-4">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-[#1C1F26] md:text-4xl">
-                        6
+                {/* Highlight stats — only on HIGHLIGHTS tab */}
+                {activeTab === portfolioHighlights.highlightsTabLabel && (
+                  <div className="grid grid-cols-2 gap-4 mt-8 sm:gap-6 lg:gap-8 lg:mt-12 md:grid-cols-4">
+                    {highlightStats.map((stat, i) => (
+                      <div key={i} className="text-center">
+                        <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#1C1F26]">
+                          {stat.value}
+                        </div>
+                        <div className="mt-1 text-xs font-medium tracking-wide text-gray-600 uppercase sm:mt-2">
+                          {stat.label}
+                        </div>
                       </div>
-                      <div className="mt-2 text-xs font-medium tracking-wide text-gray-600 uppercase">
-                        Sectors
-                      </div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-[#1C1F26] md:text-4xl">
-                        24
-                      </div>
-                      <div className="mt-2 text-xs font-medium tracking-wide text-gray-600 uppercase">
-                        Countries
-                      </div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-[#1C1F26] md:text-4xl">
-                        40k+
-                      </div>
-                      <div className="mt-2 text-xs font-medium tracking-wide text-gray-600 uppercase">
-                        Employees
-                      </div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-[#1C1F26] md:text-4xl">
-                        $12.39Bn
-                      </div>
-                      <div className="mt-2 text-xs font-medium tracking-wide text-gray-600 uppercase">
-                        Portfolio Value
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 )}
               </div>
+
             </div>
           </div>
-          
-          <div className="hidden col-span-1 lg:block"></div>
+          <div className="hidden col-span-1 lg:block" />
         </div>
       </section>
 
-      {/* PIE CHART SECTION - Big pie chart on top, small pie charts at bottom */}
-      <section className="py-16 bg-white">
+      {/* ── PIE CHARTS + PHILOSOPHY ──────────────────────────────────────── */}
+      <section className="py-10 bg-white sm:py-12 lg:py-16">
         <div className="grid w-full grid-cols-12 mx-auto max-w-screen-3xl">
-          <div className="hidden col-span-1 lg:block"></div>
-          
+          <div className="hidden col-span-1 lg:block" />
           <div className="col-span-12 lg:col-span-10">
             <div className="px-4 sm:px-6 lg:px-8">
-              {/* Big Pie Chart on Top - Centered */}
-              <div className="max-w-4xl mx-auto mb-12">
-                <div className="h-[500px]">
-                  <Pie data={pieChartData} options={pieOptions} />
+
+              {/* Big pie chart */}
+              <div className="max-w-4xl mx-auto mb-8 lg:mb-12">
+                <div className="h-[300px] sm:h-[400px] lg:h-[500px]">
+                  <Pie data={bigPieChartData} options={bigPieOptions} />
                 </div>
               </div>
 
-              {/* Small Pie Charts at Bottom - Updated to 6 sectors */}
-              <div className="grid grid-cols-2 gap-6 mb-16 sm:grid-cols-3 md:grid-cols-6">
-                {portfolioData.map((item, index) => {
-                  // Create mini pie chart data for each sector
-                  const miniPieData = {
+              {/* Mini donut per sector — auto-generated from data */}
+              <div className="grid grid-cols-2 gap-4 mb-12 sm:gap-5 lg:gap-6 lg:mb-16 sm:grid-cols-3 md:grid-cols-6">
+                {pieData.map((item, i) => {
+                  const miniData = {
                     labels: [item.category, 'Other'],
-                    datasets: [
-                      {
-                        data: [item.percentage, 100 - item.percentage],
-                        backgroundColor: [item.color, '#f3f4f6'],
-                        borderColor: '#fff',
-                        borderWidth: 2,
-                      }
-                    ]
+                    datasets: [{
+                      data: [item.percentage, 100 - item.percentage],
+                      backgroundColor: [item.color, '#f3f4f6'],
+                      borderColor: '#fff',
+                      borderWidth: 2,
+                    }],
                   };
-
-                  const miniPieOptions = {
+                  const miniOptions = {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        display: false,
-                      },
-                      tooltip: {
-                        enabled: false,
-                      }
-                    },
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
                     cutout: '60%',
                   };
 
                   return (
-                    <div key={index} className="flex flex-col items-center">
-                      <div className="relative w-32 h-32 mb-3">
-                        <Pie data={miniPieData} options={miniPieOptions} />
+                    <div key={i} className="flex flex-col items-center">
+                      <div className="relative w-20 h-20 mb-2 sm:w-24 sm:h-24 lg:w-28 lg:h-28 xl:w-32 xl:h-32 lg:mb-3">
+                        <Pie data={miniData} options={miniOptions} />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-xl font-bold text-gray-900">{item.percentage}%</span>
+                          <span className="text-base font-bold text-gray-900 sm:text-lg lg:text-xl">{item.percentage}%</span>
                         </div>
                       </div>
-                      <div className="text-center">
-                        <div className="flex items-center justify-center mb-1">
-                          <div 
-                            className="flex-shrink-0 w-3 h-3 mr-2 rounded-full" 
-                            style={{ backgroundColor: item.color }}
-                          ></div>
-                          <span className="text-sm font-medium text-gray-700">
-                            {item.category}
-                          </span>
-                        </div>
+                      <div className="flex items-center justify-center">
+                        <div className="flex-shrink-0 w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 mr-1 sm:mr-1.5 lg:mr-2 rounded-full" style={{ backgroundColor: item.color }} />
+                        <span className="text-xs font-medium text-gray-700 sm:text-sm">{item.category}</span>
                       </div>
                     </div>
                   );
                 })}
               </div>
 
-              {/* INVESTMENT PHILOSOPHY SECTION - Added below the pie charts */}
+              {/* Investment philosophy */}
               <div className="max-w-4xl mx-auto text-center">
-                <h3 className="mb-6 text-base font-bold text-gray-900 md:text-3xl lg:text-4xl">
-                  INVESTMENT PHILOSOPHY
+                <h3 className="mb-4 text-lg font-bold text-gray-900 lg:mb-6 sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl">
+                  {philosophyTitle}
                 </h3>
-                
-                <p className="text-lg leading-relaxed text-gray-700 md:text-xl">
-                  Our approach to investment is guided by the philosophy of African capitalism, which is the private sector's commitment to Africa's development through long term investments that create economic prosperity and social wealth.
+                <p className="text-sm leading-relaxed text-gray-700 sm:text-base md:text-lg lg:text-xl">
+                  {philosophyText}
                 </p>
               </div>
+
             </div>
           </div>
-          
-          <div className="hidden col-span-1 lg:block"></div>
+          <div className="hidden col-span-1 lg:block" />
         </div>
       </section>
     </>
