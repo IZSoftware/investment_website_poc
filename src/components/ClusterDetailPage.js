@@ -195,7 +195,7 @@ const ClusterDetailPage = () => {
                           </div>
                         </>
                       ) : (
-                        <div className="h-full p-4 sm:p-6 lg:p-8 bg-gray-50 overflow-y-auto">
+                        <div className="h-full p-4 overflow-y-auto sm:p-6 lg:p-8 bg-gray-50">
                           <h3 className="mb-4 text-xl font-bold text-gray-900 lg:mb-6 lg:text-2xl">{item.title}</h3>
                           {cluster.companies.length > 0 ? (
                             <div className="grid grid-cols-2 gap-3 sm:gap-4">
