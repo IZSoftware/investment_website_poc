@@ -1,3 +1,4 @@
+// src/pages/OtpModal.js
 import React, { useState, useRef, useEffect } from 'react';
 import { Shield, RefreshCw, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -7,15 +8,32 @@ export default function OtpModal() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
   const inputRefs = useRef([]);
   const navigate = useNavigate();
-  const { verifyOtp, userEmail, DEMO_OTP } = useAuth();
+  const { verifyOtp, resendOtp, userEmail, loginPortal } = useAuth();
 
+  // Auto-fill with 493817 for testing
   useEffect(() => {
-    if (inputRefs.current[0]) {
-      inputRefs.current[0].focus();
+    // Check if we're in development and auto-fill the test OTP
+    if (process.env.NODE_ENV === 'development') {
+      const testOtp = ['4', '9', '3', '8', '1', '7'];
+      setOtp(testOtp);
+      if (inputRefs.current[5]) {
+        inputRefs.current[5].focus();
+      }
+    } else {
+      if (inputRefs.current[0]) {
+        inputRefs.current[0].focus();
+      }
     }
   }, []);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   const handleChange = (index, value) => {
     if (value && !/^\d$/.test(value)) return;
@@ -51,7 +69,7 @@ export default function OtpModal() {
     inputRefs.current[nextIndex]?.focus();
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const otpCode = otp.join('');
     if (otpCode.length !== 6) {
       setError('Please enter all 6 digits');
@@ -59,24 +77,28 @@ export default function OtpModal() {
     }
 
     setIsVerifying(true);
-    
-    setTimeout(() => {
-      const isValid = verifyOtp(otpCode);
-      
-      if (isValid) {
-        navigate('/investor-portal/dashboard');
-      } else {
-        setError('Invalid verification code. Try 123456');
-      }
-      setIsVerifying(false);
-    }, 1500);
+    const result = await verifyOtp(otpCode);
+    setIsVerifying(false);
+
+    if (result.success) {
+      navigate(loginPortal === 'admin' ? '/admin-portal/dashboard' : '/investor-portal/dashboard');
+    } else {
+      setError(result.message || 'Invalid or expired code.');
+    }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
+    if (resendCooldown > 0) return;
     setOtp(['', '', '', '', '', '']);
     setError('');
     inputRefs.current[0]?.focus();
-    alert(`New code sent to ${userEmail} (demo: ${DEMO_OTP})`);
+
+    const result = await resendOtp();
+    if (result.success) {
+      setResendCooldown(30);
+    } else {
+      setError(result.message || 'Could not resend code.');
+    }
   };
 
   return (
@@ -84,7 +106,7 @@ export default function OtpModal() {
       <div className="relative w-full max-w-md bg-white shadow-2xl rounded-2xl">
         {/* Close button */}
         <button
-          onClick={() => navigate('/investor-portal/login')}
+          onClick={() => navigate(loginPortal === 'admin' ? '/admin-portal/login' : '/investor-portal/login')}
           className="absolute top-4 right-4 p-2 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-all"
         >
           <X size={20} />
@@ -108,7 +130,12 @@ export default function OtpModal() {
               <br />
               <span className="font-medium text-[#1D1D1F]">{userEmail}</span>
             </p>
-            {/* <p className="text-xs text-[#6E6E73] mt-2">Demo code: 123456</p> */}
+            {/* Temporary test OTP display */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="p-2 mt-3 text-xs text-yellow-800 border border-yellow-200 rounded-lg bg-yellow-50">
+                <span className="font-medium">Test OTP:</span> <span className="font-bold">493817</span> (auto-filled)
+              </div>
+            )}
           </div>
 
           {/* Error message */}
@@ -161,10 +188,11 @@ export default function OtpModal() {
             </p>
             <button
               onClick={handleResend}
-              className="inline-flex items-center gap-2 text-sm text-[#1D1D1F] hover:text-[#6E6E73] font-medium transition-colors group"
+              disabled={resendCooldown > 0}
+              className="inline-flex items-center gap-2 text-sm text-[#1D1D1F] hover:text-[#6E6E73] font-medium transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw size={16} className="transition-transform duration-500 group-hover:rotate-180" />
-              <span>Resend Code</span>
+              <span>{resendCooldown > 0 ? `Resend Code (${resendCooldown}s)` : 'Resend Code'}</span>
             </button>
           </div>
 
@@ -173,7 +201,7 @@ export default function OtpModal() {
             <div className="flex items-start gap-3 bg-[#F5F5F7] rounded-xl p-4">
               <Shield size={18} className="text-[#6E6E73] mt-0.5 flex-shrink-0" />
               <p className="text-xs text-[#6E6E73] leading-relaxed">
-                This code will expire in 10 minutes. Never share your verification 
+                This code will expire in 10 minutes. Never share your verification
                 code with anyone, including our support team.
               </p>
             </div>

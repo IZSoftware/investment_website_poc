@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 const MapPinIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -27,49 +27,13 @@ const ClockIcon = () => (
   </svg>
 );
 
-const ArrowRightIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="5" y1="12" x2="19" y2="12" />
-    <polyline points="12 5 19 12 12 19" />
-  </svg>
-);
-
 export default function ContactPage() {
-  const [formData, setFormData] = useState({ name: '', phone: '', email: '', subject: '', message: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleChange = (e) => setFormData(f => ({ ...f, [e.target.name]: e.target.value }));
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    await new Promise(r => setTimeout(r, 1600));
-    setIsSubmitting(false);
-    setSubmitted(true);
-  };
-
+  // All contact info is static - no API calls
   const contactInfo = [
-    {
-      icon: <MapPinIcon />,
-      label: 'Our Office',
-      value: 'The Westgate Mall, 4th Floor\nMwanzi Road, Westlands\nNairobi, Kenya'
-    },
-    {
-      icon: <PhoneIcon />,
-      label: 'Phone',
-      value: '+254 7123654789\n+254 7123456789'
-    },
-    {
-      icon: <MailIcon />,
-      label: 'Email',
-      value: 'investor@nf-holding.com'
-    },
-    {
-      icon: <ClockIcon />,
-      label: 'Business Hours',
-      value: 'Monday – Friday\n8:00 AM – 5:00 PM EAT'
-    }
+    { icon: <MapPinIcon />, label: 'Our Office', value: 'Ushuru Pension Plaza\nNairobi, Kenya' },
+    { icon: <PhoneIcon />, label: 'Phone', value: '+254 7123654789\n+254 7123456789' },
+    { icon: <MailIcon />, label: 'Email', value: 'investor@nf-holding.com' },
+    { icon: <ClockIcon />, label: 'Business Hours', value: 'Monday – Friday\n8:00 AM – 5:00 PM EAT' },
   ];
 
   return (
@@ -86,7 +50,6 @@ export default function ContactPage() {
           color: #1a1814;
         }
 
-        /* ── Hero with Image ── */
         .hero {
           position: relative;
           height: 400px;
@@ -139,7 +102,6 @@ export default function ContactPage() {
           animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.3s both;
         }
 
-        /* ── Page wrapper ── */
         .page-grid {
           display: grid; width: 100%;
           grid-template-columns: repeat(12, 1fr);
@@ -152,7 +114,6 @@ export default function ContactPage() {
         @media (min-width: 640px) { .page-col { padding: 0 28px; } }
         @media (min-width: 1024px) { .page-col { grid-column: 2 / 12; padding: 0 36px; } }
 
-        /* ── Section: Get in Touch + Map ── */
         .info-map-section {
           padding: 72px 0 80px;
           display: grid;
@@ -200,7 +161,6 @@ export default function ContactPage() {
           white-space: pre-line;
         }
 
-        /* Map */
         .map-container {
           border-radius: 16px; overflow: hidden;
           border: 1.5px solid #e8e3dd;
@@ -221,135 +181,6 @@ export default function ContactPage() {
         .map-overlay-text { font-size: 12.5px; font-weight: 500; color: #1a1814; line-height: 1.4; }
         .map-overlay-sub { font-size: 11px; color: #9e8e82; }
 
-        /* ── Section: Form + Image ── */
-        .form-section {
-          padding: 80px 0 96px;
-          display: grid; gap: 48px;
-          grid-template-columns: 1fr;
-        }
-        @media (min-width: 960px) {
-          .form-section { 
-            grid-template-columns: 1fr 1fr; 
-            gap: 48px; 
-            align-items: stretch;
-          }
-        }
-
-        /* Form Card */
-        .form-card {
-          background: #ffffff; border-radius: 20px;
-          border: 1.5px solid #e8e3dd;
-          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04), 0 20px 56px -12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.02);
-          overflow: hidden;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-        }
-        .form-card-header {
-          background: linear-gradient(135deg, #1a1814 0%, #2e2a24 100%);
-          padding: 32px 36px 28px;
-          position: relative; overflow: hidden;
-        }
-        .form-card-header-pattern {
-          position: absolute; inset: 0; opacity: 0.05;
-          background-image: radial-gradient(circle at 2px 2px, #fff 1px, transparent 0);
-          background-size: 24px 24px;
-        }
-        .form-card-header-accent {
-          position: absolute; top: -40px; right: -40px;
-          width: 160px; height: 160px; border-radius: 50%;
-          background: radial-gradient(circle, rgba(0,0,0,0.12) 0%, transparent 70%);
-        }
-        .form-card-title {
-          font-family: 'DM Serif Display', serif;
-          font-size: 26px; font-weight: 400; color: #ffffff;
-          position: relative; z-index: 1; margin-bottom: 6px;
-        }
-        .form-card-subtitle {
-          font-size: 14px; color: rgba(255,255,255,0.5);
-          position: relative; z-index: 1; line-height: 1.5;
-        }
-        .form-card-bar {
-          width: 32px; height: 3px; background: #ffffff;
-          border-radius: 99px; margin-top: 16px; position: relative; z-index: 1; opacity: 0.7;
-        }
-        .form-body { padding: 32px 36px 36px; flex: 1; }
-
-        .form-row { display: grid; grid-template-columns: 1fr; gap: 18px; margin-bottom: 18px; }
-        @media (min-width: 560px) { .form-row { grid-template-columns: 1fr 1fr; } }
-
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .form-group.full { grid-column: 1 / -1; }
-
-        .form-label { font-size: 12.5px; font-weight: 500; color: #4e4a46; letter-spacing: 0.01em; }
-
-        .form-input, .form-textarea {
-          background: #faf9f7; border: 1.5px solid #e2ddd7;
-          border-radius: 10px; padding: 13px 16px;
-          font-size: 15px; font-family: 'DM Sans', sans-serif;
-          color: #1a1814; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-          width: 100%;
-        }
-        .form-input::placeholder, .form-textarea::placeholder { color: #b0a89e; }
-        .form-input:focus, .form-textarea:focus {
-          outline: none; background: #ffffff;
-          border-color: #ccc; box-shadow: 0 0 0 4px rgba(0,0,0,0.06);
-        }
-        .form-textarea { resize: vertical; min-height: 130px; line-height: 1.6; }
-
-        .form-legal {
-          font-size: 13px; color: #8a8078; line-height: 1.65;
-          margin: 20px 0 24px;
-        }
-        .form-legal a { color: #1a1814; font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
-
-        .btn-submit {
-          width: 100%; padding: 16px 28px;
-          background: #1a1814; color: #ffffff;
-          border: none; border-radius: 10px;
-          font-size: 15px; font-family: 'DM Sans', sans-serif;
-          font-weight: 500; letter-spacing: 0.03em; cursor: pointer;
-          display: flex; align-items: center; justify-content: center; gap: 10px;
-          transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-        .btn-submit:hover:not(:disabled) { background: #2e2a24; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
-        .btn-submit:active:not(:disabled) { transform: scale(0.99); }
-        .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        .success-card {
-          background: #f8f8f8; border: 1.5px solid #e0e0e0;
-          border-radius: 12px; padding: 24px;
-          display: flex; align-items: flex-start; gap: 16px;
-          height: 100%;
-        }
-        .success-icon {
-          width: 36px; height: 36px; border-radius: 50%;
-          background: #e8e8e8; display: flex; align-items: center; justify-content: center;
-          color: #444; flex-shrink: 0;
-        }
-
-        /* Image side - full height matching form */
-        .image-side {
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-        }
-        .image-main {
-          border-radius: 20px; overflow: hidden;
-          border: 1.5px solid #e8e3dd;
-          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04), 0 20px 48px -8px rgba(0,0,0,0.1);
-          position: relative;
-          flex: 1;
-          min-height: 450px;
-          background: #f5f2ee;
-        }
-        .image-main img {
-          width: 100%; height: 100%;
-          object-fit: cover;
-        }
-
-        /* Social Icons - Twitter and LinkedIn only */
         .social-icons {
           display: flex;
           gap: 12px;
@@ -370,19 +201,10 @@ export default function ContactPage() {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in { animation: fadeIn 0.4s ease forwards; }
-
-        .section-divider { height: 1px; background: #ede9e4; }
       `}</style>
 
       <div className="contact-page">
 
-        {/* HERO WITH IMAGE */}
         <div className="hero">
           <img 
             src="/contact hero img.jpg" 
@@ -407,12 +229,10 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* GET IN TOUCH + MAP */}
         <div className="page-grid">
           <div className="page-col">
             <div className="info-map-section">
 
-              {/* Left: Info */}
               <div>
                 <p className="section-eyebrow">Find Us</p>
                 <h2 className="section-heading">Get in Touch</h2>
@@ -432,17 +252,7 @@ export default function ContactPage() {
                   ))}
                 </div>
 
-                {/* Follow us - Twitter and LinkedIn only */}
                 <div className="social-icons">
-                  <button
-                    onClick={() => window.open('https://twitter.com/NF Holdinggroup', '_blank')}
-                    className="social-icon"
-                    aria-label="Twitter (opens in new tab)"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                  </button>
                   <button
                     onClick={() => window.open('https://linkedin.com/company/NF Holdinggroup', '_blank')}
                     className="social-icon"
@@ -455,12 +265,11 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Right: Map */}
               <div>
                 <div className="map-container">
                   <iframe
-                    title="NF Holding Group Office - Westlands Nairobi"
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.819426671786!2d36.80518007496582!3d-1.2676399356488635!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f173c0a1f9de7%3A0x48e78bcd06478e71!2sWestgate%20Shopping%20Mall!5e0!3m2!1sen!2ske!4v1708000000000!5m2!1sen!2ske"
+                    title="NF Holding Group Office - Ushuru Pension Plaza, Nairobi"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d255282.3585374377!2d36.68219672051632!3d-1.3028611!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f1172d84d49a7%3A0xf7cf0254b297924c!2sNairobi%2C%20Kenya!5e0!3m2!1sen!2ske!4v1708000000000!5m2!1sen!2ske"
                     allowFullScreen=""
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
@@ -470,115 +279,9 @@ export default function ContactPage() {
                     <div className="map-overlay-dot" />
                     <div>
                       <div className="map-overlay-text">NF Holding Group</div>
-                      <div className="map-overlay-sub">Westgate Mall, Westlands · Nairobi</div>
+                      <div className="map-overlay-sub">Ushuru Pension Plaza · Nairobi, Kenya</div>
                     </div>
                   </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div className="section-divider" />
-
-        {/* FORM + IMAGE SIDE BY SIDE */}
-        <div className="page-grid">
-          <div className="page-col">
-            <div className="form-section">
-
-              {/* Left: Form Card */}
-              <div>
-                {submitted ? (
-                  <div className="success-card fade-in">
-                    <div className="success-icon">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p style={{ fontWeight: 600, fontSize: 16, color: '#1a1814', marginBottom: 6 }}>Message sent successfully!</p>
-                      <p style={{ fontSize: 14, color: '#444', lineHeight: 1.6 }}>
-                        Thank you for reaching out. A member of our team will get back to you within 1–2 business days.
-                      </p>
-                      <button
-                        onClick={() => { setSubmitted(false); setFormData({ name: '', phone: '', email: '', subject: '', message: '' }); }}
-                        style={{ marginTop: 14, fontSize: 13.5, fontWeight: 500, color: '#1a1814', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2, fontFamily: 'inherit' }}
-                      >
-                        Send another message
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="form-card">
-                    <div className="form-card-header">
-                      <div className="form-card-header-pattern" />
-                      <div className="form-card-header-accent" />
-                      <h2 className="form-card-title">Send a Message</h2>
-                      <p className="form-card-subtitle">Fill in the form and we'll get back to you shortly.</p>
-                      <div className="form-card-bar" />
-                    </div>
-
-                    <div className="form-body">
-                      <form onSubmit={handleSubmit} noValidate>
-                        <div className="form-row">
-                          <div className="form-group">
-                            <label className="form-label">Full Name *</label>
-                            <input name="name" value={formData.name} onChange={handleChange} placeholder="John Kamau" className="form-input" required />
-                          </div>
-                          <div className="form-group">
-                            <label className="form-label">Phone Number</label>
-                            <input name="phone" value={formData.phone} onChange={handleChange} placeholder="+254 7XX XXX XXX" className="form-input" />
-                          </div>
-                        </div>
-
-                        <div className="form-row">
-                          <div className="form-group">
-                            <label className="form-label">Email Address *</label>
-                            <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="you@company.com" className="form-input" required />
-                          </div>
-                          <div className="form-group">
-                            <label className="form-label">Subject *</label>
-                            <input name="subject" value={formData.subject} onChange={handleChange} placeholder="How can we help?" className="form-input" required />
-                          </div>
-                        </div>
-
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                          <label className="form-label">Message *</label>
-                          <textarea name="message" value={formData.message} onChange={handleChange} placeholder="Write your message here…" className="form-textarea" required />
-                        </div>
-
-                        <p className="form-legal">
-                          By clicking submit, you agree to our{' '}
-                          <a href="/terms">Terms</a> and{' '}
-                          <a href="/privacy">Data Collection Policy</a>.
-                          You may receive notifications from us and can opt out at any time.
-                        </p>
-
-                        <button type="submit" className="btn-submit" disabled={isSubmitting}>
-                          {isSubmitting ? (
-                            <span style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.75s linear infinite' }} />
-                          ) : (
-                            <><span>Submit Message</span><ArrowRightIcon /></>
-                          )}
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Right: Image */}
-              <div className="image-side">
-                <div className="image-main">
-                  <img 
-                    src="/contact us.jpg" 
-                    alt="Our team at NF Holding Group" 
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80';
-                    }}
-                  />
                 </div>
               </div>
 

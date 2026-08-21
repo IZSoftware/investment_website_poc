@@ -1,19 +1,80 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { learnAboutUs } from '../data/data';
+import { getSiteInfo } from '../api/services';
+import { getClusterImageByName } from '../data/clusterLocalImages';
+
+const formatToday = () =>
+  new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
 const LearnAboutUs = () => {
   const navigate = useNavigate();
   const [hoveredId, setHoveredId] = useState(null);
 
-  const {
-    heading,
-    intro,
-    portfolioStatement,
-    exploreButtonLabel,
-    investmentCards,
-    stats,
-  } = learnAboutUs;
+  // Static content from data
+  const heading = "Who We Are";
+  const intro = "NF Holdings is a pan-African family-owned investment holding company with investment in various sectors in East Africa. NF Holdings is inspired by our mission to create a legacy, for all Africans who will inherit the Africa we are building today. We create, grow and preserve value for our stakeholders – while driving Africa's sustainable economic and social development.";
+  const exploreButtonLabel = "Explore Our Portfolio";
+  const portfolioStatementBase = "We are committed to building enduring value through responsible investments that enhance lives and support Africa's transformation. Our portfolio was valued at";
+
+  const [investmentCards, setInvestmentCards] = useState([]);
+  const [stats, setStats] = useState([
+    { value: 'Loading...', label: 'Assets Under Management' },
+    { value: 'Loading...', label: 'Clusters' },
+    { value: 'Loading...', label: 'Continents' },
+    { value: 'Loading...', label: 'Countries' },
+    { value: 'Loading...', label: 'Portfolio Companies' },
+  ]);
+  const [portfolioStatement, setPortfolioStatement] = useState(`${portfolioStatementBase} loading... as of ${formatToday()}.`);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        const res = await getSiteInfo();
+        if (isMounted && res?.data) {
+          const data = res.data;
+
+          // ✅ Clusters from data.clusters
+          if (Array.isArray(data.clusters) && data.clusters.length > 0) {
+            const mapped = data.clusters.map((cluster) => ({
+              id: cluster.id,
+              clusterId: cluster.id,
+              title: cluster.name,
+              image: getClusterImageByName(cluster.name),
+              category: cluster.value?.displayText ?? '',
+              description: cluster.description || `Explore our ${cluster.name} cluster`,
+            }));
+            setInvestmentCards(mapped);
+          }
+
+          // ✅ Stats from data
+          setStats([
+            { value: data.totalPortfolioValue?.displayText ?? 'N/A', label: 'Assets Under Management' },
+            { value: data.totalClusters ?? 0, label: 'Clusters' },
+            { value: 0, label: 'Continents' }, // Not in API - keep static
+            { value: data.totalCountries ?? 0, label: 'Countries' },
+            { value: data.totalCompanies ?? 0, label: 'Portfolio Companies' },
+          ]);
+
+          // ✅ Portfolio statement
+          if (data.totalPortfolioValue) {
+            const asOfDate = data.lastUpdateTime 
+              ? new Date(data.lastUpdateTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+              : formatToday();
+            setPortfolioStatement(
+              `${portfolioStatementBase} ${data.totalPortfolioValue.displayText} as of ${asOfDate}.`
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      }
+    };
+
+    fetchData();
+    return () => { isMounted = false; };
+  }, []);
 
   return (
     <section className="py-16 lg:py-24 bg-gray-50">
@@ -23,28 +84,25 @@ const LearnAboutUs = () => {
         <div className="col-span-12 lg:col-span-10">
           <div className="px-4 sm:px-6 lg:px-8">
 
-            {/* ── Section header ── */}
             <div className="mb-12">
               <h2 className="mb-6 text-3xl font-bold text-gray-900 sm:text-4xl lg:text-7xl">
                 {heading}
               </h2>
-              <p className="mb-8 text-lg leading-relaxed text-gray-700 max-w-7xl">
+              <p className="mb-8 text-lg leading-relaxed text-gray-700 max-w-7xl text-justify">
                 {intro}
               </p>
             </div>
 
-            {/* ── Horizontal image accordion ── */}
             <div className="mb-12 lg:mb-16">
               <div
                 className="flex flex-col lg:flex-row h-auto lg:h-[500px] gap-4 lg:gap-0 overflow-hidden rounded-lg"
                 onMouseLeave={() => setHoveredId(null)}
               >
-                {investmentCards.map(item => {
-                  const isHovered  = hoveredId === item.id;
+                {investmentCards.length > 0 ? investmentCards.map(item => {
+                  const isHovered = hoveredId === item.id;
                   const anyHovered = hoveredId !== null;
 
-                  // For small devices, use different styling
-                  const widthStyle = window.innerWidth < 1024 
+                  const widthStyle = window.innerWidth < 1024
                     ? { width: '100%', height: '300px' }
                     : anyHovered
                       ? { flex: isHovered ? '0 0 45%' : '0 0 11%' }
@@ -58,14 +116,15 @@ const LearnAboutUs = () => {
                       onMouseEnter={() => setHoveredId(item.id)}
                       onClick={() => navigate(`/cluster/${item.clusterId}`)}
                     >
-                      {/* Image */}
                       <div className="relative w-full h-full">
                         <img
                           src={item.image}
                           alt={item.title}
                           className="object-cover w-full h-full"
+                          onError={(e) => {
+                            e.target.src = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2070&q=80';
+                          }}
                         />
-                        {/* Overlay */}
                         <div
                           className={`absolute inset-0 transition-all duration-700 ${
                             isHovered ? 'bg-black bg-opacity-60' : 'bg-black bg-opacity-30'
@@ -73,7 +132,6 @@ const LearnAboutUs = () => {
                         />
                       </div>
 
-                      {/* Content for small devices - always visible */}
                       <div className="absolute inset-0 flex items-end p-4 lg:hidden">
                         <div className="w-full">
                           <div className="mb-1 text-xs font-semibold tracking-wider text-white uppercase">
@@ -88,7 +146,6 @@ const LearnAboutUs = () => {
                         </div>
                       </div>
 
-                      {/* Expanded content for large screens (bottom, fades in on hover) */}
                       <div className="absolute inset-0 items-end hidden p-6 lg:flex lg:p-8">
                         <div
                           className={`transition-all duration-700 ${
@@ -111,7 +168,6 @@ const LearnAboutUs = () => {
                         </div>
                       </div>
 
-                      {/* Vertical title for large screens (shows when collapsed) */}
                       <div
                         className={`absolute transition-all duration-700 transform -translate-x-1/2 -translate-y-1/2 hidden lg:block ${
                           isHovered ? 'opacity-0' : 'opacity-100'
@@ -123,18 +179,20 @@ const LearnAboutUs = () => {
                       </div>
                     </div>
                   );
-                })}
+                }) : (
+                  <div className="flex items-center justify-center w-full h-full text-gray-500">
+                    Loading clusters...
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* ── Explore button ── */}
             <div className="mb-12 text-center lg:mb-16">
               <button className="bg-[#0A2540] hover:bg-[#003852] text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
                 {exploreButtonLabel}
               </button>
             </div>
 
-            {/* ── Portfolio statement + statistics ── */}
             <div className="text-center">
               <h3 className="max-w-4xl mx-auto mb-8 text-2xl font-bold text-gray-900 lg:text-3xl">
                 {portfolioStatement}

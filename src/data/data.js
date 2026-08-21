@@ -5,44 +5,44 @@ export const assetData = {
     title: 'Sovereign Fixed Income',
     description: 'Short-term investments, rates, and credit instruments.',
     value: '$1.5 B',
-    date: 'AS AT DECEMBER 31, 2025',
+    date: 'AS AT July 30, 2026',
     enabled: true,
     subEntities: [
-      { id: 'sovereign-bonds', title: 'Sovereign Bonds', description: 'Long-term investment instruments issued by governments.', value: '$0.9 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: [] },
-      { id: 'sovereign-bills', title: 'Sovereign Bills', description: 'Short-term investment instruments with maturity under one year.', value: '$0.6 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: [] }
+      { id: 'sovereign-bonds', title: 'Sovereign Bonds', description: 'Long-term investment instruments issued by governments.', value: '$0.9 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: [] },
+      { id: 'sovereign-bills', title: 'Sovereign Bills', description: 'Short-term investment instruments with maturity under one year.', value: '$0.6 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: [] }
     ]
   },
   'credit': {
-    id: 'credit', title: 'Credit', description: 'Corporate lending and bond portfolio investments.', value: '$1.0 B', date: 'AS AT DECEMBER 31, 2025', enabled: true,
+    id: 'credit', title: 'Credit', description: 'Corporate lending and bond portfolio investments.', value: '$1.0 B', date: 'AS AT July 30, 2026', enabled: true,
     subEntities: [
-      { id: 'corporate-loan',  title: 'Corporate Loan',  description: 'Direct lending to corporate entities.',           value: '$0.6 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: [] },
-      { id: 'corporate-bonds', title: 'Corporate Bonds', description: 'Fixed income securities issued by corporations.', value: '$0.4 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: [] }
+      { id: 'corporate-loan',  title: 'Corporate Loan',  description: 'Direct lending to corporate entities.',           value: '$0.6 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: [] },
+      { id: 'corporate-bonds', title: 'Corporate Bonds', description: 'Fixed income securities issued by corporations.', value: '$0.4 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: [] }
     ]
   },
   'equities': {
-    id: 'equities', title: 'Equities', description: 'Private equity positions and public equity market holdings.', value: '$1.0 B', date: 'AS AT DECEMBER 31, 2025', enabled: true,
+    id: 'equities', title: 'Equities', description: 'Private equity positions and public equity market holdings.', value: '$1.0 B', date: 'AS AT July 30, 2026', enabled: true,
     subEntities: [
-      { id: 'public-equity',  title: 'Public Equity',  description: 'Publicly traded equity securities and market positions.', value: '$0.5 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: [] },
-      { id: 'private-equity', title: 'Private Equity', description: 'Direct investments in private companies and buyouts.',    value: '$0.3 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: [] },
+      { id: 'public-equity',  title: 'Public Equity',  description: 'Publicly traded equity securities and market positions.', value: '$0.5 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: [] },
+      { id: 'private-equity', title: 'Private Equity', description: 'Direct investments in private companies and buyouts.',    value: '$0.3 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: [] },
       {
-        id: 'international-equity', title: 'International Equity', description: 'Global equity investments across international markets.', value: '$0.2 B', date: 'AS AT DECEMBER 31, 2025', enabled: true,
+        id: 'international-equity', title: 'International Equity', description: 'Global equity investments across international markets.', value: '$0.2 B', date: 'AS AT July 30, 2026', enabled: true,
         subEntities: [
-          { id: 'global-public-equity',  title: 'Global Public Equity',  description: 'International publicly traded equity positions.',          value: '$0.12 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: [] },
-          { id: 'global-private-equity', title: 'Global Private Equity', description: 'International private equity investments and partnerships.', value: '$0.08 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: [] }
+          { id: 'global-public-equity',  title: 'Global Public Equity',  description: 'International publicly traded equity positions.',          value: '$0.12 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: [] },
+          { id: 'global-private-equity', title: 'Global Private Equity', description: 'International private equity investments and partnerships.', value: '$0.08 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: [] }
         ]
       }
     ]
   },
   'real-estate': {
-    id: 'real-estate', title: 'Real Estate', description: 'Real estate holdings and infrastructure investments.', value: '$1.0 B', date: 'AS AT DECEMBER 31, 2025', enabled: true,
+    id: 'real-estate', title: 'Real Estate', description: 'Real estate holdings and infrastructure investments.', value: '$1.0 B', date: 'AS AT July 30, 2026', enabled: true,
     subEntities: [
-      { id: 'residential',         title: 'Residential',         description: 'Residential property holdings and developments.', value: '$0.45 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: [] },
-      { id: 'land',                title: 'Land',                description: 'Undeveloped land holdings and strategic parcels.', value: '$0.20 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: [] },
-      { id: 'commercial-buildings',title: 'Commercial Buildings', description: 'Commercial real estate and office properties.',    value: '$0.35 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: [] }
+      { id: 'residential',         title: 'Residential',         description: 'Residential property holdings and developments.', value: '$0.45 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: [] },
+      { id: 'land',                title: 'Land',                description: 'Undeveloped land holdings and strategic parcels.', value: '$0.20 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: [] },
+      { id: 'commercial-buildings',title: 'Commercial Buildings', description: 'Commercial real estate and office properties.',    value: '$0.35 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: [] }
     ]
   },
   'fund-of-funds': {
-    id: 'fund-of-funds', title: 'Fund of Funds', description: 'Portfolio of investments in various investment funds.', value: '$0.5 B', date: 'AS AT DECEMBER 31, 2025', enabled: true, subEntities: []
+    id: 'fund-of-funds', title: 'Fund of Funds', description: 'Portfolio of investments in various investment funds.', value: '$0.5 B', date: 'AS AT July 30, 2026', enabled: true, subEntities: []
   }
 };
 
@@ -128,13 +128,14 @@ export const companyDetails = {
     votingMeetings: [{ date: '12/05/2025', meetingType: 'Annual' },{ date: '12/10/2024', meetingType: 'Annual' },{ date: '12/07/2023', meetingType: 'Annual' },{ date: '12/13/2022', meetingType: 'Annual' },{ date: '11/30/2021', meetingType: 'Annual' }]
   }
 };
+
 // 3. SECTORS
 export const sectorsData = [
   {
     id: 'finance',    title: 'FINANCE',    icon: '💰', color: '#086F94',
     portfolioValue: '$1.25 B', portfolioPct: 25,
     heroImage: '/close-up-shot-business-study-essentials-white-desk-work-study-aesthetics.jpg',
-    date: 'AS AT DECEMBER 31, 2025',
+    date: 'AS AT July 30, 2026',
     description: "We are addressing Africa's infrastructure deficit by mobilising global capital and allocating it to sectors that will power Africa to prosperity. Strong economic fundamentals and technological innovation have enabled us to build one of the largest pan-African banking networks, providing commercial and investment banking, asset management, and insurance services across the continent.",
     partnerships: [{ id: 'NF Holding-finance', name: 'NF HOLDING FINANCE', logo: '/NF Holding Logo.png', description: 'Leading African investment and securities company' }]
   },
@@ -142,7 +143,7 @@ export const sectorsData = [
     id: 'technology', title: 'TECHNOLOGY', icon: '💻', color: '#00AAAA',
     portfolioValue: '$1.0 B', portfolioPct: 20,
     heroImage: '/ai-nuclear-energy-future-innovation-disruptive-technology.jpg',
-    date: 'AS AT DECEMBER 31, 2025',
+    date: 'AS AT July 30, 2026',
     description: "We invest in innovative technology solutions that transform African industries and communities. From fintech to agritech, healthtech to edutech, our technology portfolio drives digital transformation across the continent, creating new opportunities and improving lives.",
     partnerships: [{ id: 'NF Holding-digital', name: 'NF HOLDING DIGITAL', logo: '/NF Holding Logo.png', description: 'Digital solutions and technology investments' }]
   },
@@ -150,7 +151,7 @@ export const sectorsData = [
     id: 'hospitality', title: 'HOSPITALITY', icon: '🏨', color: '#D14850',
     portfolioValue: '$0.5 B', portfolioPct: 10,
     heroImage: '/beautiful-aerial-shot-city.jpg',
-    date: 'AS AT DECEMBER 31, 2025',
+    date: 'AS AT July 30, 2026',
     description: "Premium hospitality assets including hotels, resorts, and tourism infrastructure. We develop and manage premium hospitality assets that redefine tourism experiences across Africa, combining world-class amenities with local cultural authenticity.",
     partnerships: [{ id: 'NF Holding-hotels', name: 'NF HOLDING HOTELS PLC', logo: '/NF Holding Logo.png', description: 'Luxury hospitality group with properties across Rwanda' }]
   },
@@ -158,7 +159,7 @@ export const sectorsData = [
     id: 'power', title: 'POWER', icon: '🔋', color: '#7FBC4D',
     portfolioValue: '$0.9 B', portfolioPct: 18,
     heroImage: '/medium-shot-smiley-engineer-holding-tablet.jpg',
-    date: 'AS AT DECEMBER 31, 2025',
+    date: 'AS AT July 30, 2026',
     description: "With an installed capacity of 2,000 megawatts, we supply 13–15% of national grid powering millions of homes. Our 120,000-kilometer power distribution network extends our reach to over 1.8 million customers including businesses, hospitals, and schools—empowering communities across Africa.",
     partnerships: [{ id: 'NF Holding-power', name: 'NF HOLDING POWER', logo: '/NF Holding Logo.png', description: 'Leading power generation company in Ghana' }]
   },
@@ -166,7 +167,7 @@ export const sectorsData = [
     id: 'energy', title: 'ENERGY', icon: '⚡', color: '#B18C7F',
     portfolioValue: '$0.75 B', portfolioPct: 15,
     heroImage: '/sun-setting-silhouette-electricity-pylons.jpg',
-    date: 'AS AT DECEMBER 31, 2025',
+    date: 'AS AT July 30, 2026',
     description: "Our energy portfolio focuses on sustainable energy solutions across Africa. We invest in oil, gas, and renewable energy projects that drive economic growth while ensuring environmental sustainability. Through strategic partnerships and innovative technologies, we're powering Africa's energy transition.",
     partnerships: [{ id: 'NF Holding-energy', name: 'NF HOLDINGS ENERGY', logo: '/NF Holding Logo.png', description: 'Integrated energy company' }]
   },
@@ -174,15 +175,16 @@ export const sectorsData = [
     id: 'real-estate', title: 'REAL ESTATE', icon: '🏢', color: '#2A384C',
     portfolioValue: '$0.6 B', portfolioPct: 12,
     heroImage: '/beautiful-aerial-shot-city.jpg',
-    date: 'AS AT DECEMBER 31, 2025',
+    date: 'AS AT July 30, 2026',
     description: "Commercial and residential real estate developments in key African markets. We develop and manage premium real estate assets that redefine urban landscapes across Africa. Our portfolio includes commercial properties, residential developments and mixed-use projects that combine world-class standards with local market understanding.",
     partnerships: [{ id: 'NF Holding-realty', name: 'NF HOLDING REALTY', logo: '/NF Holding Logo.png', description: 'Commercial and residential real estate across East Africa' }]
   }
 ];
+
 // 4. CLUSTERS
 export const clusters = [
   {
-    id: 'finance', // Changed from 1 to 'finance'
+    id: 'finance',
     sectorId: 'finance', 
     title: 'Finance Cluster',
     image: '/close-up-shot-business-study-essentials-white-desk-work-study-aesthetics.jpg',
@@ -199,7 +201,7 @@ export const clusters = [
     details: "Our Finance Cluster comprises strategic investments in leading financial institutions that form the backbone of economic development across multiple African markets."
   },
   {
-    id: 'technology', // Changed from 2 to 'technology'
+    id: 'technology',
     sectorId: 'technology',
     title: 'Technology Cluster',
     image: '/ai-nuclear-energy-future-innovation-disruptive-technology.jpg',
@@ -215,7 +217,7 @@ export const clusters = [
     details: "The Technology Cluster represents our investment in cutting-edge digital solutions that are driving Africa's Fourth Industrial Revolution."
   },
   {
-    id: 'hospitality', // Changed from 3 to 'hospitality'
+    id: 'hospitality',
     sectorId: 'hospitality',
     title: 'Hospitality Cluster',
     image: '/beautiful-aerial-shot-city.jpg', 
@@ -227,7 +229,7 @@ export const clusters = [
     details: "Our Hospitality Cluster encompasses premium hotels, resorts, and tourism infrastructure that are transforming the African hospitality landscape."
   },
   {
-    id: 'power', // Changed from 4 to 'power'
+    id: 'power',
     sectorId: 'power',
     title: 'Power Cluster',
     image: '/medium-shot-smiley-engineer-holding-tablet.jpg',
@@ -242,7 +244,7 @@ export const clusters = [
     details: "The Power Cluster represents our comprehensive approach to Africa's energy transformation through diversified power generation, transmission, and distribution assets."
   },
   {
-    id: 'energy', // Changed from 5 to 'energy'
+    id: 'energy',
     sectorId: 'energy',
     title: 'Energy Cluster',
     image: '/sun-setting-silhouette-electricity-pylons.jpg',
@@ -257,7 +259,7 @@ export const clusters = [
     details: "Our Energy Cluster represents a comprehensive portfolio of sustainable power generation and distribution assets strategically positioned across the African continent."
   },
   {
-    id: 'real-estate', // Changed from 6 to 'real-estate'
+    id: 'real-estate',
     sectorId: 'real-estate',
     title: 'Real Estate Cluster',
     image: '/beautiful-aerial-shot-city.jpg', 
@@ -272,29 +274,26 @@ export const clusters = [
     details: "Our Real Estate Cluster encompasses commercial and residential developments that are transforming urban landscapes across Africa."
   }
 ];
+
 // 5. PORTFOLIO HIGHLIGHTS
 export const portfolioHighlights = {
 
-  // Hero section
   hero: {
     backgroundImage: '/businessman-is-using-computer-laptop.jpg',
     title: 'Investment Portfolio',
   },
   highlightsTabLabel: 'HIGHLIGHTS',
 
-  // Summary description shown under the tabs
   summaryText:
-    "We invest in sectors that provide strong long-term returns and have the ability to transform Africa's economy. The value of our existing portfolio as at December 31, 2025 is USD 5.0 billion.",
+    "We invest in clusters that provide strong long-term returns and have the ability to transform Africa's economy. The value of our existing portfolio as at July 30, 2026 is USD 5.0 billion.",
 
   highlightStats: [
-    { label: 'Sectors',         value: '6'     },
+    { label: 'Clusters',         value: '6'     },
     { label: 'Countries',       value: '4'     },
     { label: 'Employees',       value: '40k+'  },
     { label: 'Portfolio Value', value: '$5 Bn' },
   ],
 
-  // Pie chart colours per sector — keyed by sectorId so they stay in sync with sectorsData
-  // The component reads percentages from sectorsData.portfolioPct automatically.
   sectorColors: {
     finance:      '#338BBA',
     technology:   '#FF6B6B',
@@ -304,15 +303,14 @@ export const portfolioHighlights = {
     'real-estate':'#118AB2',
   },
 
-  // Investment philosophy text shown below the pie charts
   philosophyTitle: 'INVESTMENT PHILOSOPHY',
   philosophyText:
     "Our approach to investment is guided by the philosophy of African capitalism, which is the private sector's commitment to Africa's development through long term investments that create economic prosperity and social wealth.",
 };
 
-// 6. INVESTMENT PORTFOLIO (total portfolio summary card)
+// 6. INVESTMENT PORTFOLIO
 export const investmentPortfolio = {
-  totalPortfolio: { value: '$5.0 B', description: 'Net assets as at December 31, 2025' },
+  totalPortfolio: { value: '$5.0 B', description: 'Net assets as at July 30, 2026' },
   countries: '4',
   years: '5',
   philosophyText: "Our approach to investment is guided by the philosophy of African capitalism, which is the private sector's commitment to Africa's development through long term investments that create economic prosperity and social wealth.",
@@ -322,14 +320,14 @@ export const investmentPortfolio = {
   }))
 };
 
-// 7. PORTFOLIO KPI  (PortfolioPage charts & key facts)
+// 7. PORTFOLIO KPI
 export const portfolioKPI = {
   keyFacts: {
-    kes: { aum: 520000, aumUnit: 'M', revenue: 38000, revenueUnit: 'M', debt: 14768, debtUnit: 'M', gearing: '29.4%', roa: '4.2%', operatingCountries: 4, lastUpdated: '31-Dec-2025', asAtDate: 'DECEMBER 31, 2025' },
-    usd: { aum: 5000,   aumUnit: 'M', revenue: 823,   revenueUnit: 'M', debt: 328,   debtUnit: 'M', gearing: '29.4%', roa: '4.2%', operatingCountries: 4, lastUpdated: '31-Dec-2025', asAtDate: 'DECEMBER 31, 2025' }
+    kes: { aum: 520000, aumUnit: 'M', revenue: 38000, revenueUnit: 'M', debt: 14768, debtUnit: 'M', gearing: '29.4%', roa: '4.2%', operatingCountries: 4, lastUpdated: '31-Dec-2025', asAtDate: 'July 30, 2026' },
+    usd: { aum: 5000,   aumUnit: 'M', revenue: 823,   revenueUnit: 'M', debt: 328,   debtUnit: 'M', gearing: '29.4%', roa: '4.2%', operatingCountries: 4, lastUpdated: '31-Dec-2025', asAtDate: 'July 30, 2026' }
   },
-  investorRelations: { name: 'Admin Charleen', tel: '(+254) 7123456789', email: 'investor@nf-holding.com' },
-  portfolioTotals: { kes: 'KES 520,000 M', usd: 'USD 5,000 M', asAtDate: 'December 31, 2025' },
+  investorRelations: { name: 'Charles', tel: '(+254) 71234567', email: 'investor@nf-holding.com' },
+  portfolioTotals: { kes: 'KES 520,000 M', usd: 'USD 5,000 M', asAtDate: 'July 30, 2026' },
   pieChartSectors: sectorsData.map(s => ({ name: s.title.charAt(0) + s.title.slice(1).toLowerCase(), value: s.portfolioPct, color: s.color })),
   revenueData: {
     kes: [{ year: '2021', value: 22578 },{ year: '2022', value: 28525 },{ year: '2023', value: 33000 },{ year: '2024', value: 36000 },{ year: '2025', value: 38000 }],
@@ -342,11 +340,11 @@ export const portfolioKPI = {
   }
 };
 
-// 8. LEARN ABOUT US  (home page clusters section)
+// 8. LEARN ABOUT US
 export const learnAboutUs = {
   heading: 'Our Clusters',
   intro: "NF Holdings is a pan-African, family-owned investment group dedicated to building sustainable businesses that create long-term impact. Our investments focus on sectors that drive growth, improve lives, and shape Africa's future.",
-  portfolioStatement: "We are committed to building enduring value through responsible investments that enhance lives and support Africa's transformation. Our portfolio was valued at $5.0 billion as of December 31, 2025.",
+  portfolioStatement: "We are committed to building enduring value through responsible investments that enhance lives and support Africa's transformation. Our portfolio was valued at $5.0 billion as of July 30, 2026.",
   exploreButtonLabel: 'EXPLORE OUR INVESTMENTS',
   investmentCards: [
     { id: 1, clusterId: 'finance',     image: '/close-up-shot-business-study-essentials-white-desk-work-study-aesthetics.jpg', title: 'Finance',     category: 'Finance',     description: 'Strategic investments in financial institutions driving economic growth across Africa.' },
@@ -357,13 +355,14 @@ export const learnAboutUs = {
     { id: 6, clusterId: 'real-estate', image: '/beautiful-aerial-shot-city.jpg',                                              title: 'Real Estate', category: 'Real Estate', description: 'Premium developments that redefine urban landscapes across Africa.' },
   ],
   stats: [
-    { label: 'Sectors',                                value: '6'      },
+    { label: 'Clusters',                                value: '6'      },
     { label: 'Continents',                             value: '1'      },
     { label: 'Countries',                              value: '4'      },
     { label: 'Employees',                              value: '40k +'  },
     { label: 'Current Value of Portfolio Investments', value: '$5.0 B' },
   ],
 };
+
 // 9. ABOUT PAGE
 export const aboutPage = {
   hero: {
@@ -373,10 +372,10 @@ export const aboutPage = {
     subheadline: 'A pan-African investment group allocating capital across six core sectors to power sustainable prosperity.',
   },
   stats: [
-    { value: '$5.0 B', label: 'Total AUM'      },
-    { value: '4',      label: 'Countries'      },
+    { value: '$5.0 B', label: 'TOTAL PORTFOLIO' },
+    { value: '4',      label: 'Countries' },
     { value: '6+',     label: 'Portfolio Cos.' },
-    { value: '6',      label: 'Core Sectors'   },
+    { value: '6',      label: 'Core Clusters' },
   ],
   whoWeAre: {
     para1: "NF Holdings Group is a premier pan-African investment firm with 5 years of focused experience mobilising global capital into Africa's most transformative sectors. We are builders — of financial institutions, energy infrastructure, healthcare networks, and technology platforms.",
@@ -387,7 +386,7 @@ export const aboutPage = {
     { year: '2022', event: 'First major infrastructure investment' },
     { year: '2023', event: 'Expansion into 4 African countries' },
     { year: '2024', event: 'Crossed $2.5 B AUM milestone' },
-    { year: '2025', event: 'Reached $5.0 B total AUM' },
+    { year: '2025', event: 'Reached $5.0 B TOTAL PORTFOLIO' },
   ],
   orbitAssets: [
     { id: 'sfi',    label: 'Sovereign\nFixed Income', pct: '30%', value: '$1.5 B', color: '#c4a078', subs: [{ label: 'Bonds', value: '$0.9 B' }, { label: 'Bills', value: '$0.6 B' }] },
@@ -417,10 +416,10 @@ export const marketsData = {
   companyOverview: { years: { value: '5', description: 'of focused investing' } },
   description: 'Our investments are strategically located across Africa, in markets targeted for their performance potential. This allows us to reap the benefits of each region and diversify our risk.',
   countries: [
-    { id: 1, name: 'Kenya',    years: '5 years', value: '$2.0 B',  date: 'AS AT DECEMBER 31, 2025' },
-    { id: 2, name: 'Ghana',    years: '5 years', value: '$1.25 B', date: 'AS AT DECEMBER 31, 2025' },
-    { id: 3, name: 'Ethiopia', years: '5 years', value: '$1.0 B',  date: 'AS AT DECEMBER 31, 2025' },
-    { id: 4, name: 'Rwanda',   years: '5 years', value: '$0.75 B', date: 'AS AT DECEMBER 31, 2025' },
+    { id: 1, name: 'Kenya',    years: '5 years', value: '$2.0 B',  date: 'AS AT July 30, 2026' },
+    { id: 2, name: 'Ghana',    years: '5 years', value: '$1.25 B', date: 'AS AT July 30, 2026' },
+    { id: 3, name: 'Ethiopia', years: '5 years', value: '$1.0 B',  date: 'AS AT July 30, 2026' },
+    { id: 4, name: 'Rwanda',   years: '5 years', value: '$0.75 B', date: 'AS AT July 30, 2026' },
   ],
   africanCountries: [
     'Algeria','Angola','Benin','Botswana','Burkina Faso','Burundi','Cabo Verde','Cameroon',
@@ -434,6 +433,7 @@ export const marketsData = {
   ],
   otherCountries: ['Canada','China','France','Germany','India','Japan','Singapore','United Arab Emirates','United Kingdom','United States'],
 };
+
 // HELPER FUNCTIONS
 export const getCompanyById       = (id) => companyDetails[id] || null;
 export const getSectorById        = (id) => sectorsData.find(s => s.id === id) || null;
@@ -475,18 +475,49 @@ export const getSupportedCountries = () => [...marketsData.africanCountries, ...
 export const getOrbitAssets        = () => aboutPage.orbitAssets;
 export const getAssetBreakdown     = (assetId) => aboutPage.breakdown[assetId] || [];
 
-// Helpers specifically for PortfolioHighlights
-// Returns the tab list: [{id, name, href}] — HIGHLIGHTS first, then one per sector
 export const getPortfolioHighlightsTabs = () => [
   { id: 0, name: portfolioHighlights.highlightsTabLabel, href: '#highlights' },
   ...sectorsData.map((s, i) => ({ id: i + 1, name: s.title, href: `#${s.id}` })),
 ];
 
-// Returns pie chart data array ready for Chart.js, pulling pct from sectorsData
-// and colours from portfolioHighlights.sectorColors
 export const getHighlightsPieData = () =>
   sectorsData.map(s => ({
     category:   s.title.charAt(0) + s.title.slice(1).toLowerCase(),
     percentage: s.portfolioPct,
     color:      portfolioHighlights.sectorColors[s.id] ?? s.color,
   }));
+
+// 11. CLUSTER DESCRIPTIONS
+export const clusterDescriptions = {
+  'finance': sectorsData.find(s => s.id === 'finance').description,
+  'technology': sectorsData.find(s => s.id === 'technology').description,
+  'hospitality': sectorsData.find(s => s.id === 'hospitality').description,
+  'power': sectorsData.find(s => s.id === 'power').description,
+  'energy': sectorsData.find(s => s.id === 'energy').description,
+  'real estate': sectorsData.find(s => s.id === 'real-estate').description,
+  'manufacturing': "We back industrial and manufacturing ventures that strengthen Africa's production base, reduce import dependency, and create skilled jobs. Our manufacturing investments span light and heavy industry, building the factories and supply chains that power local economies.",
+  'healthcare': "Our healthcare investments expand access to quality medical infrastructure across Africa — from hospitals and diagnostic networks to pharmaceutical distribution — improving health outcomes for millions while building resilient, modern care systems.",
+  'agriculture': "We invest across the agricultural value chain, from farming and processing to logistics and distribution, strengthening food security and rural livelihoods while unlocking the continent's vast agricultural potential.",
+  'education': "Our education investments support schools, training institutions, and edtech platforms that expand access to quality learning across Africa, equipping the next generation with the skills to drive the continent's growth.",
+  'investment': "Through diversified investment vehicles and strategic partnerships, we deploy long-term capital into ventures across Africa's most promising sectors, generating sustainable returns while building enduring economic value.",
+};
+
+export const getClusterDescriptionByName = (name, fallback = 'Description coming soon.') => {
+  if (!name) return fallback;
+  return clusterDescriptions[name.trim().toLowerCase()] || fallback;
+};
+
+// 12. CLUSTER COMPANIES
+export const clusterCompanies = {
+  'finance': clusters.find(c => c.id === 'finance')?.logos ?? [],
+  'technology': clusters.find(c => c.id === 'technology')?.logos ?? [],
+  'hospitality': clusters.find(c => c.id === 'hospitality')?.logos ?? [],
+  'power': clusters.find(c => c.id === 'power')?.logos ?? [],
+  'energy': clusters.find(c => c.id === 'energy')?.logos ?? [],
+  'real estate': clusters.find(c => c.id === 'real-estate')?.logos ?? [],
+};
+
+export const getClusterCompaniesByName = (name) => {
+  if (!name) return [];
+  return clusterCompanies[name.trim().toLowerCase()] || [];
+};

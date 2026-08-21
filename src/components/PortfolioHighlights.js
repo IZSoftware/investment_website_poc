@@ -1,25 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaFacebook, FaTwitter, FaLinkedin } from 'react-icons/fa';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-
-import {
-  portfolioHighlights,
-  getPortfolioHighlightsTabs,
-  getHighlightsPieData,
-} from '../data/data';
+import { getSiteInfo } from '../api/services';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const FALLBACK_PALETTE = ['#338BBA', '#FF6B6B', '#4ECDC4', '#FFD166', '#06D6A0', '#118AB2', '#9B5DE5', '#F15BB5'];
+
 const PortfolioHighlights = () => {
-  const [activeTab, setActiveTab] = useState(portfolioHighlights.highlightsTabLabel);
+  const hero = {
+    title: "Our Portfolio",
+    backgroundImage: "/businessman-is-using-computer-laptop.jpg",
+  };
 
-  // ── Data from the single source of truth ──────────────────────────────────
-  const tabs        = getPortfolioHighlightsTabs();   // [{id, name, href}]
-  const pieData     = getHighlightsPieData();          // [{category, percentage, color}]
-  const { hero, summaryText, highlightStats, philosophyTitle, philosophyText } = portfolioHighlights;
+  const [activeTab, setActiveTab] = useState('HIGHLIGHTS');
+  const [tabs, setTabs] = useState([{ id: 0, name: 'HIGHLIGHTS', href: '#highlights' }]);
+  const [pieData, setPieData] = useState([]);
+  const [summaryText, setSummaryText] = useState('');
+  const [highlightStats, setHighlightStats] = useState([
+    { label: 'Clusters', value: 'Loading...' },
+    { label: 'Countries', value: 'Loading...' },
+    { label: 'Portfolio Companies', value: 'Loading...' },
+    { label: 'Portfolio Value', value: 'Loading...' },
+  ]);
 
-  // ── Chart.js config ───────────────────────────────────────────────────────
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        const res = await getSiteInfo();
+        if (isMounted && res?.data) {
+          const data = res.data;
+
+          // Clusters from data.clusters
+          if (Array.isArray(data.clusters) && data.clusters.length > 0) {
+            const sorted = data.clusters;
+            setTabs([
+              { id: 0, name: 'HIGHLIGHTS', href: '#highlights' },
+              ...sorted.map((c, i) => ({ id: i + 1, name: c.name, href: `#${c.id}` })),
+            ]);
+            setPieData(
+              sorted.map((c, i) => ({
+                category: c.name,
+                percentage: c.percent ?? 0,
+                color: FALLBACK_PALETTE[i % FALLBACK_PALETTE.length],
+              }))
+            );
+          }
+
+          // Stats from data
+          setHighlightStats([
+            { label: 'Clusters', value: String(data.totalClusters ?? 0) },
+            { label: 'Countries', value: String(data.totalCountries ?? 0) },
+            { label: 'Portfolio Companies', value: String(data.totalCompanies ?? 0) },
+            { label: 'Portfolio Value', value: data.totalPortfolioValue?.displayText ?? 'N/A' },
+          ]);
+
+          // Summary
+          if (data.totalPortfolioValue) {
+            const asOfDate = data.lastUpdateTime 
+              ? new Date(data.lastUpdateTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+              : 'July 30, 2026';
+            setSummaryText(
+              `We invest in clusters that provide strong long-term returns and have the ability to transform Africa's economy. The value of our existing portfolio as at ${asOfDate} is ${data.totalPortfolioValue.displayText}.`
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      }
+    };
+
+    fetchData();
+    return () => { isMounted = false; };
+  }, []);
+
   const bigPieChartData = {
     labels: pieData.map(d => d.category),
     datasets: [{
@@ -36,15 +93,12 @@ const PortfolioHighlights = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
-      tooltip: {
-        callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed}%` },
-      },
+      tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed}%` } },
     },
   };
 
   return (
     <>
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section
         className="relative w-full h-[50vh] sm:h-[60vh] lg:h-screen min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] bg-cover bg-center"
         style={{ backgroundImage: `url('${hero.backgroundImage}')` }}
@@ -56,14 +110,12 @@ const PortfolioHighlights = () => {
           <div className="relative col-span-12 lg:col-span-10">
             <div className="h-full px-4 sm:px-6 lg:px-8">
 
-              {/* Title — bottom left */}
               <div className="absolute z-10 bottom-4 sm:bottom-6 lg:bottom-8 left-4 sm:left-6 lg:left-8">
                 <h1 className="text-2xl font-bold text-white sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
                   {hero.title}
                 </h1>
               </div>
 
-              {/* Social share — right centre (hidden on mobile) */}
               <div className="absolute hidden transform -translate-y-1/2 right-4 sm:right-6 lg:right-8 top-1/2 md:block">
                 <div className="flex flex-col space-y-3 lg:space-y-4">
                   {[FaFacebook, FaTwitter, FaLinkedin].map((Icon, i) => (
@@ -83,14 +135,12 @@ const PortfolioHighlights = () => {
         </div>
       </section>
 
-      {/* ── PORTFOLIO HIGHLIGHTS ─────────────────────────────────────────── */}
       <section className="py-8 bg-white sm:py-10 lg:py-12">
         <div className="grid w-full grid-cols-12 mx-auto max-w-screen-3xl">
           <div className="hidden col-span-1 lg:block" />
           <div className="col-span-12 lg:col-span-10">
             <div className="px-4 sm:px-6 lg:px-8">
 
-              {/* Tab navigation — built from data, no hardcoding */}
               <div className="flex flex-wrap items-center justify-center gap-2 mb-8 sm:gap-3 lg:mb-12">
                 {tabs.map(tab => (
                   <a
@@ -101,24 +151,21 @@ const PortfolioHighlights = () => {
                       activeTab === tab.name
                         ? 'bg-[#338BBA] text-white'
                         : 'text-gray-700 hover:text-blue-600 hover:bg-gray-100'
-                    }`}
-                  >
+                    }`}>
                     {tab.name}
                   </a>
                 ))}
               </div>
 
-              {/* Summary text */}
               <div className="max-w-4xl mx-auto text-center">
                 <h6 className="mb-4 text-xs font-bold tracking-widest text-gray-500 uppercase lg:mb-6 sm:text-sm">
                   PORTFOLIO HIGHLIGHTS
                 </h6>
                 <h2 className="mb-6 text-base font-normal leading-relaxed text-gray-800 lg:mb-8 sm:text-lg md:text-xl lg:text-2xl">
-                  {summaryText}
+                  {summaryText || 'Loading portfolio data...'}
                 </h2>
 
-                {/* Highlight stats — only on HIGHLIGHTS tab */}
-                {activeTab === portfolioHighlights.highlightsTabLabel && (
+                {activeTab === 'HIGHLIGHTS' && (
                   <div className="grid grid-cols-2 gap-4 mt-8 sm:gap-6 lg:gap-8 lg:mt-12 md:grid-cols-4">
                     {highlightStats.map((stat, i) => (
                       <div key={i} className="text-center">
@@ -140,22 +187,25 @@ const PortfolioHighlights = () => {
         </div>
       </section>
 
-      {/* ── PIE CHARTS + PHILOSOPHY ──────────────────────────────────────── */}
       <section className="py-10 bg-white sm:py-12 lg:py-16">
         <div className="grid w-full grid-cols-12 mx-auto max-w-screen-3xl">
           <div className="hidden col-span-1 lg:block" />
           <div className="col-span-12 lg:col-span-10">
             <div className="px-4 sm:px-6 lg:px-8">
 
-              {/* Big pie chart */}
               <div className="max-w-4xl mx-auto mb-8 lg:mb-12">
                 <div className="h-[300px] sm:h-[400px] lg:h-[500px]">
-                  <Pie data={bigPieChartData} options={bigPieOptions} />
+                  {pieData.length > 0 ? (
+                    <Pie data={bigPieChartData} options={bigPieOptions} />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      Loading portfolio data...
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Mini donut per sector — auto-generated from data */}
-              <div className="grid grid-cols-2 gap-4 mb-12 sm:gap-5 lg:gap-6 lg:mb-16 sm:grid-cols-3 md:grid-cols-6">
+              <div className="flex flex-wrap justify-center gap-4 mb-12 sm:gap-5 lg:gap-6 lg:mb-16">
                 {pieData.map((item, i) => {
                   const miniData = {
                     labels: [item.category, 'Other'],
@@ -174,7 +224,10 @@ const PortfolioHighlights = () => {
                   };
 
                   return (
-                    <div key={i} className="flex flex-col items-center">
+                    <div
+                      key={i}
+                      className="flex flex-col items-center basis-[45%] sm:basis-[30%] md:basis-[15%]"
+                    >
                       <div className="relative w-20 h-20 mb-2 sm:w-24 sm:h-24 lg:w-28 lg:h-28 xl:w-32 xl:h-32 lg:mb-3">
                         <Pie data={miniData} options={miniOptions} />
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -190,13 +243,12 @@ const PortfolioHighlights = () => {
                 })}
               </div>
 
-              {/* Investment philosophy */}
               <div className="max-w-4xl mx-auto text-center">
                 <h3 className="mb-4 text-lg font-bold text-gray-900 lg:mb-6 sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl">
-                  {philosophyTitle}
+                  Our Investment Philosophy
                 </h3>
                 <p className="text-sm leading-relaxed text-gray-700 sm:text-base md:text-lg lg:text-xl">
-                  {philosophyText}
+                  We invest in clusters that provide strong long-term returns and have the ability to transform Africa's economy. Our approach combines deep local expertise with global best practices to create sustainable value for all stakeholders.
                 </p>
               </div>
 
