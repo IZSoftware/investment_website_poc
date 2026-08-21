@@ -26,8 +26,12 @@ export default function Market() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({
-    name: '', numberOfYears: '', currency: 'USD', amount: '',
-    unit: 'BILLIONS', allocationPercent: '', selectedDate: null,
+    name: '',
+    currency: 'USD',
+    amount: '',
+    unit: 'BILLIONS',
+    allocationPercent: '',
+    selectedDate: null,
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
@@ -39,9 +43,6 @@ export default function Market() {
 
   const supportedCountries = getSupportedCountries();
 
-  // Pulled out so it can be re-run after any create/edit/delete,
-  // keeping the summary cards and country list in sync with the server
-  // instead of only patching local state.
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -78,7 +79,6 @@ export default function Market() {
     setEditingItem(country);
     setFormData({
       name: country.name || '',
-      numberOfYears: country.numberOfYears ?? '',
       currency: parsedVal.currency,
       amount: parsedVal.amount,
       unit: parsedVal.unit,
@@ -108,7 +108,6 @@ export default function Market() {
       const response = await updateAdminCountry({
         id: editingItem.id,
         name: formData.name,
-        numberOfYears: Number(formData.numberOfYears),
         valuation,
         enabled: editingItem.enabled ?? true,
         sortOrder: editingItem.sortOrder ?? 0,
@@ -242,8 +241,11 @@ export default function Market() {
                     <h3 className="text-lg lg:text-xl font-semibold text-[#1D1D1F]">{country.name}</h3>
                     <ChevronRight size={16} className="lg:w-5 lg:h-5 text-[#6E6E73] mt-0.5 lg:mt-1" />
                   </div>
+                  {/* ✅ Replaced numberOfYears with allocationPercent */}
                   <p className="text-xs sm:text-sm text-[#6E6E73] mb-4 lg:mb-6 flex-grow">
-                    {country.numberOfYears} years
+                    {country.valuation?.allocationPercent != null 
+                      ? `${country.valuation.allocationPercent}% allocation` 
+                      : ''}
                   </p>
                   <div>
                     <div className="text-xl lg:text-2xl font-semibold text-[#1D1D1F]">
@@ -286,18 +288,7 @@ export default function Market() {
                 </select>
               </div>
 
-              <div className="space-y-1.5 lg:space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">
-                  Number of Years <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number" min="1" max="100"
-                  value={formData.numberOfYears}
-                  onChange={(e) => handleInputChange('numberOfYears', e.target.value)}
-                  placeholder="Enter number of years"
-                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
-                />
-              </div>
+              {/* ✅ REMOVED: Number of Years input field - no longer exists */}
 
               <div className="space-y-1.5 lg:space-y-2">
                 <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">

@@ -7,8 +7,7 @@ import { VALUATION_UNITS, CURRENCY_OPTIONS, buildValuation, formatAsAtDate } fro
 
 export default function AddCountryModal({ isOpen, onClose, onSave, supportedCountries }) {
   const [formData, setFormData] = useState({
-    countryName: '',
-    numberOfYears: '',
+    name: '',
     currency: 'USD',
     amount: '',
     unit: 'BILLIONS',
@@ -22,7 +21,7 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
   useEffect(() => {
     if (!isOpen) {
       setFormData({
-        countryName: '', numberOfYears: '', currency: 'USD', amount: '',
+        name: '', currency: 'USD', amount: '',
         unit: 'BILLIONS', allocationPercent: '', selectedDate: null,
       });
       setErrors({});
@@ -34,8 +33,7 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.countryName) newErrors.countryName = 'Country name is required';
-    if (!formData.numberOfYears) newErrors.numberOfYears = 'Number of years is required';
+    if (!formData.name) newErrors.name = 'Country name is required';
     if (!formData.amount) newErrors.amount = 'Valuation number is required';
     if (!formData.selectedDate) newErrors.date = 'Date is required';
     return newErrors;
@@ -64,8 +62,7 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
     });
 
     const payload = {
-      countryName: formData.countryName,
-      numberOfYears: Number(formData.numberOfYears),
+      name: formData.name,
       valuation,
       enabled: true,
       sortOrder: 0,
@@ -108,9 +105,9 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
               Country Name <span className="text-red-500">*</span>
             </label>
             <select
-              value={formData.countryName}
-              onChange={(e) => handleInputChange('countryName', e.target.value)}
-              className={`w-full bg-white border ${errors.countryName ? 'border-red-500' : 'border-[#D2D2D7]'} rounded-xl px-4 py-3 text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all appearance-none`}
+              value={formData.name}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              className={`w-full bg-white border ${errors.name ? 'border-red-500' : 'border-[#D2D2D7]'} rounded-xl px-4 py-3 text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all appearance-none`}
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236E6E73' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                 backgroundPosition: 'right 0.5rem center',
@@ -124,23 +121,7 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
                 <option key={country} value={country}>{country}</option>
               ))}
             </select>
-            {errors.countryName && <p className="mt-1 text-xs text-red-500">{errors.countryName}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#1D1D1F] block">
-              Number of Years <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              value={formData.numberOfYears}
-              onChange={(e) => handleInputChange('numberOfYears', e.target.value)}
-              placeholder="Enter number of years"
-              min="1"
-              max="100"
-              className={`w-full bg-white border ${errors.numberOfYears ? 'border-red-500' : 'border-[#D2D2D7]'} rounded-xl px-4 py-3 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all`}
-            />
-            {errors.numberOfYears && <p className="mt-1 text-xs text-red-500">{errors.numberOfYears}</p>}
+            {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
           </div>
 
           <div className="space-y-2">
