@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getClusterDescriptionByName, getClusterCompaniesByName } from '../data/data';
 import { getClusterGalleryByName } from '../data/clusterLocalImages';
 import { getSiteInfo } from '../api/services';
 
 const ClusterDetailPage = () => {
-  const { clusterId } = useParams(); // The backend cluster's DB id, as passed from the card link.
+  const { clusterId } = useParams();
   const navigate = useNavigate();
   const [hoveredId, setHoveredId] = useState(null);
 
@@ -21,7 +20,6 @@ const ClusterDetailPage = () => {
         const res = await getSiteInfo();
         if (!isMounted) return;
 
-        // ✅ Clusters are in res.data.clusters from /api/site/info
         const clusters = Array.isArray(res?.data?.clusters) ? res.data.clusters : [];
         const found = clusters.find((c) => String(c.id) === String(clusterId));
 
@@ -31,11 +29,24 @@ const ClusterDetailPage = () => {
           return;
         }
 
+        // ✅ Get companies directly from the API response
+        const apiCompanies = found.companies || [];
+        
+        // Format companies for display
+        const companies = apiCompanies.map((company) => ({
+          name: company.name || 'Company',
+          link: company.link || '#',
+          image: company.logo || '',
+        }));
+
         setCluster({
+          id: found.id,
           title: found.name,
-          description: found.description?.trim() || getClusterDescriptionByName(found.name),
+          description: found.description || `Explore our ${found.name} cluster`,
           gallery: getClusterGalleryByName(found.name),
-          companies: getClusterCompaniesByName(found.name),
+          companies: companies,
+          value: found.value?.displayText || 'N/A',
+          percent: found.percent || 0,
         });
         setLoading(false);
       } catch (error) {
@@ -72,8 +83,7 @@ const ClusterDetailPage = () => {
     );
   }
 
-  // One gallery item per photo in this cluster's array (2, 3, however many),
-  // plus the Key Companies card at the end.
+  // Gallery items from local images
   const galleryItems = cluster.gallery.map((src, idx) => ({
     id: `img-${idx}`,
     type: 'image',
@@ -81,7 +91,12 @@ const ClusterDetailPage = () => {
     alt: `${cluster.title} photo ${idx + 1}`,
     title: idx === 0 ? 'Main Facility' : idx === 1 ? 'Operations' : `Gallery Photo ${idx + 1}`,
   }));
-  const horizontalItems = [...galleryItems, { id: 'companies', type: 'logos', title: 'Key Companies' }];
+  
+  // ✅ Only add companies card if there are companies
+  const hasCompanies = cluster.companies && cluster.companies.length > 0;
+  const horizontalItems = hasCompanies 
+    ? [...galleryItems, { id: 'companies', type: 'logos', title: 'Key Companies' }]
+    : galleryItems;
   const itemCount = horizontalItems.length;
 
   return (
@@ -90,7 +105,11 @@ const ClusterDetailPage = () => {
       {/* ── Hero ── */}
       <section className="relative h-[40vh] sm:h-[50vh] lg:h-[70vh] w-full">
         <div className="absolute inset-0">
-          <img src={cluster.gallery[0]} alt={cluster.title} className="object-cover w-full h-full" />
+          <img 
+            src={cluster.gallery[0] || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2070&q=80'} 
+            alt={cluster.title} 
+            className="object-cover w-full h-full" 
+          />
           <div className="absolute inset-0 bg-black bg-opacity-40" />
         </div>
         <div className="relative h-full">
@@ -101,6 +120,11 @@ const ClusterDetailPage = () => {
                 <h1 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl xl:text-7xl">
                   {cluster.title}
                 </h1>
+                {cluster.value && (
+                  <p className="mt-2 text-lg text-white/80 sm:text-xl lg:text-2xl">
+                    {cluster.value} · {cluster.percent}% of portfolio
+                  </p>
+                )}
               </div>
             </div>
             <div className="hidden col-span-1 lg:block" />
@@ -114,7 +138,9 @@ const ClusterDetailPage = () => {
           <div className="hidden col-span-1 lg:block" />
           <div className="col-span-12 lg:col-span-10">
             <div className="px-4 sm:px-6 lg:px-8">
-              <p className="text-base leading-relaxed text-justify text-gray-700 sm:text-lg lg:text-xl">{cluster.description}</p>
+              <p className="text-base leading-relaxed text-justify text-gray-700 sm:text-lg lg:text-xl">
+                {cluster.description}
+              </p>
             </div>
           </div>
           <div className="hidden col-span-1 lg:block" />
@@ -128,7 +154,7 @@ const ClusterDetailPage = () => {
           <div className="col-span-12 lg:col-span-10">
             <div className="px-4 sm:px-6 lg:px-8">
               <h2 className="mb-6 text-2xl font-bold text-gray-900 lg:mb-8 sm:text-3xl lg:text-4xl">
-                Gallery &amp; Key Companies
+                Gallery &amp; {hasCompanies ? 'Key Companies' : ''}
               </h2>
 
               <div
@@ -159,6 +185,9 @@ const ClusterDetailPage = () => {
                             src={item.src}
                             alt={item.alt}
                             className="object-cover w-full h-full transition-transform duration-500 lg:hover:scale-105"
+                            onError={(e) => {
+                              e.target.src = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2070&q=80';
+                            }}
                           />
                           <div className={`absolute inset-0 bg-black transition-opacity duration-500 ${isHovered ? 'opacity-0' : 'opacity-30'}`} />
                           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent lg:hidden">
@@ -166,31 +195,47 @@ const ClusterDetailPage = () => {
                           </div>
                         </>
                       ) : (
-                        <div className="h-full p-4 sm:p-6 lg:p-8 bg-gray-50">
+                        <div className="h-full p-4 sm:p-6 lg:p-8 bg-gray-50 overflow-y-auto">
                           <h3 className="mb-4 text-xl font-bold text-gray-900 lg:mb-6 lg:text-2xl">{item.title}</h3>
                           {cluster.companies.length > 0 ? (
                             <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                              {cluster.companies.map((logo, idx) => (
+                              {cluster.companies.map((company, idx) => (
                                 <a
                                   key={idx}
-                                  href={logo.link}
+                                  href={company.link || '#'}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
                                   className="flex flex-col items-center p-3 transition-all duration-300 bg-white border border-gray-200 rounded-lg sm:p-4 group hover:shadow-lg"
                                 >
                                   <div className="flex items-center justify-center w-12 h-12 mb-2 bg-white rounded-full shadow-sm sm:w-14 sm:h-14 lg:w-16 lg:h-16 lg:mb-3 group-hover:shadow-md">
-                                    {logo.image ? (
-                                      <img src={logo.image} alt={logo.name} className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12" />
+                                    {company.image ? (
+                                      <img 
+                                        src={company.image} 
+                                        alt={company.name} 
+                                        className="object-contain w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12"
+                                        onError={(e) => {
+                                          e.target.style.display = 'none';
+                                          e.target.parentElement.innerHTML = `
+                                            <div class="text-base font-bold text-gray-800 sm:text-lg lg:text-xl">
+                                              ${company.name.charAt(0)}
+                                            </div>
+                                          `;
+                                        }}
+                                      />
                                     ) : (
-                                      <div className="text-base font-bold text-gray-800 sm:text-lg lg:text-xl">{logo.name.charAt(0)}</div>
+                                      <div className="text-base font-bold text-gray-800 sm:text-lg lg:text-xl">
+                                        {company.name.charAt(0)}
+                                      </div>
                                     )}
                                   </div>
                                   <div className="text-xs font-semibold text-center text-gray-800 sm:text-sm group-hover:text-blue-600">
-                                    {logo.name}
+                                    {company.name}
                                   </div>
                                 </a>
                               ))}
                             </div>
                           ) : (
-                            <p className="text-sm text-gray-500">No key companies added yet.</p>
+                            <p className="text-sm text-gray-500">No companies listed for this cluster.</p>
                           )}
                         </div>
                       )}
