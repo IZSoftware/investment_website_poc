@@ -188,7 +188,7 @@ const AdminSettings = () => {
             </SectionCard>
 
             <SectionCard title="Company Stats">
-              <Field label="AUM (e.g. 6.0 B)" value={form.companyStats.aum} onChange={(v) => updateNested('companyStats', 'aum', v)} />
+              <Field label="Total Portfolio (e.g. 6.0 B)" value={form.companyStats.aum} onChange={(v) => updateNested('companyStats', 'aum', v)} />
               <Field label="Clusters Count" type="number" value={form.companyStats.sectorsCount} onChange={(v) => updateNested('companyStats', 'sectorsCount', Number(v))} />
               <Field label="Continents Count" type="number" value={form.companyStats.continentsCount} onChange={(v) => updateNested('companyStats', 'continentsCount', Number(v))} />
               <Field label="Countries Count" type="number" value={form.companyStats.countriesCount} onChange={(v) => updateNested('companyStats', 'countriesCount', Number(v))} />
