@@ -10,8 +10,8 @@ import {
 } from '../../api/services';
 
 const AdminPerformance = () => {
-  const { user } = useAuth();
-  const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN';
+  const { userRole } = useAuth();
+  const isAdmin = userRole === 'SUPER_ADMIN' || userRole === 'ADMIN';
 
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -158,7 +158,6 @@ const AdminPerformance = () => {
     }
   };
 
-  // Format percentage - already scaled (42.5 = 42.5%)
   const formatPercent = (value) => {
     if (value === undefined || value === null) return 'N/A';
     return `${value}%`;
@@ -300,7 +299,6 @@ const AdminPerformance = () => {
         <div className="hidden col-span-1 lg:block" />
       </div>
 
-      {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
@@ -326,7 +324,6 @@ const AdminPerformance = () => {
         </div>
       )}
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 max-h-[90vh] overflow-y-auto">

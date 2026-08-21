@@ -26,7 +26,7 @@ export default function Market() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({
-    countryName: '', numberOfYears: '', currency: 'USD', amount: '',
+    name: '', numberOfYears: '', currency: 'USD', amount: '',
     unit: 'BILLIONS', allocationPercent: '', selectedDate: null,
   });
   const [submitting, setSubmitting] = useState(false);
@@ -77,7 +77,7 @@ export default function Market() {
     const parsedVal = parseValuation(country.valuation);
     setEditingItem(country);
     setFormData({
-      countryName: country.countryName || '',
+      name: country.name || '',
       numberOfYears: country.numberOfYears ?? '',
       currency: parsedVal.currency,
       amount: parsedVal.amount,
@@ -107,7 +107,7 @@ export default function Market() {
       setSubmitError(null);
       const response = await updateAdminCountry({
         id: editingItem.id,
-        countryName: formData.countryName,
+        name: formData.name,
         numberOfYears: Number(formData.numberOfYears),
         valuation,
         enabled: editingItem.enabled ?? true,
@@ -239,7 +239,7 @@ export default function Market() {
                     </button>
                   </div>
                   <div className="flex items-start gap-1.5 lg:gap-2 mb-3 lg:mb-4">
-                    <h3 className="text-lg lg:text-xl font-semibold text-[#1D1D1F]">{country.countryName}</h3>
+                    <h3 className="text-lg lg:text-xl font-semibold text-[#1D1D1F]">{country.name}</h3>
                     <ChevronRight size={16} className="lg:w-5 lg:h-5 text-[#6E6E73] mt-0.5 lg:mt-1" />
                   </div>
                   <p className="text-xs sm:text-sm text-[#6E6E73] mb-4 lg:mb-6 flex-grow">
@@ -276,8 +276,8 @@ export default function Market() {
               <div className="space-y-1.5 lg:space-y-2">
                 <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">Country Name</label>
                 <select
-                  value={formData.countryName}
-                  onChange={(e) => handleInputChange('countryName', e.target.value)}
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
                   className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all appearance-none"
                   style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236E6E73' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
                 >

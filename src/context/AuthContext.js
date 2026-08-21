@@ -40,11 +40,21 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (email, password) => {
     try {
       const data = await loginApi({ email, password });
-      const challenge = data.challenge || data;
+
+      // Handles both nested and flat response shapes
+      const challenge = data?.data?.challenge || data?.challenge || data;
+
+      if (!challenge?.challengeId || !challenge?.letters) {
+        return {
+          success: false,
+          message: "Invalid response from server",
+        };
+      }
+
       return {
         success: true,
         challengeId: challenge.challengeId,
-        letters: challenge.letters || [],
+        letters: challenge.letters,
         expiresInSeconds: challenge.expiresInSeconds || 180,
       };
     } catch (error) {
@@ -55,16 +65,25 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Phase 2
+  // Phase 2 – FIXED for nested data
   const verifyChallengeHandler = useCallback(async (challengeId, answers) => {
     try {
       const data = await verifyChallenge({ challengeId, answers });
 
-      const accessToken = data.accessToken || data.data?.accessToken;
-      const refreshTokenVal = data.refreshToken || data.data?.refreshToken;
-      const user = data.user || data.data?.user || {};
+      // Real success response:
+      // { success, message, data: { accessToken, refreshToken, user: {...} } }
+      const payload = data?.data || data;
 
-      if (!accessToken) throw new Error("No access token received");
+      const accessToken = payload.accessToken;
+      const refreshTokenVal = payload.refreshToken;
+      const user = payload.user || {};
+
+      if (!accessToken) {
+        return {
+          success: false,
+          message: "No access token received",
+        };
+      }
 
       setTokens(accessToken, refreshTokenVal);
 
@@ -76,17 +95,20 @@ export const AuthProvider = ({ children }) => {
       const isAdmin = adminRoles.some((r) => role.toUpperCase() === r.toUpperCase());
       const portal = isAdmin ? "admin" : "investor";
 
-      setUserEmail(email);
-      setUserRole(role);
-      setFullName(name);
-      setLoginPortal(portal);
-      setIsAuthenticated(true);
-
+      // Set sessionStorage FIRST, then state — so that if any consumer reads
+      // storage synchronously right after this resolves, it sees fresh values,
+      // not the previous session's leftovers.
       sessionStorage.setItem(STORAGE_KEYS.AUTH, "true");
       sessionStorage.setItem(STORAGE_KEYS.EMAIL, email);
       sessionStorage.setItem(STORAGE_KEYS.ROLE, role);
       sessionStorage.setItem(STORAGE_KEYS.PORTAL, portal);
       sessionStorage.setItem(STORAGE_KEYS.FULL_NAME, name);
+
+      setUserEmail(email);
+      setUserRole(role);
+      setFullName(name);
+      setLoginPortal(portal);
+      setIsAuthenticated(true);
 
       return { success: true, role, portal };
     } catch (error) {
@@ -97,18 +119,33 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const logout = useCallback(async () => {
+  // FIXED: logout no longer does a hard `window.location.href` redirect.
+  // A hard redirect tears down the whole React tree — including this
+  // AuthProvider — mid-flight, which is what caused the two bugs you saw:
+  //   1. Logging out of one portal then logging into the other in the same
+  //      tab could land you on the wrong portal, because the old AuthProvider
+  //      instance's in-flight state updates raced against the reload.
+  //   2. Client-side navigation (e.g. clicking back) inside the investor
+  //      portal could hit a moment where sessionStorage had just been cleared
+  //      by a prior hard reload that hadn't finished, so ProtectedRoute read
+  //      `isFullyAuthenticated: false` and bounced you to the homepage.
+  //
+  // Now logout clears state/storage and lets React Router perform a normal
+  // client-side navigation via the `navigate` function passed in by the
+  // caller (AdminNavbar / InvestorNavbar). No full page reload, no race.
+  const logout = useCallback(async (navigate) => {
+    const portal = sessionStorage.getItem(STORAGE_KEYS.PORTAL) || "investor";
+
     try {
       const rt = getRefreshToken();
       if (rt) {
         try {
-          await logoutApi({ refreshToken: rt });
+          await logoutApi(rt);
         } catch (err) {
           console.warn("Logout API failed, continuing local cleanup", err);
         }
       }
     } finally {
-      const portal = sessionStorage.getItem(STORAGE_KEYS.PORTAL) || "investor";
       clearTokens();
       setIsAuthenticated(false);
       setUserEmail("");
@@ -122,8 +159,15 @@ export const AuthProvider = ({ children }) => {
       sessionStorage.removeItem(STORAGE_KEYS.PORTAL);
       sessionStorage.removeItem(STORAGE_KEYS.FULL_NAME);
 
-      window.location.href =
-        portal === "admin" ? "/admin-portal/login" : "/investor-portal/login";
+      const destination = portal === "admin" ? "/admin-portal/login" : "/investor-portal/login";
+
+      if (navigate) {
+        navigate(destination, { replace: true });
+      } else {
+        // Fallback only if a caller forgets to pass navigate — still works,
+        // just loses the "no hard reload" benefit for that one call site.
+        window.location.href = destination;
+      }
     }
   }, []);
 

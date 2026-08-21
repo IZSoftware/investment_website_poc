@@ -535,10 +535,9 @@ export const createAdminAsset = async ({ name, description, valuation, enabled, 
   }
 };
 
-// PUT /api/admin/assets/{id}
-export const updateAdminAsset = async ({ id, name, description, valuation, enabled, subEntitiesVisible, allowSubEntities, sortOrder }) => {
+export const updateAdminAsset = async ({ id, name, description, valuation, enabled, subclassesVisible, allowsSubclasses, sortOrder }) => {
   try {
-    const response = await api.put(`/api/admin/assets/${id}`, { name, description, valuation, enabled, subEntitiesVisible, allowSubEntities, sortOrder });
+    const response = await api.put(`/api/admin/assets/${id}`, { name, description, valuation, enabled, subclassesVisible, allowsSubclasses, sortOrder });
     return response.data;
   } catch (error) {
     throw error;
@@ -760,9 +759,9 @@ export const createAdminNews = async ({ slug, title, category, publishDate, exce
 };
 
 // PUT /api/admin/news/{id}
-export const updateAdminNews = async ({ id, slug, title, category, publishDate, excerpt, body, coverImageUrl, published }) => {
+export const updateAdminNews = async ({ id, slug, title, category, publishDate, message, imageUrl, published }) => {
   try {
-    const response = await api.put(`/api/admin/news/${id}`, { slug, title, category, publishDate, excerpt, body, coverImageUrl, published });
+    const response = await api.put(`/api/admin/news/${id}`, { slug, title, category, publishDate, message, imageUrl, published });
     return response.data;
   } catch (error) {
     throw error;
@@ -1267,6 +1266,127 @@ export const updateAdminPerformance = async ({ id, month, year, portfolioValue, 
 export const deleteAdminPerformance = async ({ id }) => {
   try {
     const response = await api.delete(`/api/admin/performance/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+// ============ ADMIN LOGIN LOCKS ============
+// GET /api/admin/login-locks
+export const getAdminLoginLocks = async () => {
+  try {
+    const response = await api.get("/api/admin/login-locks");
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// DELETE /api/admin/login-locks/{id}
+export const deleteAdminLoginLock = async ({ id }) => {
+  try {
+    const response = await api.delete(`/api/admin/login-locks/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+// ============ ADMIN CLUSTERS ============
+// GET /api/admin/clusters
+export const getAdminClusters = async () => {
+  try {
+    const response = await api.get("/api/admin/clusters");
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// POST /api/admin/clusters
+export const createAdminCluster = async ({ name, icon, description, publicDescription, companies, valuation, enabled, sortOrder }) => {
+  try {
+    const response = await api.post("/api/admin/clusters", { name, icon, description, publicDescription, companies, valuation, enabled, sortOrder });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// PUT /api/admin/clusters/{id}
+export const updateAdminCluster = async ({ id, name, icon, description, publicDescription, companies, valuation, enabled, sortOrder }) => {
+  try {
+    const response = await api.put(`/api/admin/clusters/${id}`, { name, icon, description, publicDescription, companies, valuation, enabled, sortOrder });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// DELETE /api/admin/clusters/{id}
+export const deleteAdminCluster = async ({ id }) => {
+  try {
+    const response = await api.delete(`/api/admin/clusters/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// PATCH /api/admin/clusters/{id}/status
+export const updateAdminClusterStatus = async ({ id, enabled }) => {
+  try {
+    const response = await api.patch(`/api/admin/clusters/${id}/status`, { enabled });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// ============ ADMIN ASSET SUBCLASSES ============
+// GET /api/admin/assets/{assetId}/asset-subclasses
+export const getAdminAssetSubclasses = async ({ assetId }) => {
+  try {
+    const response = await api.get(`/api/admin/assets/${assetId}/asset-subclasses`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// POST /api/admin/assets/{assetId}/asset-subclasses
+export const createAdminAssetSubclass = async ({ assetId, name, description, valuation, enabled, sortOrder }) => {
+  try {
+    const response = await api.post(`/api/admin/assets/${assetId}/asset-subclasses`, { name, description, valuation, enabled, sortOrder });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// PUT /api/admin/asset-subclasses/{id}
+export const updateAdminAssetSubclass = async ({ id, name, description, valuation, enabled, sortOrder }) => {
+  try {
+    const response = await api.put(`/api/admin/asset-subclasses/${id}`, { name, description, valuation, enabled, sortOrder });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// DELETE /api/admin/asset-subclasses/{id}
+export const deleteAdminAssetSubclass = async ({ id }) => {
+  try {
+    const response = await api.delete(`/api/admin/asset-subclasses/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// PATCH /api/admin/asset-subclasses/{id}/status
+export const updateAdminAssetSubclassStatus = async ({ id, enabled }) => {
+  try {
+    const response = await api.patch(`/api/admin/asset-subclasses/${id}/status`, { enabled });
     return response.data;
   } catch (error) {
     throw error;

@@ -1,9 +1,8 @@
-// src/pages/admin/AdminDashboard.js
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/admin/AdminNavbar';
 import { useAuth } from '../../context/AuthContext';
-import { getAdminUsers, getAdminNewsletter, getAdminContactMessages, getAdminNews } from '../../api/services';
+import { getAdminUsers, getAdminNewsletter, getAdminNews } from '../../api/services';
 
 const StatCard = ({ title, description, value, subtitle, onManage }) => (
   <div className="flex flex-col h-full p-4 transition-shadow duration-300 bg-white border border-gray-200 shadow-lg sm:p-5 lg:p-6 hover:shadow-xl rounded-xl">
@@ -31,8 +30,7 @@ const AdminDashboard = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [stats, setStats] = useState({ users: 0, subscribers: 0, unreadMessages: 0, publishedNews: 0 });
-  const [recentMessages, setRecentMessages] = useState([]);
+  const [stats, setStats] = useState({ users: 0, subscribers: 0, publishedNews: 0 });
   const [recentNews, setRecentNews] = useState([]);
 
   useEffect(() => {
@@ -43,10 +41,9 @@ const AdminDashboard = () => {
         setLoading(true);
         setError(null);
 
-        const [usersRes, newsletterRes, messagesRes, newsRes] = await Promise.all([
+        const [usersRes, newsletterRes, newsRes] = await Promise.all([
           getAdminUsers(),
           getAdminNewsletter(),
-          getAdminContactMessages({ page: 0, size: 5 }),
           getAdminNews(),
         ]);
 
@@ -54,13 +51,10 @@ const AdminDashboard = () => {
 
         const usersCount = Array.isArray(usersRes?.data) ? usersRes.data.length : 0;
         const subscribersCount = Array.isArray(newsletterRes?.data) ? newsletterRes.data.length : 0;
-        const messages = messagesRes?.data?.content ?? messagesRes?.data ?? [];
-        const unreadCount = Array.isArray(messages) ? messages.filter((m) => !m.read).length : 0;
         const newsList = Array.isArray(newsRes?.data) ? newsRes.data : [];
         const publishedCount = newsList.filter((n) => n.published).length;
 
-        setStats({ users: usersCount, subscribers: subscribersCount, unreadMessages: unreadCount, publishedNews: publishedCount });
-        setRecentMessages(Array.isArray(messages) ? messages.slice(0, 5) : []);
+        setStats({ users: usersCount, subscribers: subscribersCount, publishedNews: publishedCount });
         setRecentNews(newsList.slice(0, 5));
       } catch (err) {
         console.error('Failed to load dashboard:', err);
@@ -98,11 +92,11 @@ const AdminDashboard = () => {
 
           <div className="grid grid-cols-1 gap-4 px-4 pb-12 sm:gap-6 lg:gap-8 sm:pb-16 lg:pb-20 sm:px-6 lg:px-0 md:grid-cols-3">
             <StatCard
-              title="Contact Messages"
-              description="New enquiries submitted through the public contact form."
-              value={loading ? '—' : stats.unreadMessages}
-              subtitle="Unread messages"
-              onManage={() => navigate('/admin-portal/engagement/messages')}
+              title="Total Users"
+              description="Admin and investor accounts with portal access."
+              value={loading ? '—' : stats.users}
+              subtitle="Registered accounts"
+              onManage={() => navigate('/admin-portal/users')}
             />
             <StatCard
               title="Newsletter Subscribers"
@@ -120,42 +114,7 @@ const AdminDashboard = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-6 px-4 pb-16 sm:px-6 lg:px-0 lg:grid-cols-2 lg:gap-8">
-
-            <div className="bg-white border border-gray-200 rounded-xl shadow-lg">
-              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900">Recent Contact Messages</h3>
-                <button
-                  onClick={() => navigate('/admin-portal/engagement/messages')}
-                  className="text-sm font-semibold text-[#0A2540] hover:text-[#003852]"
-                >
-                  View all →
-                </button>
-              </div>
-              <div className="divide-y divide-gray-100">
-                {loading ? (
-                  <div className="px-6 py-8 text-sm text-center text-gray-400">Loading…</div>
-                ) : recentMessages.length === 0 ? (
-                  <div className="px-6 py-8 text-sm text-center text-gray-400">No messages yet</div>
-                ) : (
-                  recentMessages.map((msg) => (
-                    <div key={msg.id} className="flex items-center justify-between px-6 py-4">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          {!msg.read && <span className="w-2 h-2 bg-[#0A2540] rounded-full flex-shrink-0" />}
-                          <span className={`text-sm truncate ${!msg.read ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
-                            {msg.fullName}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 truncate">{msg.subject}</p>
-                      </div>
-                      <span className="flex-shrink-0 ml-4 text-xs text-gray-400">{msg.createdAt?.slice(0, 10)}</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
+          <div className="grid grid-cols-1 gap-6 px-4 pb-16 sm:px-6 lg:px-0">
             <div className="bg-white border border-gray-200 rounded-xl shadow-lg">
               <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200">
                 <h3 className="text-lg font-bold text-gray-900">Recent News</h3>
@@ -190,8 +149,8 @@ const AdminDashboard = () => {
                 )}
               </div>
             </div>
-
           </div>
+
         </div>
         <div className="hidden col-span-1 lg:block" />
       </div>

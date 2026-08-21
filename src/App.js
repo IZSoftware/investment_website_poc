@@ -6,7 +6,6 @@ import InvestorNavbar from './components/InvestorNavbar';
 import DisclaimerModal from './components/DisclaimerModal';
 import HeroSection from './components/HeroSection';
 import LearnAboutUs from './components/LearnAboutUs';
-// import LeadershipPhilanthropy from './components/LeadershipPhilanthropy';
 import LatestNews from './components/LatestNews';
 import Footer from './components/Footer';
 import PortfolioHighlights from './components/PortfolioHighlights';
@@ -17,7 +16,6 @@ import ClusterDetailPage from './components/ClusterDetailPage';
 import Objectives from './components/Objectives';
 import InvestorPortal from './page/InvestorPortal';
 import HoldingCompanyLogin from './components/HoldingCompanyLogin';
-import OtpModal from './components/OtpModal';
 import PortfolioInvestment from './page/PortfolioInvestment';
 import NetAssets from './page/NetAssets';
 import AssetSubEntities from './page/AssetSubEntities';
@@ -48,6 +46,9 @@ import AdminFoundation from './page/admin/AdminFoundation';
 import AdminNewsletter from './page/admin/AdminNewsletter';
 import AdminContactMessages from './page/admin/AdminContactMessages';
 import AdminSettings from './page/admin/AdminSettings';
+import AdminUsdKesRates from './page/admin/AdminUsdKesRates';
+import AdminPerformance from './page/admin/AdminPerformance';
+import AdminLoginLocks from './page/admin/AdminLoginLocks';
 
 // Helper function to check if user is admin
 const isAdminRole = (role) => {
@@ -56,7 +57,7 @@ const isAdminRole = (role) => {
   return adminRoles.some(r => role.toUpperCase() === r.toUpperCase());
 };
 
-// Protected Route for fully authenticated (login + OTP)
+// Protected Route for fully authenticated users
 const FullyProtectedRoute = ({ children }) => {
   const { isFullyAuthenticated, loading } = useAuth();
 
@@ -71,26 +72,7 @@ const FullyProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Route for OTP verification (only after login, before OTP)
-const OtpRoute = ({ children }) => {
-  const { isAuthenticated, isOtpVerified, loading } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (isAuthenticated && isOtpVerified) {
-    return <Navigate to="/investor-portal/dashboard" replace />;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/investor-portal/login" replace />;
-  }
-
-  return children;
-};
-
-// ── Admin: requires full login + OTP + admin role ──
+// Admin Protected Route
 const AdminProtectedRoute = ({ children }) => {
   const { isFullyAuthenticated, userRole, loading } = useAuth();
 
@@ -109,25 +91,6 @@ const AdminProtectedRoute = ({ children }) => {
   return children;
 };
 
-// ── Admin: mirrors OtpRoute, pointed at /admin-portal ──
-const AdminOtpRoute = ({ children }) => {
-  const { isAuthenticated, isOtpVerified, userRole, loading } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (isAuthenticated && isOtpVerified) {
-    return <Navigate to={isAdminRole(userRole) ? '/admin-portal/dashboard' : '/investor-portal/dashboard'} replace />;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/admin-portal/login" replace />;
-  }
-
-  return children;
-};
-
 function AppContent() {
   const location = useLocation();
   const [showDisclaimer, setShowDisclaimer] = useState(false);
@@ -135,11 +98,10 @@ function AppContent() {
   const isInvestorPortal = location.pathname.startsWith('/investor-portal');
   const isAdminPortal = location.pathname.startsWith('/admin-portal');
   const isLoginPage = location.pathname === '/investor-portal/login';
-  const isOtpPage = location.pathname === '/investor-portal/verify-otp';
   const isHomePage = location.pathname === '/';
 
   const showInvestorNavbar = isInvestorPortal;
-  const showFooter = !isLoginPage && !isOtpPage && !isAdminPortal;
+  const showFooter = !isLoginPage && !isAdminPortal;
 
   useEffect(() => {
     if (isHomePage) {
@@ -171,7 +133,6 @@ function AppContent() {
         />
       )}
 
-      {/* Admin pages render their own AdminNavbar internally — no public/investor navbar here */}
       {!isAdminPortal && (showInvestorNavbar ? <InvestorNavbar /> : <Navbar />)}
 
       <main className="flex-grow">
@@ -180,7 +141,6 @@ function AppContent() {
             <>
               <HeroSection />
               <LearnAboutUs />
-              {/* <LeadershipPhilanthropy /> */}
               <LatestNews />
             </>
           } />
@@ -204,104 +164,60 @@ function AppContent() {
           <Route path="/terms" element={<TermsConditions />} />
 
           {/* Investor Portal Routes */}
-          <Route
-            path="/investor-portal"
-            element={<Navigate to="/investor-portal/login" replace />}
-          />
-
+          <Route path="/investor-portal" element={<Navigate to="/investor-portal/login" replace />} />
           <Route path="/investor-portal/login" element={<HoldingCompanyLogin />} />
+          <Route path="/investor-portal/reset-password" element={<ResetPassword />} />
 
-          <Route
-            path="/investor-portal/verify-otp"
-            element={
-              <OtpRoute>
-                <OtpModal />
-              </OtpRoute>
-            }
-          />
+          <Route path="/investor-portal/dashboard" element={
+            <FullyProtectedRoute>
+              <InvestorPortal />
+            </FullyProtectedRoute>
+          } />
 
-          <Route
-            path="/investor-portal/reset-password"
-            element={<ResetPassword />}
-          />
+          <Route path="/investor-portal/portfolio-investment" element={
+            <FullyProtectedRoute>
+              <PortfolioInvestment />
+            </FullyProtectedRoute>
+          } />
 
-          <Route
-            path="/investor-portal/dashboard"
-            element={
-              <FullyProtectedRoute>
-                <InvestorPortal />
-              </FullyProtectedRoute>
-            }
-          />
+          <Route path="/investor-portal/net-assets" element={
+            <FullyProtectedRoute>
+              <NetAssets />
+            </FullyProtectedRoute>
+          } />
 
-          <Route
-            path="/investor-portal/portfolio-investment"
-            element={
-              <FullyProtectedRoute>
-                <PortfolioInvestment />
-              </FullyProtectedRoute>
-            }
-          />
+          <Route path="/investor-portal/net-assets/:assetId" element={
+            <FullyProtectedRoute>
+              <AssetSubEntities />
+            </FullyProtectedRoute>
+          } />
 
-          <Route
-            path="/investor-portal/net-assets"
-            element={
-              <FullyProtectedRoute>
-                <NetAssets />
-              </FullyProtectedRoute>
-            }
-          />
+          <Route path="/investor-portal/net-assets/:assetId/:subId" element={
+            <FullyProtectedRoute>
+              <AssetSubEntities />
+            </FullyProtectedRoute>
+          } />
 
-          <Route
-            path="/investor-portal/net-assets/:assetId"
-            element={
-              <FullyProtectedRoute>
-                <AssetSubEntities />
-              </FullyProtectedRoute>
-            }
-          />
+          <Route path="/investor-portal/market" element={
+            <FullyProtectedRoute>
+              <Market />
+            </FullyProtectedRoute>
+          } />
 
-          <Route
-            path="/investor-portal/net-assets/:assetId/:subId"
-            element={
-              <FullyProtectedRoute>
-                <AssetSubEntities />
-              </FullyProtectedRoute>
-            }
-          />
+          <Route path="/investor-portal/profile" element={
+            <FullyProtectedRoute>
+              <Profile />
+            </FullyProtectedRoute>
+          } />
 
-          <Route
-            path="/investor-portal/market"
-            element={
-              <FullyProtectedRoute>
-                <Market />
-              </FullyProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/investor-portal/profile"
-            element={
-              <FullyProtectedRoute>
-                <Profile />
-              </FullyProtectedRoute>
-            }
-          />
-
-          {/* ── Admin Portal Routes ── */}
+          {/* Admin Portal Routes */}
           <Route path="/admin-portal" element={<Navigate to="/admin-portal/login" replace />} />
           <Route path="/admin-portal/login" element={<AdminLogin />} />
-          <Route
-            path="/admin-portal/verify-otp"
-            element={
-              <AdminOtpRoute>
-                <OtpModal />
-              </AdminOtpRoute>
-            }
-          />
 
           <Route path="/admin-portal/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
           <Route path="/admin-portal/users" element={<AdminProtectedRoute><AdminUsers /></AdminProtectedRoute>} />
+          
+          {/* Content */}
           <Route path="/admin-portal/content/clusters" element={<AdminProtectedRoute><AdminClusters /></AdminProtectedRoute>} />
           <Route path="/admin-portal/content/portfolio" element={<AdminProtectedRoute><AdminPortfolio /></AdminProtectedRoute>} />
           <Route path="/admin-portal/content/countries" element={<AdminProtectedRoute><AdminCountries /></AdminProtectedRoute>} />
@@ -313,8 +229,18 @@ function AppContent() {
           <Route path="/admin-portal/content/pages" element={<AdminProtectedRoute><AdminPages /></AdminProtectedRoute>} />
           <Route path="/admin-portal/content/foundation" element={<AdminProtectedRoute><AdminFoundation /></AdminProtectedRoute>} />
           <Route path="/admin-portal/content/site" element={<AdminProtectedRoute><AdminSettings /></AdminProtectedRoute>} />
+          
+          {/* Engagement */}
           <Route path="/admin-portal/engagement/newsletter" element={<AdminProtectedRoute><AdminNewsletter /></AdminProtectedRoute>} />
           <Route path="/admin-portal/engagement/messages" element={<AdminProtectedRoute><AdminContactMessages /></AdminProtectedRoute>} />
+
+          {/* Financial */}
+          <Route path="/admin-portal/financial/usd-kes-rates" element={<AdminProtectedRoute><AdminUsdKesRates /></AdminProtectedRoute>} />
+          <Route path="/admin-portal/financial/performance" element={<AdminProtectedRoute><AdminPerformance /></AdminProtectedRoute>} />
+          
+          {/* System */}
+          <Route path="/admin-portal/system/login-locks" element={<AdminProtectedRoute><AdminLoginLocks /></AdminProtectedRoute>} />
+
         </Routes>
       </main>
 

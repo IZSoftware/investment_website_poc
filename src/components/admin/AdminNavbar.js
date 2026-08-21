@@ -9,17 +9,20 @@ const CONTENT_LINKS = [
   { label: 'Portfolio', path: '/admin-portal/content/portfolio' },
   { label: 'Countries', path: '/admin-portal/content/countries' },
   { label: 'Timeline', path: '/admin-portal/content/timeline' },
-  { label: 'Values', path: '/admin-portal/content/values' },
-  { label: 'Leadership', path: '/admin-portal/content/leadership' },
-  { label: 'Foundation', path: '/admin-portal/content/foundation' },
-  { label: 'Media', path: '/admin-portal/content/media' },
   { label: 'News', path: '/admin-portal/content/news' },
-  { label: 'Pages', path: '/admin-portal/content/pages' },
 ];
 
 const ENGAGEMENT_LINKS = [
   { label: 'Newsletter Subscribers', path: '/admin-portal/engagement/newsletter' },
-  { label: 'Contact Messages', path: '/admin-portal/engagement/messages' },
+];
+
+const FINANCE_LINKS = [
+  { label: 'Portfolio Performance', path: '/admin-portal/financial/performance' },
+  { label: 'USD/KES Rates', path: '/admin-portal/financial/usd-kes-rates' },
+];
+
+const SUPPORT_LINKS = [
+  { label: 'Login Locks', path: '/admin-portal/system/login-locks' },
 ];
 
 const NavDropdown = ({ label, links }) => {
@@ -75,7 +78,6 @@ const AdminNavbar = () => {
           <div className="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
 
             <div className="flex items-center gap-10">
-              {/* Logo now links to homepage */}
               <Link to="/" className="flex-shrink-0">
                 <img src="/NF Holding Logo.png" alt="NF Holding Home" className="w-auto h-10" />
               </Link>
@@ -88,7 +90,9 @@ const AdminNavbar = () => {
                   Dashboard
                 </Link>
                 <NavDropdown label="Content" links={CONTENT_LINKS} />
+                <NavDropdown label="Finance" links={FINANCE_LINKS} />
                 <NavDropdown label="Engagement" links={ENGAGEMENT_LINKS} />
+                <NavDropdown label="Support" links={SUPPORT_LINKS} />
                 <Link
                   to="/admin-portal/users"
                   className="text-sm font-bold tracking-wide text-gray-600 hover:text-[#0A2540] transition-colors"

@@ -2,8 +2,60 @@ import React, { useState } from 'react';
 import AdminNavbar from './AdminNavbar';
 import SlideOver from './SlideOver';
 import { useAdminCrud } from '../../hooks/useAdminCrud';
+import { uploadFile, deleteFile } from '../../api/services';
 
-const AdminContentManager = ({ title, description, api, fields, columns, extractList }) => {
+const ImageField = ({ label, url, objectName, onChange, folder }) => {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const res = await uploadFile({ file, folder });
+      onChange({ url: res.data.url, objectName: res.data.objectName });
+    } catch (err) {
+      console.error(err);
+      setError('Upload failed. Max size is 5MB.');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemove = async () => {
+    if (objectName) {
+      try {
+        await deleteFile({ objectName });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    onChange({ url: '', objectName: '' });
+  };
+
+  return (
+    <div>
+      <label className="block mb-1.5 text-sm font-medium text-gray-700">{label}</label>
+      {url ? (
+        <div className="flex items-center gap-3">
+          <img src={url} alt="" className="object-cover w-16 h-16 border border-gray-200 rounded-lg" />
+          <button type="button" onClick={handleRemove} className="text-sm font-semibold text-red-600 hover:text-red-800">
+            Remove
+          </button>
+        </div>
+      ) : (
+        <input type="file" accept="image/*" onChange={handleFileChange} disabled={uploading} className="w-full text-sm" />
+      )}
+      {uploading && <p className="mt-1 text-xs text-gray-400">Uploading…</p>}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+};
+
+const AdminContentManager = ({ title, description, api, fields, columns, extractList, uploadFolder }) => {
   const { items, loading, error, saveItem, removeItem } = useAdminCrud({
     list: api.list,
     create: api.create,
@@ -15,6 +67,7 @@ const AdminContentManager = ({ title, description, api, fields, columns, extract
   const [slideOpen, setSlideOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formValues, setFormValues] = useState({});
+  const [imageMeta, setImageMeta] = useState({}); // { [fieldName]: objectName } — kept out of the submit payload
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
@@ -24,6 +77,7 @@ const AdminContentManager = ({ title, description, api, fields, columns, extract
   const openCreate = () => {
     setEditingId(null);
     setFormValues(emptyForm());
+    setImageMeta({});
     setFormError(null);
     setSlideOpen(true);
   };
@@ -31,11 +85,17 @@ const AdminContentManager = ({ title, description, api, fields, columns, extract
   const openEdit = (item) => {
     setEditingId(item.id);
     setFormValues(Object.fromEntries(fields.map((f) => [f.name, item[f.name] ?? (f.type === 'checkbox' ? true : '')])));
+    setImageMeta({}); // objectName for existing images isn't returned by list/detail endpoints — only known after a fresh upload in this session
     setFormError(null);
     setSlideOpen(true);
   };
 
   const handleChange = (name, value) => setFormValues((prev) => ({ ...prev, [name]: value }));
+
+  const handleImageChange = (name, { url, objectName }) => {
+    setFormValues((prev) => ({ ...prev, [name]: url }));
+    setImageMeta((prev) => ({ ...prev, [name]: objectName }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,6 +106,7 @@ const AdminContentManager = ({ title, description, api, fields, columns, extract
       fields.forEach((f) => {
         if (f.type === 'number') payload[f.name] = payload[f.name] === '' ? 0 : Number(payload[f.name]);
       });
+      // imageMeta (objectName) is a client-side-only detail for delete-on-replace; never send it to the backend
       await saveItem(payload, editingId);
       setSlideOpen(false);
     } catch (err) {
@@ -148,6 +209,14 @@ const AdminContentManager = ({ title, description, api, fields, columns, extract
                   />
                   {f.label}
                 </label>
+              ) : f.type === 'image' ? (
+                <ImageField
+                  label={f.label}
+                  url={formValues[f.name]}
+                  objectName={imageMeta[f.name]}
+                  onChange={(val) => handleImageChange(f.name, val)}
+                  folder={uploadFolder}
+                />
               ) : (
                 <>
                   <label className="block mb-1.5 text-sm font-medium text-gray-700">{f.label}</label>

@@ -5,8 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import { getAdminLoginLocks, deleteAdminLoginLock } from '../../api/services';
 
 const AdminLoginLocks = () => {
-  const { user } = useAuth();
-  const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN';
+  const { userRole } = useAuth();
+  const isAdmin = userRole === 'SUPER_ADMIN' || userRole === 'ADMIN';
 
   const [locks, setLocks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,11 +64,13 @@ const AdminLoginLocks = () => {
     }
   };
 
-  // Check if lock is still active
-  const isLockActive = (lockedUntil) => {
-    if (!lockedUntil) return false;
+  // Checks BOTH lockedUntil (account-scope, 24h) and cooldownUntil (IP-scope, 15min) —
+  // whichever one this row actually populates
+  const isLockActive = (lock) => {
+    const until = lock.lockedUntil || lock.cooldownUntil;
+    if (!until) return false;
     try {
-      return new Date(lockedUntil) > new Date();
+      return new Date(until) > new Date();
     } catch {
       return false;
     }
@@ -164,7 +166,7 @@ const AdminLoginLocks = () => {
                       </tr>
                     ) : (
                       locks.map((lock) => {
-                        const active = isLockActive(lock.lockedUntil);
+                        const active = isLockActive(lock);
                         return (
                           <tr key={lock.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -224,7 +226,6 @@ const AdminLoginLocks = () => {
         <div className="hidden col-span-1 lg:block" />
       </div>
 
-      {/* Unlock Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
