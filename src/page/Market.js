@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   getInvestorDashboardCountries,
   getInvestorCountries,
+  getAdminCountries,
   updateAdminCountryStatus,
 } from '../api/services';
 import { getSupportedCountries } from '../data/data';
@@ -38,9 +39,12 @@ export default function Market() {
     try {
       setLoading(true);
       setError(null);
+      // Writers list from the admin endpoint: /api/investor/** returns only
+      // enabled countries, so a disabled one would vanish from the page that is
+      // supposed to re-enable it.
       const [dashboardRes, countriesRes] = await Promise.all([
         getInvestorDashboardCountries(),
-        getInvestorCountries(),
+        canWrite ? getAdminCountries() : getInvestorCountries(),
       ]);
 
       if (dashboardRes.success) {
@@ -59,7 +63,7 @@ export default function Market() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [canWrite]);
 
   useEffect(() => {
     fetchData();

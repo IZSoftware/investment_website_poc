@@ -3,6 +3,7 @@ import { Plus, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   getInvestorAssets,
+  getAdminAssets,
   getInvestorDashboardNetAssets,
   updateAdminAssetStatus,
 } from '../api/services';
@@ -30,8 +31,10 @@ export default function NetAssets() {
       try {
         setLoading(true);
         setError(null);
+        // Editors list from the admin endpoint: /api/investor/** hides disabled
+        // records, which would strand a disabled asset out of reach.
         const [assetsRes, dashboardRes] = await Promise.all([
-          getInvestorAssets(),
+          canEdit ? getAdminAssets() : getInvestorAssets(),
           getInvestorDashboardNetAssets(),
         ]);
 
@@ -51,7 +54,7 @@ export default function NetAssets() {
       }
     };
     fetchData();
-  }, []);
+  }, [canEdit]);
 
   // Drill-down only exists for assets the backend says can hold subclasses.
   const handleCardClick = (asset) => {

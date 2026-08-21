@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import {
   getInvestorDashboardPortfolio,
   getInvestorClusters,
+  getAdminClusters,
   updateAdminClusterStatus,
 } from '../api/services';
 import { formatDisplayDate } from '../utils/valuation';
@@ -33,9 +34,12 @@ export default function InvestmentPortfolio() {
     try {
       setLoading(true);
       setError(null);
+      // Editors list from the admin endpoint: /api/investor/** is filtered to
+      // enabled records, so disabling a cluster there would hide it from the
+      // very person who has to be able to switch it back on.
       const [portfolioRes, clustersRes] = await Promise.all([
         getInvestorDashboardPortfolio(),
-        getInvestorClusters(),
+        canEdit ? getAdminClusters() : getInvestorClusters(),
       ]);
 
       if (portfolioRes.success) {
@@ -54,7 +58,7 @@ export default function InvestmentPortfolio() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [canEdit]);
 
   useEffect(() => {
     fetchData();

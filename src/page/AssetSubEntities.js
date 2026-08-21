@@ -3,7 +3,9 @@ import { Plus, ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   getInvestorAssets,
+  getAdminAssets,
   getInvestorAssetSubclasses,
+  getAdminAssetSubclasses,
   updateAdminAssetSubclassStatus,
 } from '../api/services';
 import { formatDisplayDate } from '../utils/valuation';
@@ -35,11 +37,12 @@ export default function AssetSubclasses() {
         setLoading(true);
         setError(null);
 
-        // No single-asset investor endpoint exists — the parent is picked out of
-        // the list response.
+        // No single-asset endpoint exists — the parent is picked out of the list
+        // response. Editors read the admin lists, which unlike /api/investor/**
+        // still contain disabled records so they can be switched back on.
         const [assetsRes, subclassesRes] = await Promise.all([
-          getInvestorAssets(),
-          getInvestorAssetSubclasses({ assetId }),
+          canEdit ? getAdminAssets() : getInvestorAssets(),
+          canEdit ? getAdminAssetSubclasses({ assetId }) : getInvestorAssetSubclasses({ assetId }),
         ]);
 
         if (assetsRes.success) {
@@ -59,7 +62,7 @@ export default function AssetSubclasses() {
       }
     };
     fetchData();
-  }, [assetId]);
+  }, [assetId, canEdit]);
 
   const handleEdit = (subclass) => {
     if (!canEdit) return;
