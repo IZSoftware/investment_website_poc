@@ -7,9 +7,7 @@ export const decodeJwtRole = (token) => {
     
     const payload = token.split('.')[1];
     const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-    
-    console.log('Decoded JWT Payload:', decoded);
-    
+
     let role = null;
     
     // Try every possible role field
@@ -36,8 +34,7 @@ export const decodeJwtRole = (token) => {
       role = role.replace(/^ROLE_/i, '');
       role = role.toUpperCase(); // Convert to uppercase for consistent comparison
     }
-    
-    console.log('Extracted and normalized role:', role);
+
     return role || null;
   } catch (error) {
     console.error('Error decoding JWT:', error);

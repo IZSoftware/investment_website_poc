@@ -9,17 +9,9 @@ export const CURRENCY_OPTIONS = [
   { value: 'KES', symbol: 'KES', label: 'KES' },
 ];
 
-const unitSuffix = (unit) => VALUATION_UNITS.find((u) => u.value === unit)?.suffix || '';
-const currencySymbol = (currency) => CURRENCY_OPTIONS.find((c) => c.value === currency)?.symbol || currency || '';
-
-export const buildDisplayText = ({ currency, amount, unit }) => {
-  const symbol = currencySymbol(currency);
-  const suffix = unitSuffix(unit);
-  return `${symbol} ${amount ?? 0} ${suffix}`.replace(/\s+/g, ' ').trim();
-};
-
-// Builds the full `valuation` object the API expects, including a
-// frontend-computed `displayText` (confirmed with you: frontend sends this).
+// Builds the `valuation` object the API expects. `displayText` is
+// SERVER-derived on every write (README §9) — never send or compute it here;
+// always render the value the API echoes back.
 export const buildValuation = ({ currency, amount, unit, allocationPercent, asAtDate }) => ({
   currency,
   amount: amount === '' || amount === null || amount === undefined ? 0 : Number(amount),
@@ -29,7 +21,6 @@ export const buildValuation = ({ currency, amount, unit, allocationPercent, asAt
       ? 0
       : Number(allocationPercent),
   asAtDate,
-  displayText: buildDisplayText({ currency, amount, unit }),
 });
 
 // Turns an API `valuation` object into flat form-field values for editing.

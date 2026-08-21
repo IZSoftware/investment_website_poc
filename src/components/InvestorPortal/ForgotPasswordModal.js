@@ -1,30 +1,19 @@
-import { useState, useRef, useEffect } from "react";
-import { X, Shield, ArrowRight, Mail, ShieldAlert, Clock, Lock, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Shield, ArrowRight, Mail, ShieldAlert, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { forgotPassword, verifyResetChallenge, resetPassword } from "../../api/services";
+import LetterChallengeInput, { ChallengeTimer } from "../auth/LetterChallengeInput";
 
 const CHALLENGE_TTL_SECONDS = 180;
 const COOLDOWN_SECONDS = 5 * 60;
 
-function ChallengeTimer({ secondsLeft }) {
-  const mins = Math.floor(secondsLeft / 60);
-  const secs = secondsLeft % 60;
-  const low = secondsLeft <= 30;
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium ${low ? "text-red-600" : "text-[#6E6E73]"}`}>
-      <Clock size={13} />
-      {mins}:{String(secs).padStart(2, "0")}
-    </span>
-  );
-}
-
-export default function ForgotPasswordModal({ isOpen, onClose }) {
+export default function ForgotPasswordModal({ isOpen, onClose, initialEmail }) {
   const navigate = useNavigate();
   const [step, setStep] = useState("email");
   const [email, setEmail] = useState("");
   const [challengeId, setChallengeId] = useState("");
   const [letters, setLetters] = useState([]);
-  const [answers, setAnswers] = useState([]);
+  const [answers, setAnswers] = useState([]); // index-keyed: answers[idx]
   const [challengeSecondsLeft, setChallengeSecondsLeft] = useState(CHALLENGE_TTL_SECONDS);
   const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -33,14 +22,14 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [failedAttempts, setFailedAttempts] = useState(0);
   const [cooldownSecondsLeft, setCooldownSecondsLeft] = useState(0);
-  const [locked, setLocked] = useState(false);
 
-  const inputRefs = useRef([]);
+  const emailLocked = Boolean(initialEmail);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
+      setEmail(initialEmail || "");
+    } else {
       setStep("email");
       setEmail("");
       setChallengeId("");
@@ -50,14 +39,13 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
       setNewPassword("");
       setConfirmPassword("");
       setError("");
-      setFailedAttempts(0);
       setCooldownSecondsLeft(0);
-      setLocked(false);
     }
-  }, [isOpen]);
+  }, [isOpen, initialEmail]);
 
+  // Challenge countdown — on expiry the challenge is dead server-side too
   useEffect(() => {
-    if (step !== "challenge" || cooldownSecondsLeft > 0 || locked) return;
+    if (step !== "challenge") return;
     if (challengeSecondsLeft <= 0) {
       setError("Challenge expired. Please start again.");
       setStep("email");
@@ -68,8 +56,9 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
     }
     const t = setTimeout(() => setChallengeSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
-  }, [step, challengeSecondsLeft, cooldownSecondsLeft, locked]);
+  }, [step, challengeSecondsLeft]);
 
+  // Cooldown countdown
   useEffect(() => {
     if (cooldownSecondsLeft <= 0) return;
     const t = setTimeout(() => setCooldownSecondsLeft((s) => s - 1), 1000);
@@ -80,48 +69,47 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
+    if (cooldownSecondsLeft > 0) return;
     setError("");
     setIsLoading(true);
     try {
+      // forgot-password returns the challenge directly under data (not data.challenge)
       const response = await forgotPassword({ email: email.trim() });
       const data = response.data;
-      
+
       setChallengeId(data.challengeId);
       setLetters(data.letters || []);
       setAnswers(new Array(data.letters?.length || 8).fill(""));
       setChallengeSecondsLeft(data.expiresInSeconds || CHALLENGE_TTL_SECONDS);
-      setFailedAttempts(0);
-      setCooldownSecondsLeft(0);
-      setLocked(false);
       setStep("challenge");
     } catch (err) {
-      setError(err.response?.data?.message || "Unable to start password reset.");
+      if (err.response?.status === 429) {
+        setError("");
+        setCooldownSecondsLeft(COOLDOWN_SECONDS);
+      } else {
+        setError(err.response?.data?.message || "Unable to start password reset.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAnswerChange = (idx, value) => {
-    if (!/^[0-9]?$/.test(value)) return;
-    const newAnswers = [...answers];
-    newAnswers[idx] = value;
-    setAnswers(newAnswers);
-    if (value && idx < letters.length - 1) {
-      inputRefs.current[idx + 1]?.focus();
-    }
+  const handleAnswerChange = (idx, digit) => {
+    setAnswers((prev) => {
+      const next = [...prev];
+      next[idx] = digit;
+      return next;
+    });
   };
 
-  const handleAnswerKeyDown = (idx, e) => {
-    if (e.key === "Backspace" && !answers[idx] && idx > 0) {
-      inputRefs.current[idx - 1]?.focus();
-    }
-  };
+  const allAnswered =
+    answers.length > 0 && answers.every((ans) => ans !== "" && ans !== undefined);
 
-  const allAnswered = answers.every((ans) => ans !== "" && ans !== undefined);
-
+  // The challenge is single-use: ANY failure burns it server-side, so every
+  // failure path returns to the email step.
   const handleChallengeSubmit = async (e) => {
     e.preventDefault();
-    if (!allAnswered || cooldownSecondsLeft > 0 || locked) return;
+    if (!allAnswered) return;
 
     setError("");
     setIsLoading(true);
@@ -133,22 +121,16 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
       setResetToken(data.resetToken);
       setStep("new-password");
     } catch (err) {
-      const nextFail = failedAttempts + 1;
-      setFailedAttempts(nextFail);
-
-      if (nextFail === 1) {
-        setError(err.response?.data?.message || "Incorrect answers. Please try again.");
-        setStep("email");
-        setLetters([]);
-        setAnswers([]);
-        setChallengeId("");
-      } else if (nextFail === 2) {
+      if (err.response?.status === 429) {
         setError("");
         setCooldownSecondsLeft(COOLDOWN_SECONDS);
       } else {
-        setError("");
-        setLocked(true);
+        setError(err.response?.data?.message || "Incorrect answers. Please start again.");
       }
+      setStep("email");
+      setLetters([]);
+      setAnswers([]);
+      setChallengeId("");
     } finally {
       setIsLoading(false);
     }
@@ -177,25 +159,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
       setIsLoading(false);
     }
   };
-
-  if (locked) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-        <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-[#E5E5EA] p-8 text-center">
-          <div className="flex items-center justify-center mx-auto mb-4 rounded-full w-14 h-14 bg-red-50">
-            <Lock size={24} className="text-red-500" />
-          </div>
-          <h3 className="text-2xl font-semibold text-[#1D1D1F] mb-2">Account Locked</h3>
-          <p className="text-sm text-[#6E6E73] mb-6">
-            Too many failed attempts. This account has been locked and can only be unlocked by an administrator.
-          </p>
-          <button onClick={onClose} className="text-sm text-[#1D1D1F] font-medium underline underline-offset-2">
-            Close
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   if (step === "done") {
     return (
@@ -249,34 +212,44 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                 </div>
               )}
 
-              <form onSubmit={handleEmailSubmit} className="space-y-6">
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-black">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@company.com"
-                    required
-                    autoFocus
-                    className="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/30 focus:border-black"
-                  />
+              {cooldownSecondsLeft > 0 ? (
+                <div className="px-4 py-6 text-center border border-amber-200 bg-amber-50 rounded-xl">
+                  <ShieldAlert size={22} className="mx-auto mb-2 text-amber-500" />
+                  <p className="text-sm font-medium text-[#1D1D1F] mb-1">Too many attempts</p>
+                  <p className="text-xs text-[#6E6E73] mb-3">Please wait before trying again.</p>
+                  <ChallengeTimer secondsLeft={cooldownSecondsLeft} />
                 </div>
-                <button
-                  type="submit"
-                  disabled={isLoading || !email.trim()}
-                  className="flex items-center justify-center w-full gap-2 py-4 font-medium text-white bg-black rounded-xl hover:bg-gray-900 disabled:opacity-60"
-                >
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 rounded-full border-white/30 border-t-white animate-spin" />
-                  ) : (
-                    <>
-                      Continue
-                      <ArrowRight size={18} />
-                    </>
-                  )}
-                </button>
-              </form>
+              ) : (
+                <form onSubmit={handleEmailSubmit} className="space-y-6">
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-black">Email</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@company.com"
+                      required
+                      autoFocus={!emailLocked}
+                      disabled={emailLocked}
+                      className="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/30 focus:border-black disabled:bg-[#F5F5F7] disabled:text-[#6E6E73] disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isLoading || !email.trim()}
+                    className="flex items-center justify-center w-full gap-2 py-4 font-medium text-white bg-black rounded-xl hover:bg-gray-900 disabled:opacity-60"
+                  >
+                    {isLoading ? (
+                      <div className="w-5 h-5 border-2 rounded-full border-white/30 border-t-white animate-spin" />
+                    ) : (
+                      <>
+                        Continue
+                        <ArrowRight size={18} />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
             </div>
           )}
 
@@ -288,7 +261,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                 </div>
                 <div className="flex items-center justify-center gap-3 mb-2">
                   <h3 className="text-2xl font-semibold text-black">Security Check</h3>
-                  {cooldownSecondsLeft === 0 && <ChallengeTimer secondsLeft={challengeSecondsLeft} />}
+                  <ChallengeTimer secondsLeft={challengeSecondsLeft} />
                 </div>
                 <p className="text-sm text-gray-600">Enter the number that matches each letter below.</p>
               </div>
@@ -299,47 +272,26 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                 </div>
               )}
 
-              {cooldownSecondsLeft > 0 ? (
-                <div className="px-4 py-6 text-center border border-amber-200 bg-amber-50 rounded-xl">
-                  <ShieldAlert size={22} className="mx-auto mb-2 text-amber-500" />
-                  <p className="text-sm font-medium text-[#1D1D1F] mb-1">Too many attempts</p>
-                  <p className="text-xs text-[#6E6E73] mb-3">Please wait before trying again.</p>
-                  <ChallengeTimer secondsLeft={cooldownSecondsLeft} />
-                </div>
-              ) : (
-                <form onSubmit={handleChallengeSubmit} className="space-y-6">
-                  <div className="grid grid-cols-4 gap-3 sm:grid-cols-8">
-                    {letters.map((letter, idx) => (
-                      <div key={`${letter}-${idx}`} className="flex flex-col items-center gap-1.5">
-                        <span className="text-lg font-semibold text-[#1D1D1F]">{letter}</span>
-                        <input
-                          ref={(el) => (inputRefs.current[idx] = el)}
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={1}
-                          value={answers[idx] || ""}
-                          onChange={(e) => handleAnswerChange(idx, e.target.value)}
-                          onKeyDown={(e) => handleAnswerKeyDown(idx, e)}
-                          placeholder="?"
-                          className="w-12 h-14 text-center text-xl font-semibold bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent placeholder-gray-400"
-                        />
-                      </div>
-                    ))}
-                  </div>
+              <form onSubmit={handleChallengeSubmit} className="space-y-6">
+                <LetterChallengeInput
+                  letters={letters}
+                  answers={answers}
+                  onChange={handleAnswerChange}
+                  disabled={isLoading}
+                />
 
-                  <button
-                    type="submit"
-                    disabled={!allAnswered || isLoading}
-                    className="flex items-center justify-center w-full gap-2 py-4 font-medium text-white bg-black rounded-xl hover:bg-gray-900 disabled:opacity-60"
-                  >
-                    {isLoading ? (
-                      <div className="w-5 h-5 border-2 rounded-full border-white/30 border-t-white animate-spin" />
-                    ) : (
-                      "Verify & Continue"
-                    )}
-                  </button>
-                </form>
-              )}
+                <button
+                  type="submit"
+                  disabled={!allAnswered || isLoading}
+                  className="flex items-center justify-center w-full gap-2 py-4 font-medium text-white bg-black rounded-xl hover:bg-gray-900 disabled:opacity-60"
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 rounded-full border-white/30 border-t-white animate-spin" />
+                  ) : (
+                    "Verify & Continue"
+                  )}
+                </button>
+              </form>
 
               <div className="text-center">
                 <button
@@ -347,10 +299,9 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
                   onClick={() => {
                     setStep("email");
                     setError("");
-                    setFailedAttempts(0);
-                    setCooldownSecondsLeft(0);
                     setLetters([]);
                     setAnswers([]);
+                    setChallengeId("");
                   }}
                   className="text-sm text-gray-600 hover:text-black font-medium"
                 >

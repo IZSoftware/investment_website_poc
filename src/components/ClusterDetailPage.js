@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getClusterDescriptionByName, getClusterCompaniesByName } from '../data/data';
 import { getClusterGalleryByName } from '../data/clusterLocalImages';
-import { getPublicClusters } from '../api/services';
+import { getSiteInfo } from '../api/services';
 
 const ClusterDetailPage = () => {
   const { clusterId } = useParams(); // The backend cluster's DB id, as passed from the card link.
@@ -18,11 +18,11 @@ const ClusterDetailPage = () => {
 
     const fetchCluster = async () => {
       try {
-        const res = await getPublicClusters();
+        const res = await getSiteInfo();
         if (!isMounted) return;
 
-        const found = Array.isArray(res?.data)
-          ? res.data.find((c) => String(c.id) === String(clusterId))
+        const found = Array.isArray(res?.data?.clusters)
+          ? res.data.clusters.find((c) => String(c.id) === String(clusterId))
           : null;
 
         if (!found) {
@@ -33,9 +33,12 @@ const ClusterDetailPage = () => {
 
         setCluster({
           title: found.name,
-          description: found.publicDescription?.trim() || getClusterDescriptionByName(found.name),
+          // The site API already prefers the marketing publicDescription server-side.
+          description: found.description?.trim() || getClusterDescriptionByName(found.name),
           gallery: getClusterGalleryByName(found.name),
-          companies: getClusterCompaniesByName(found.name),
+          companies: found.companies?.length
+            ? found.companies.map((c) => ({ name: c.name, link: c.link, image: c.logo }))
+            : getClusterCompaniesByName(found.name),
         });
         setLoading(false);
       } catch (error) {

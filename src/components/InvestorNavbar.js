@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Home } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const InvestorNavbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, fullName, userEmail, logout } = useAuth();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -18,10 +21,10 @@ const InvestorNavbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    console.log('Logging out...');
+  const handleLogout = async () => {
     setIsDropdownOpen(false);
-    navigate('/investor-portal/login');
+    // Clears tokens server- and client-side, then redirects to the login page
+    await logout();
   };
 
   const handleProfileClick = () => {
@@ -33,13 +36,10 @@ const InvestorNavbar = () => {
     navigate('/');
   };
 
-  // SIMPLE CHECK: Look at the current URL path
-  const currentPath = window.location.pathname;
-  const isLoginPage = currentPath === '/investor-portal/login';
-  const isOtpPage = currentPath === '/investor-portal/verify-otp';
-  
-  // Only show avatar if NOT on login page AND NOT on OTP page
-  const showAvatar = !isLoginPage && !isOtpPage;
+  const isLoginPage = location.pathname === '/investor-portal/login';
+
+  // Only show the avatar for a signed-in user outside the login page
+  const showAvatar = isAuthenticated && !isLoginPage;
 
   // Logo always takes user to home page
   const logoLink = '/';
@@ -52,9 +52,9 @@ const InvestorNavbar = () => {
           <div className="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-center flex-shrink-0">
               <Link to={logoLink}>
-                <img 
-                  src="/NF Holding Logo.png" 
-                  alt="Company Logo" 
+                <img
+                  src="/NF Holding Logo.png"
+                  alt="Company Logo"
                   className="w-auto transition-all duration-300 cursor-pointer h-14 sm:h-20 lg:h-18 xl:h-22 2xl:h-26 hover:opacity-90"
                 />
               </Link>
@@ -72,7 +72,7 @@ const InvestorNavbar = () => {
                 <span className="hidden sm:inline">Home</span>
               </button>
 
-              {/* Avatar Dropdown - ONLY show if NOT on login/OTP pages */}
+              {/* Avatar Dropdown - only for signed-in users */}
               {showAvatar && (
                 <div className="relative" ref={dropdownRef}>
                   <button
@@ -90,10 +90,10 @@ const InvestorNavbar = () => {
                   {isDropdownOpen && (
                     <div className="absolute right-0 z-50 w-56 py-2 mt-3 bg-white border border-gray-100 rounded-lg shadow-lg">
                       <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-semibold text-gray-900">NF Holding  Accounting</p>
-                        <p className="text-xs text-gray-500 mt-0.5">Haccount@nf-holding.com</p>
+                        <p className="text-sm font-semibold text-gray-900">{fullName || 'Account'}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{userEmail}</p>
                       </div>
-                      
+
                       {/* Profile Link */}
                       <button
                         onClick={handleProfileClick}

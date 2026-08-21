@@ -13,6 +13,9 @@ const STORAGE_KEYS = {
   FULL_NAME: "auth:fullName",
 };
 
+// Staff roles enter through the admin portal; INVESTOR stays investor-portal-only.
+const ADMIN_PORTAL_ROLES = ["SUPER_ADMIN", "ADMIN", "DEV", "FINANCIAL_ADMIN"];
+
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
@@ -36,66 +39,96 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // Phase 1
-  const login = useCallback(async (email, password) => {
-    try {
-      const data = await loginApi({ email, password });
-      const challenge = data.challenge || data;
-      return {
-        success: true,
-        challengeId: challenge.challengeId,
-        letters: challenge.letters || [],
-        expiresInSeconds: challenge.expiresInSeconds || 180,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Invalid email or password",
-      };
-    }
+  // Shared session completion — used by verify-challenge and by the direct-login
+  // path when the letter challenge is disabled in the environment.
+  const completeSession = useCallback((auth) => {
+    const accessToken = auth.accessToken;
+    const refreshTokenVal = auth.refreshToken;
+    const user = auth.user || {};
+
+    if (!accessToken) throw new Error("No access token received");
+
+    setTokens(accessToken, refreshTokenVal);
+
+    const role = user.role || decodeJwtRole(accessToken) || "";
+    const email = user.email || "";
+    const name = user.fullName || "";
+
+    const normalizedRole = String(role).toUpperCase().replace(/^ROLE_/, "");
+    const portal = ADMIN_PORTAL_ROLES.includes(normalizedRole) ? "admin" : "investor";
+
+    setUserEmail(email);
+    setUserRole(role);
+    setFullName(name);
+    setLoginPortal(portal);
+    setIsAuthenticated(true);
+
+    sessionStorage.setItem(STORAGE_KEYS.AUTH, "true");
+    sessionStorage.setItem(STORAGE_KEYS.EMAIL, email);
+    sessionStorage.setItem(STORAGE_KEYS.ROLE, role);
+    sessionStorage.setItem(STORAGE_KEYS.PORTAL, portal);
+    sessionStorage.setItem(STORAGE_KEYS.FULL_NAME, name);
+
+    return { role, portal };
   }, []);
+
+  // Phase 1 — the service returns the envelope {success,message,data:{challenge?,auth?},errors}
+  const login = useCallback(
+    async (email, password) => {
+      try {
+        const envelope = await loginApi({ email, password });
+        const payload = envelope.data || {};
+
+        // Challenge disabled in this environment — tokens come back directly.
+        if (payload.auth) {
+          const { role, portal } = completeSession(payload.auth);
+          return { success: true, authenticated: true, role, portal };
+        }
+
+        const challenge = payload.challenge;
+        if (!challenge) {
+          return {
+            success: false,
+            message: envelope.message || "Unexpected response. Please try again.",
+          };
+        }
+
+        return {
+          success: true,
+          challengeId: challenge.challengeId,
+          letters: challenge.letters || [],
+          expiresInSeconds: challenge.expiresInSeconds || 180,
+        };
+      } catch (error) {
+        return {
+          success: false,
+          status: error.response?.status,
+          message: error.response?.data?.message || "Invalid email or password",
+        };
+      }
+    },
+    [completeSession]
+  );
 
   // Phase 2
-  const verifyChallengeHandler = useCallback(async (challengeId, answers) => {
-    try {
-      const data = await verifyChallenge({ challengeId, answers });
+  const verifyChallengeHandler = useCallback(
+    async (challengeId, answers) => {
+      try {
+        const envelope = await verifyChallenge({ challengeId, answers });
+        const auth = envelope.data || envelope;
 
-      const accessToken = data.accessToken || data.data?.accessToken;
-      const refreshTokenVal = data.refreshToken || data.data?.refreshToken;
-      const user = data.user || data.data?.user || {};
-
-      if (!accessToken) throw new Error("No access token received");
-
-      setTokens(accessToken, refreshTokenVal);
-
-      const role = user.role || decodeJwtRole(accessToken) || "";
-      const email = user.email || "";
-      const name = user.fullName || "";
-
-      const adminRoles = ["SUPER_ADMIN", "ADMIN", "ROLE_SUPER_ADMIN", "ROLE_ADMIN"];
-      const isAdmin = adminRoles.some((r) => role.toUpperCase() === r.toUpperCase());
-      const portal = isAdmin ? "admin" : "investor";
-
-      setUserEmail(email);
-      setUserRole(role);
-      setFullName(name);
-      setLoginPortal(portal);
-      setIsAuthenticated(true);
-
-      sessionStorage.setItem(STORAGE_KEYS.AUTH, "true");
-      sessionStorage.setItem(STORAGE_KEYS.EMAIL, email);
-      sessionStorage.setItem(STORAGE_KEYS.ROLE, role);
-      sessionStorage.setItem(STORAGE_KEYS.PORTAL, portal);
-      sessionStorage.setItem(STORAGE_KEYS.FULL_NAME, name);
-
-      return { success: true, role, portal };
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Incorrect answers. Please try again.",
-      };
-    }
-  }, []);
+        const { role, portal } = completeSession(auth);
+        return { success: true, role, portal };
+      } catch (error) {
+        return {
+          success: false,
+          status: error.response?.status,
+          message: error.response?.data?.message || "Incorrect answers. Please try again.",
+        };
+      }
+    },
+    [completeSession]
+  );
 
   const logout = useCallback(async () => {
     try {
