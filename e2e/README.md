@@ -1,9 +1,9 @@
 # End-to-end tests
 
-Fourteen scenarios driving real Chrome against a real backend: the public site,
-both sign-in portals (credentials + letter challenge), invite onboarding through
-the emailed set-password link, the investor portal and its portfolio CRUD, the
-admin console, and the role matrix.
+Fifteen scenarios driving real Chrome against a real backend: the public site
+and its KPI charts, both sign-in portals (credentials + letter challenge), invite
+onboarding through the emailed set-password link, the investor portal and its
+portfolio CRUD, the admin console, and the role matrix.
 
 ```
 npm run e2e                      # everything
@@ -53,7 +53,13 @@ performance scenario walks candidate periods until it finds a free one.
 - `helpers.js` — config, browser/page setup with console and API-failure
   collectors, DOM utilities, challenge solving, mail-link reading, direct API
   calls for fast provisioning.
-- `scenarios.js` — the fourteen scenarios and their shared page factories.
+- `scenarios.js` — the fifteen scenarios and their shared page factories.
+
+Recharts renders its axis **tick labels in a sibling layer**, not inside
+`.recharts-xAxis` — so `.recharts-xAxis .recharts-cartesian-axis-tick-value`
+matches nothing and `.recharts-xAxis-tick-labels text` is what reads the years.
+Currency tiles are CSS-uppercased, so `clickByText` must be given `USD`, not the
+`usd` in the markup: `innerText` reports what is painted.
 
 Waits go through `pollFor` (evaluated from Node) rather than
 `page.waitForFunction` for anything that settles after a same-tab route change:

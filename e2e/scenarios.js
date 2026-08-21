@@ -23,6 +23,8 @@ const {
   provisionUserViaApi,
   SET_NATIVE_VALUE_SRC,
   pollFor,
+  api,
+  apiLogin,
 } = require('./helpers');
 
 const OVERLAY = 'div.fixed.inset-0.z-50'; // SlideOver + investor/admin modals root
@@ -225,6 +227,131 @@ async function publicPerformance({ state }) {
     /Gearing/i.test(text) && /Return on Assets/i.test(text),
     'Key facts tiles are missing Gearing / Return on Assets'
   );
+}
+
+/**
+ * The Key Performance Indicators charts used to draw a hardcoded 2021-2025 series, so they
+ * looked live while ignoring the database entirely. This seeds two periods, then asserts the
+ * x-axis matches the years GET /api/site/info/portfolio/history actually returns — which a
+ * static series could not do, since the seeded years are nowhere near 2021-2025.
+ */
+async function publicKpiCharts({ state }) {
+  const page = state.publicPage;
+  assert(page && !page.isClosed(), 'public page missing (scenario 1 must run first)');
+  state.lastPage = page;
+
+  const auth = await apiLogin(CFG.ADMIN_EMAIL, CFG.ADMIN_PASSWORD);
+  const token = auth.accessToken;
+  const created = [];
+
+  // Two adjacent years high enough to be the newest periods on record, so the page's
+  // default "latest 10 years" window is guaranteed to include them.
+  const base = 2490 + (Math.floor(Date.now() / 60000) % 5);
+  const seeded = [
+    { month: 6, year: base, portfolioValue: 900000000, revenue: 400000000, debt: 80000000, gearing: 38.5, returnOnAssets: 6.0 },
+    { month: 6, year: base + 1, portfolioValue: 1500000000, revenue: 800000000, debt: 70000000, gearing: 27.5, returnOnAssets: 8.0 },
+  ];
+
+  try {
+    for (const body of seeded) {
+      // A period left over from an earlier run is fine — it already holds figures to chart.
+      const res = await api('/api/admin/performance', { method: 'POST', token, body });
+      if (res.status < 400 && res.env?.data?.id) created.push(res.env.data.id);
+      else if (!/already exists/i.test(res.env?.message || '')) {
+        throw new Error(`Seeding ${body.month}/${body.year} failed (${res.status}): ${res.env?.message}`);
+      }
+    }
+
+    page._pageErrors.length = 0;
+    await goto(page, '/portfolio-performance');
+    await waitForText(page, 'Key Performance', 30000);
+
+    // What the API serves, read from the page's own origin.
+    const apiYears = await page.evaluate(async (apiUrl) => {
+      const r = await fetch(`${apiUrl}/api/site/info/portfolio/history?limit=10`);
+      const j = await r.json();
+      return (j.data?.points || []).map((pt) => String(pt.year));
+    }, CFG.API_URL);
+
+    assert(apiYears.length >= 2, `history endpoint returned ${apiYears.length} points, expected >= 2`);
+    seeded.forEach((p) =>
+      assert(apiYears.includes(String(p.year)), `history is missing the seeded year ${p.year}`)
+    );
+
+    const readChart = () => {
+      // Recharts renders the tick labels in a sibling layer, NOT inside .recharts-xAxis —
+      // a descendant selector off the axis matches nothing.
+      const ticks = [...document.querySelectorAll('.recharts-xAxis-tick-labels text')]
+        .map((t) => t.textContent.trim());
+      const bars = document.querySelectorAll('.recharts-bar-rectangle').length;
+      const lines = document.querySelectorAll('.recharts-line-curve').length;
+      const legend = [...document.querySelectorAll('.recharts-legend-item-text')]
+        .map((t) => t.textContent.trim());
+      return ticks.length ? { ticks, bars, lines, legend } : null;
+    };
+
+    // ---- PORTFOLIO tab
+    const portfolio = await pollFor(page, 'portfolio chart drawn', readChart, { timeout: 20000 });
+    assert(
+      JSON.stringify(portfolio.ticks) === JSON.stringify(apiYears),
+      `x-axis ${JSON.stringify(portfolio.ticks)} does not match the API's years ${JSON.stringify(apiYears)}`
+    );
+    assert(portfolio.bars === apiYears.length, `${portfolio.bars} bars for ${apiYears.length} periods`);
+    assert(
+      portfolio.legend.some((l) => /Portfolio Value \(KES M\)/.test(l)),
+      `PORTFOLIO tab legend reads ${JSON.stringify(portfolio.legend)}`
+    );
+
+    // ---- REVENUE tab plots revenue, which is what the label has always claimed
+    await clickByText(page, 'li', 'REVENUE', { exact: true });
+    const revenue = await pollFor(
+      page,
+      'revenue chart drawn',
+      () => {
+        const legend = [...document.querySelectorAll('.recharts-legend-item-text')].map((t) => t.textContent.trim());
+        return legend.some((l) => /Revenue \(KES M\)/.test(l))
+          ? { legend, bars: document.querySelectorAll('.recharts-bar-rectangle').length }
+          : null;
+      },
+      { timeout: 20000 }
+    );
+    assert(revenue.bars === apiYears.length, `revenue drew ${revenue.bars} bars for ${apiYears.length} periods`);
+
+    // ---- currency toggle re-scales the same series
+    // The markup says "usd"; the tile is CSS-uppercased, and innerText reports what is painted.
+    await clickByText(page, 'li', 'USD', { exact: true });
+    await pollFor(
+      page,
+      'usd legend',
+      () =>
+        [...document.querySelectorAll('.recharts-legend-item-text')].some((t) =>
+          /Revenue \(USD M\)/.test(t.textContent)
+        ),
+      { timeout: 20000 }
+    );
+
+    // ---- GEARING tab draws a line, not bars
+    await clickByText(page, 'li', 'GEARING', { exact: true });
+    const gearing = await pollFor(
+      page,
+      'gearing chart drawn',
+      () => {
+        const legend = [...document.querySelectorAll('.recharts-legend-item-text')].map((t) => t.textContent.trim());
+        return legend.some((l) => /Gearing %/.test(l))
+          ? { lines: document.querySelectorAll('.recharts-line-curve').length }
+          : null;
+      },
+      { timeout: 20000 }
+    );
+    assert(gearing.lines >= 1, 'GEARING tab drew no line');
+
+    assert(page._pageErrors.length === 0, `Page errors: ${page._pageErrors.join(' | ')}`);
+  } finally {
+    // Leave the database as it was found.
+    for (const id of created) {
+      await api(`/api/admin/performance/${id}`, { method: 'DELETE', token });
+    }
+  }
 }
 
 async function adminLogin({ browser, state }) {
@@ -948,6 +1075,7 @@ function buildScenarios() {
   return [
     { name: 'public-home', fn: publicHome },
     { name: 'public-performance', fn: publicPerformance },
+    { name: 'public-kpi-charts', fn: publicKpiCharts },
     { name: 'admin-login', fn: adminLogin },
     { name: 'admin-portfolio-crud', fn: adminPortfolioCrud },
     { name: 'admin-performance', fn: adminPerformance },
