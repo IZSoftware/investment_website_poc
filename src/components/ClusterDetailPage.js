@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getClusterDescriptionByName, getClusterCompaniesByName } from '../data/data';
 import { getClusterGalleryByName } from '../data/clusterLocalImages';
-import { getPublicClusters } from '../api/services';
+import { getSiteInfo } from '../api/services';
 
 const ClusterDetailPage = () => {
   const { clusterId } = useParams(); // The backend cluster's DB id, as passed from the card link.
@@ -18,12 +18,12 @@ const ClusterDetailPage = () => {
 
     const fetchCluster = async () => {
       try {
-        const res = await getPublicClusters();
+        const res = await getSiteInfo();
         if (!isMounted) return;
 
-        const found = Array.isArray(res?.data)
-          ? res.data.find((c) => String(c.id) === String(clusterId))
-          : null;
+        // ✅ Clusters are in res.data.clusters from /api/site/info
+        const clusters = Array.isArray(res?.data?.clusters) ? res.data.clusters : [];
+        const found = clusters.find((c) => String(c.id) === String(clusterId));
 
         if (!found) {
           setNotFound(true);
@@ -33,7 +33,7 @@ const ClusterDetailPage = () => {
 
         setCluster({
           title: found.name,
-          description: found.publicDescription?.trim() || getClusterDescriptionByName(found.name),
+          description: found.description?.trim() || getClusterDescriptionByName(found.name),
           gallery: getClusterGalleryByName(found.name),
           companies: getClusterCompaniesByName(found.name),
         });
@@ -138,9 +138,6 @@ const ClusterDetailPage = () => {
                 {horizontalItems.map(item => {
                   const isHovered  = hoveredId === item.id;
                   const anyHovered = hoveredId !== null;
-                  // 45% to whichever card is hovered, the rest split evenly
-                  // among the others — works no matter how many photos a
-                  // cluster's gallery has.
                   const restWidth = itemCount > 1 ? (55 / (itemCount - 1)).toFixed(2) : 100;
 
                   const widthStyle = window.innerWidth < 1024
