@@ -1,10 +1,9 @@
-// src/components/HoldingCompanyLogin.js
 import React, { useState, useEffect, useRef } from 'react';
 import { Eye, EyeOff, ArrowRight, ShieldAlert, Clock, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ForgotPasswordModal from '../components/InvestorPortal/ForgotPasswordModal';
-import { login as loginApi } from '../api/services';
+import { login as loginApi, getSiteInfo } from '../api/services';
 
 const CHALLENGE_TTL_SECONDS = 180;
 const COOLDOWN_SECONDS = 5 * 60;
@@ -43,6 +42,36 @@ export default function HoldingCompanyLogin() {
   const [cooldownSecondsLeft, setCooldownSecondsLeft] = useState(0);
   const [locked, setLocked] = useState(false);
 
+  // ── Site stats for the left panel ──
+  const [siteStats, setSiteStats] = useState({
+    netAssets: null,
+    portfolioCompanies: null,
+    coreClusters: null,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStats = async () => {
+      try {
+        const res = await getSiteInfo();
+        if (isMounted && res?.data) {
+          setSiteStats({
+            netAssets: res.data.totalPortfolioValue?.displayText ?? null,
+            portfolioCompanies: res.data.totalCompanies ?? null,
+            coreClusters: res.data.totalClusters ?? null,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load site stats:', err);
+      } finally {
+        if (isMounted) setStatsLoading(false);
+      }
+    };
+    fetchStats();
+    return () => { isMounted = false; };
+  }, []);
+
   useEffect(() => {
     if (step !== 'challenge' || cooldownSecondsLeft > 0 || locked) return;
     if (challengeSecondsLeft <= 0) {
@@ -72,7 +101,6 @@ export default function HoldingCompanyLogin() {
     try {
       const data = await loginApi({ email: email.trim(), password });
 
-      // Exact match to your response
       const challenge = data?.data?.challenge;
 
       if (!challenge || !challenge.letters) {
@@ -231,19 +259,25 @@ export default function HoldingCompanyLogin() {
 
                     <div className="grid grid-cols-3 gap-4">
                       <div className="bg-[#F5F5F7] rounded-xl p-3 xl:p-4">
-                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">$4.2B</div>
+                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">
+                          {statsLoading ? '—' : (siteStats.netAssets ?? 'N/A')}
+                        </div>
                         <div className="text-[10px] text-[#6E6E73] uppercase tracking-wide font-medium whitespace-nowrap">
                           NET ASSETS
                         </div>
                       </div>
                       <div className="bg-[#F5F5F7] rounded-xl p-3 xl:p-4">
-                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">14+</div>
+                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">
+                          {statsLoading ? '—' : `${siteStats.portfolioCompanies ?? 0}+`}
+                        </div>
                         <div className="text-[10px] text-[#6E6E73] uppercase tracking-wide font-medium whitespace-nowrap">
                           PORTFOLIO COMPANIES
                         </div>
                       </div>
                       <div className="bg-[#F5F5F7] rounded-xl p-3 xl:p-4">
-                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">5</div>
+                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">
+                          {statsLoading ? '—' : (siteStats.coreClusters ?? 0)}
+                        </div>
                         <div className="text-[10px] text-[#6E6E73] uppercase tracking-wide font-medium whitespace-nowrap">
                           CORE CLUSTERS
                         </div>
