@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { getInvestorAssets, getInvestorAssetSubEntities, updateAdminSubEntityStatus } from '../api/services';
+import { getInvestorAssets, getInvestorAssetSubclasses, updateAdminSubEntityStatus } from '../api/services';
 import AssetCard from '../components/InvestorPortal/AssetCard';
 import EditAssetModal from '../components/InvestorPortal/EditAssetModal';
 import AddSubEntityModal from '../components/InvestorPortal/AddSubEntityModal';
@@ -33,7 +33,7 @@ export default function AssetSubEntities() {
 
         const [assetsRes, subEntitiesRes] = await Promise.all([
           getInvestorAssets(),
-          getInvestorAssetSubEntities({ assetId }),
+          getInvestorAssetSubclasses({ assetId }),
         ]);
 
         if (assetsRes.success) {

@@ -49,7 +49,7 @@ export default function AssetCard({ asset, onEdit, onClick, showNavigationIcon =
 
       <div className="flex items-start justify-between mb-3">
         <h3 className="text-xl font-semibold text-[#1D1D1F] pr-32">{asset.name}</h3>
-        {showNavigationIcon && asset.enabled && asset.allowsSubEntities && (
+        {showNavigationIcon && asset.enabled && asset.allowsSubclasses && (
           <ChevronRight className="flex-shrink-0 text-[#6E6E73] group-hover:text-[#1D1D1F] transition-colors" size={24} />
         )}
       </div>

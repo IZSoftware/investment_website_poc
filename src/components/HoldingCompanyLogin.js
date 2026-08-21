@@ -1,9 +1,10 @@
 // src/components/HoldingCompanyLogin.js
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Eye, EyeOff, ArrowRight, ShieldAlert, Clock, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ForgotPasswordModal from '../components/InvestorPortal/ForgotPasswordModal';
+import { login as loginApi } from '../api/services';
 
 const CHALLENGE_TTL_SECONDS = 180;
 const COOLDOWN_SECONDS = 5 * 60;
@@ -29,24 +30,19 @@ export default function HoldingCompanyLogin() {
   const [showForgotModal, setShowForgotModal] = useState(false);
 
   const navigate = useNavigate();
-  const { login, verifyChallenge } = useAuth();
+  const { verifyChallenge } = useAuth();
 
-  // step: 'email' → 'challenge'
   const [step, setStep] = useState('email');
-
-  // Challenge state (from real API)
   const [challengeId, setChallengeId] = useState('');
-  const [letters, setLetters] = useState([]);          // string[] from backend
-  const [answers, setAnswers] = useState({});          // { letter: digit }
+  const [letters, setLetters] = useState([]);
+  const [answers, setAnswers] = useState({});
   const [challengeSecondsLeft, setChallengeSecondsLeft] = useState(CHALLENGE_TTL_SECONDS);
   const inputRefs = useRef([]);
 
-  // Progressive lockout (client-side UX – backend enforces the real rules)
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [cooldownSecondsLeft, setCooldownSecondsLeft] = useState(0);
   const [locked, setLocked] = useState(false);
 
-  // Challenge countdown
   useEffect(() => {
     if (step !== 'challenge' || cooldownSecondsLeft > 0 || locked) return;
     if (challengeSecondsLeft <= 0) {
@@ -61,38 +57,39 @@ export default function HoldingCompanyLogin() {
     return () => clearTimeout(t);
   }, [step, challengeSecondsLeft, cooldownSecondsLeft, locked]);
 
-  // Cooldown countdown
   useEffect(() => {
     if (cooldownSecondsLeft <= 0) return;
     const t = setTimeout(() => setCooldownSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [cooldownSecondsLeft]);
 
-  // Phase 1 – credentials → challenge
+  // Phase 1 – call API directly
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      const result = await login(email.trim(), password);
+      const data = await loginApi({ email: email.trim(), password });
 
-      if (!result.success) {
-        setError(result.message || 'Invalid email or password');
-        setIsLoading(false);
+      // Exact match to your response
+      const challenge = data?.data?.challenge;
+
+      if (!challenge || !challenge.letters) {
+        setError('Invalid response from server');
         return;
       }
 
-      setChallengeId(result.challengeId);
-      setLetters(result.letters || []);
-      setChallengeSecondsLeft(result.expiresInSeconds || CHALLENGE_TTL_SECONDS);
+      setChallengeId(challenge.challengeId);
+      setLetters(challenge.letters);
+      setChallengeSecondsLeft(challenge.expiresInSeconds || 180);
       setAnswers({});
       setFailedAttempts(0);
       setCooldownSecondsLeft(0);
       setLocked(false);
       setStep('challenge');
     } catch (err) {
-      setError('Something went wrong. Please try again.');
+      setError(err.response?.data?.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
@@ -116,34 +113,29 @@ export default function HoldingCompanyLogin() {
     letters.length > 0 &&
     letters.every((letter) => answers[letter] !== undefined && answers[letter] !== '');
 
-  // Phase 2 – verify challenge → tokens
+  // Phase 2
   const handleChallengeSubmit = async (e) => {
     e.preventDefault();
     if (!allAnswered || cooldownSecondsLeft > 0 || locked) return;
 
     setError('');
     setIsLoading(true);
-
-    // answers must be the 8-digit string in the same order as letters
     const answersString = letters.map((l) => answers[l]).join('');
 
     try {
       const result = await verifyChallenge(challengeId, answersString);
 
       if (result.success) {
-        // fully authenticated – go to the correct portal
         const portal = result.portal || 'investor';
         navigate(portal === 'admin' ? '/admin-portal/dashboard' : '/investor-portal/dashboard');
         return;
       }
 
-      // failure handling (single-use challenge)
       const nextFail = failedAttempts + 1;
       setFailedAttempts(nextFail);
 
       if (nextFail === 1) {
         setError(result.message || 'Incorrect answers. Please try again.');
-        // force user back to credentials (challenge is single-use)
         setStep('email');
         setLetters([]);
         setAnswers({});
@@ -162,7 +154,6 @@ export default function HoldingCompanyLogin() {
     }
   };
 
-  // Locked state
   if (step === 'challenge' && locked) {
     return (
       <div className="relative h-[80vh] overflow-hidden bg-white flex items-center justify-center px-4">
@@ -196,7 +187,6 @@ export default function HoldingCompanyLogin() {
   return (
     <>
       <div className="relative h-[80vh] overflow-hidden bg-white">
-        {/* Background gradients */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
             className="absolute top-20 right-0 w-[500px] h-[500px] rounded-full opacity-[0.03]"
@@ -405,17 +395,20 @@ export default function HoldingCompanyLogin() {
                             <form onSubmit={handleChallengeSubmit} className="space-y-6">
                               <div className="grid grid-cols-4 gap-3 sm:grid-cols-8">
                                 {letters.map((letter, idx) => (
-                                  <div key={`${letter}-${idx}`} className="flex flex-col items-center gap-1.5">
-                                    <span className="text-lg font-semibold text-[#1D1D1F]">{letter}</span>
+                                  <div key={`${letter}-${idx}`} className="flex flex-col items-center gap-2">
+                                    <div className="w-12 h-12 flex items-center justify-center bg-[#F5F5F7] rounded-lg border border-[#E5E5EA]">
+                                      <span className="text-xl font-bold text-[#1D1D1F]">{letter}</span>
+                                    </div>
                                     <input
                                       ref={(el) => (inputRefs.current[idx] = el)}
                                       type="text"
                                       inputMode="numeric"
                                       maxLength={1}
+                                      placeholder="•"
                                       value={answers[letter] || ''}
                                       onChange={(e) => handleAnswerChange(letter, idx, e.target.value)}
                                       onKeyDown={(e) => handleAnswerKeyDown(idx, e)}
-                                      className="w-10 h-12 text-center text-lg font-semibold bg-white border border-[#D2D2D7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent"
+                                      className="w-12 h-14 text-center text-xl font-semibold bg-white border-2 border-[#D2D2D7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-[#1D1D1F] placeholder:text-[#C7C7CC]"
                                     />
                                   </div>
                                 ))}

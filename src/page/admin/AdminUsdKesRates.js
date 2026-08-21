@@ -10,8 +10,8 @@ import {
 } from '../../api/services';
 
 const AdminUsdKesRates = () => {
-  const { user } = useAuth();
-  const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN';
+  const { userRole } = useAuth();
+  const isAdmin = userRole === 'SUPER_ADMIN' || userRole === 'ADMIN';
 
   const [rates, setRates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -111,7 +111,6 @@ const AdminUsdKesRates = () => {
         handleCloseModal();
         await fetchRates();
       } else {
-        // Check if error is about duplicate month/year
         if (res.message?.includes('already exists')) {
           setFormError('A rate already exists for this month/year');
         } else {
@@ -138,7 +137,6 @@ const AdminUsdKesRates = () => {
     }
   };
 
-  // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return '';
     try {
@@ -283,7 +281,6 @@ const AdminUsdKesRates = () => {
         <div className="hidden col-span-1 lg:block" />
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">

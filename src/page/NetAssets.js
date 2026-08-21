@@ -36,7 +36,7 @@ export default function NetAssets() {
   }, []);
 
   const handleCardClick = (asset) => {
-    if (asset.enabled && asset.allowsSubEntities) {
+    if (asset.enabled && asset.allowsSubclasses) {
       navigate(`/investor-portal/net-assets/${asset.id}`);
     }
   };

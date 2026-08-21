@@ -14,8 +14,8 @@ export default function AddAssetModal({ isOpen, onClose, onSave }) {
     unit: 'BILLIONS',
     allocationPercent: '',
     selectedDate: null,
-    subEntitiesVisible: true,
-    allowsSubEntities: true,
+    subclassesVisible: true,
+    allowsSubclasses: true,
   });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -39,7 +39,7 @@ export default function AddAssetModal({ isOpen, onClose, onSave }) {
   const resetForm = () => {
     setFormData({
       name: '', description: '', currency: 'USD', amount: '', unit: 'BILLIONS',
-      allocationPercent: '', selectedDate: null, subEntitiesVisible: true, allowsSubEntities: true,
+      allocationPercent: '', selectedDate: null, subclassesVisible: true, allowsSubclasses: true,
     });
     setErrors({});
     setSubmitError(null);
@@ -70,8 +70,8 @@ export default function AddAssetModal({ isOpen, onClose, onSave }) {
       description: formData.description,
       valuation,
       enabled: true,
-      subEntitiesVisible: formData.subEntitiesVisible,
-      allowsSubEntities: formData.allowsSubEntities,
+      subclassesVisible: formData.subclassesVisible,
+      allowsSubclasses: formData.allowsSubclasses,
       sortOrder: 0,
     };
 
@@ -206,10 +206,10 @@ export default function AddAssetModal({ isOpen, onClose, onSave }) {
               </div>
               <button
                 type="button"
-                onClick={() => handleInputChange('subEntitiesVisible', !formData.subEntitiesVisible)}
-                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.subEntitiesVisible ? 'bg-blue-500' : 'bg-[#D2D2D7]'}`}
+                onClick={() => handleInputChange('subclassesVisible', !formData.subclassesVisible)}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.subclassesVisible ? 'bg-blue-500' : 'bg-[#D2D2D7]'}`}
               >
-                <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.subEntitiesVisible ? 'translate-x-7' : 'translate-x-1'}`} />
+                <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.subclassesVisible ? 'translate-x-7' : 'translate-x-1'}`} />
               </button>
             </div>
 
@@ -220,10 +220,10 @@ export default function AddAssetModal({ isOpen, onClose, onSave }) {
               </div>
               <button
                 type="button"
-                onClick={() => handleInputChange('allowsSubEntities', !formData.allowsSubEntities)}
-                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.allowsSubEntities ? 'bg-emerald-500' : 'bg-[#D2D2D7]'}`}
+                onClick={() => handleInputChange('allowsSubclasses', !formData.allowsSubclasses)}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.allowsSubclasses ? 'bg-emerald-500' : 'bg-[#D2D2D7]'}`}
               >
-                <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.allowsSubEntities ? 'translate-x-7' : 'translate-x-1'}`} />
+                <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.allowsSubclasses ? 'translate-x-7' : 'translate-x-1'}`} />
               </button>
             </div>
 

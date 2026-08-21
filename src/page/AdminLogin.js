@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { ArrowRight, Home, Eye, EyeOff, ShieldAlert, Clock, Lock } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { login as loginApi } from "../api/services";
 
 const CHALLENGE_TTL_SECONDS = 180;
 const COOLDOWN_SECONDS = 5 * 60;
@@ -26,7 +27,7 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login, verifyChallenge } = useAuth();
+  const { verifyChallenge } = useAuth();
 
   const [step, setStep] = useState("email");
   const [challengeId, setChallengeId] = useState("");
@@ -65,24 +66,28 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     try {
-      const result = await login(email.trim(), password);
+      const data = await loginApi({ email: email.trim(), password });
 
-      if (!result.success) {
-        setError(result.message || "Invalid email or password");
+      // Exact match to your response
+      const challenge = data?.data?.challenge;
+
+      console.log("CHALLENGE →", challenge); // temporary debug
+
+      if (!challenge || !challenge.letters) {
+        setError("Invalid response from server");
         return;
       }
 
-      // Handles the real response shape: data.challenge
-      setChallengeId(result.challengeId);
-      setLetters(result.letters || []);
-      setChallengeSecondsLeft(result.expiresInSeconds || CHALLENGE_TTL_SECONDS);
+      setChallengeId(challenge.challengeId);
+      setLetters(challenge.letters);
+      setChallengeSecondsLeft(challenge.expiresInSeconds || 180);
       setAnswers({});
       setFailedAttempts(0);
       setCooldownSecondsLeft(0);
       setLocked(false);
       setStep("challenge");
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid email or password");
     } finally {
       setIsLoading(false);
     }
@@ -166,7 +171,7 @@ export default function AdminLogin() {
               setLocked(false);
               setFailedAttempts(0);
             }}
-            className="text-sm text-[#1D1D1F] font-medium underline underline-offset-2 hover:text-[#6E6E73]"
+            className="text-sm text-[#1D1D1F] font-medium underline underline-offset-2"
           >
             Back to sign in
           </button>
@@ -196,7 +201,7 @@ export default function AdminLogin() {
           <img src="/NF Holding Logo.png" alt="NF Holding" className="h-14" />
         </Link>
 
-        {/* EMAIL + PASSWORD STEP */}
+        {/* EMAIL + PASSWORD */}
         {step === "email" && (
           <div className="space-y-7">
             <div>
@@ -262,7 +267,7 @@ export default function AdminLogin() {
           </div>
         )}
 
-        {/* SECURITY CHECK STEP */}
+        {/* SECURITY CHECK */}
         {step === "challenge" && (
           <div className="space-y-7">
             <div>
@@ -295,14 +300,9 @@ export default function AdminLogin() {
                 <div className="grid grid-cols-4 gap-3 sm:grid-cols-8">
                   {letters.map((letter, idx) => (
                     <div key={`${letter}-${idx}`} className="flex flex-col items-center gap-2">
-                      {/* Letter box */}
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-[#F5F5F7] rounded-lg border border-[#E5E5EA]">
-                        <span className="text-lg sm:text-xl font-bold text-[#1D1D1F]">
-                          {letter}
-                        </span>
+                      <div className="w-12 h-12 flex items-center justify-center bg-[#F5F5F7] rounded-lg border border-[#E5E5EA]">
+                        <span className="text-xl font-bold text-[#1D1D1F]">{letter}</span>
                       </div>
-
-                      {/* Number input */}
                       <input
                         ref={(el) => (inputRefs.current[idx] = el)}
                         type="text"
@@ -312,7 +312,7 @@ export default function AdminLogin() {
                         value={answers[letter] || ""}
                         onChange={(e) => handleAnswerChange(letter, idx, e.target.value)}
                         onKeyDown={(e) => handleAnswerKeyDown(idx, e)}
-                        className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-semibold bg-white border-2 border-[#D2D2D7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A2540] focus:border-[#0A2540] placeholder:text-[#C7C7CC]"
+                        className="w-12 h-14 text-center text-xl font-semibold bg-white border-2 border-[#D2D2D7] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A2540] focus:border-[#0A2540] placeholder:text-[#C7C7CC]"
                       />
                     </div>
                   ))}

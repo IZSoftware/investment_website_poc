@@ -31,8 +31,8 @@ export default function EditAssetModal({ isOpen, onClose, asset, onSave, onDelet
     allocationPercent: '',
     selectedDate: null,
     enabled: true,
-    subEntitiesVisible: true,
-    allowsSubEntities: true,
+    subclassesVisible: true,
+    allowsSubclasses: true,
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -50,8 +50,8 @@ export default function EditAssetModal({ isOpen, onClose, asset, onSave, onDelet
         allocationPercent: parsedVal.allocationPercent,
         selectedDate: parsedVal.asAtDate,
         enabled: asset.enabled ?? true,
-        subEntitiesVisible: asset.subEntitiesVisible ?? true,
-        allowsSubEntities: asset.allowsSubEntities ?? true,
+        subclassesVisible: asset.subclassesVisible ?? true,
+        allowsSubclasses: asset.allowsSubclasses ?? true,
       });
       setSubmitError(null);
       setShowDeleteConfirm(false);
@@ -95,8 +95,8 @@ export default function EditAssetModal({ isOpen, onClose, asset, onSave, onDelet
           description: formData.description,
           valuation,
           enabled: formData.enabled,
-          subEntitiesVisible: formData.subEntitiesVisible,
-          allowsSubEntities: formData.allowsSubEntities,
+          subclassesVisible: formData.subclassesVisible,
+          allowsSubclasses: formData.allowsSubclasses,
           sortOrder: asset.sortOrder ?? 0,
         });
       }
@@ -179,11 +179,11 @@ export default function EditAssetModal({ isOpen, onClose, asset, onSave, onDelet
                 <div className="flex-1">
                   <label className="text-sm font-medium text-[#1D1D1F] block mb-1">Sub-Entities Visibility</label>
                   <p className="text-xs text-[#6E6E73]">
-                    {formData.subEntitiesVisible ? 'Sub-entities are visible under this asset' : 'Sub-entities are hidden for this asset'}
+                    {formData.subclassesVisible ? 'Sub-entities are visible under this asset' : 'Sub-entities are hidden for this asset'}
                   </p>
                 </div>
-                <button type="button" onClick={() => handleChange('subEntitiesVisible', !formData.subEntitiesVisible)} className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.subEntitiesVisible ? 'bg-blue-500' : 'bg-[#D2D2D7]'}`}>
-                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.subEntitiesVisible ? 'translate-x-7' : 'translate-x-1'}`} />
+                <button type="button" onClick={() => handleChange('subclassesVisible', !formData.subclassesVisible)} className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.subclassesVisible ? 'bg-blue-500' : 'bg-[#D2D2D7]'}`}>
+                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.subclassesVisible ? 'translate-x-7' : 'translate-x-1'}`} />
                 </button>
               </div>
             )}
@@ -194,8 +194,8 @@ export default function EditAssetModal({ isOpen, onClose, asset, onSave, onDelet
                   <label className="text-sm font-medium text-[#1D1D1F] block mb-1">Allows Sub-Entities</label>
                   <p className="text-xs text-[#6E6E73]">Can this asset have child sub-entities at all?</p>
                 </div>
-                <button type="button" onClick={() => handleChange('allowsSubEntities', !formData.allowsSubEntities)} className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.allowsSubEntities ? 'bg-emerald-500' : 'bg-[#D2D2D7]'}`}>
-                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.allowsSubEntities ? 'translate-x-7' : 'translate-x-1'}`} />
+                <button type="button" onClick={() => handleChange('allowsSubclasses', !formData.allowsSubclasses)} className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.allowsSubclasses ? 'bg-emerald-500' : 'bg-[#D2D2D7]'}`}>
+                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.allowsSubclasses ? 'translate-x-7' : 'translate-x-1'}`} />
                 </button>
               </div>
             )}
