@@ -1,47 +1,67 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getInvestorAssets, updateAdminAssetStatus } from '../api/services';
+import {
+  getInvestorAssets,
+  getInvestorDashboardNetAssets,
+  updateAdminAssetStatus,
+} from '../api/services';
+import { useAuth } from '../context/AuthContext';
 import AssetCard from '../components/InvestorPortal/AssetCard';
 import EditAssetModal from '../components/InvestorPortal/EditAssetModal';
 import AddAssetModal from '../components/InvestorPortal/AddAssetModal';
 
 export default function NetAssets() {
   const navigate = useNavigate();
+  const { userRole } = useAuth();
+  const canEdit = userRole !== 'DEV';
+
   const [assets, setAssets] = useState([]);
+  const [pageInfo, setPageInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [statusError, setStatusError] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingAsset, setEditingAsset] = useState(null);
 
   useEffect(() => {
-    const fetchAssets = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await getInvestorAssets();
-        if (response.success) {
-          setAssets(response.data);
+        const [assetsRes, dashboardRes] = await Promise.all([
+          getInvestorAssets(),
+          getInvestorDashboardNetAssets(),
+        ]);
+
+        if (assetsRes.success) {
+          setAssets(assetsRes.data || []);
         } else {
-          setError(response.message || 'Failed to load assets');
+          setError(assetsRes.message || 'Failed to load assets');
+        }
+
+        if (dashboardRes.success) {
+          setPageInfo(dashboardRes.data);
         }
       } catch (err) {
-        setError(err?.message || 'Failed to load assets');
+        setError(err.response?.data?.message || err?.message || 'Failed to load assets');
       } finally {
         setLoading(false);
       }
     };
-    fetchAssets();
+    fetchData();
   }, []);
 
+  // Drill-down only exists for assets the backend says can hold subclasses.
   const handleCardClick = (asset) => {
-    if (asset.enabled && asset.allowsSubEntities) {
+    if (asset.enabled && asset.allowsSubclasses) {
       navigate(`/investor-portal/net-assets/${asset.id}`);
     }
   };
 
   const handleEdit = (asset) => {
+    if (!canEdit) return;
     setEditingAsset({ ...asset, type: 'asset' });
     setShowEditModal(true);
   };
@@ -62,14 +82,15 @@ export default function NetAssets() {
   // (via the onToggleStatus prop) instead of making their own API calls.
   const handleToggleStatus = async (assetId, enabledStatus) => {
     try {
+      setStatusError(null);
       const response = await updateAdminAssetStatus({ id: assetId, enabled: enabledStatus });
       if (response.success) {
         setAssets((prev) => prev.map((a) => (a.id === assetId ? response.data : a)));
       } else {
-        console.error('Failed to update asset status:', response.message);
+        setStatusError(response.message || 'Failed to update asset status');
       }
     } catch (err) {
-      console.error('Failed to update asset status:', err);
+      setStatusError(err.response?.data?.message || err?.message || 'Failed to update asset status');
     }
   };
 
@@ -115,35 +136,44 @@ export default function NetAssets() {
             <div className="flex flex-col items-start justify-between gap-4 mb-8 sm:flex-row sm:items-center lg:mb-12">
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#1D1D1F] tracking-tight mb-1 lg:mb-2">
-                  NET ASSETS
+                  {pageInfo?.title || 'NET ASSETS'}
                 </h1>
                 <p className="text-xs sm:text-sm text-[#6E6E73]">Asset Classes Overview</p>
               </div>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-1.5 lg:gap-2 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all duration-200 shadow-sm hover:shadow-md text-sm sm:text-base"
-              >
-                <Plus size={16} className="sm:w-[18px] sm:h-[18px] lg:w-5 lg:h-5" />
-                <span className="font-medium">Add Asset Class</span>
-              </button>
+              {canEdit && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="inline-flex items-center gap-1.5 lg:gap-2 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all duration-200 shadow-sm hover:shadow-md text-sm sm:text-base"
+                >
+                  <Plus size={16} className="sm:w-[18px] sm:h-[18px] lg:w-5 lg:h-5" />
+                  <span className="font-medium">Add Asset Class</span>
+                </button>
+              )}
             </div>
 
-            <div className="max-w-4xl mb-12 lg:mb-16">
-              <p className="text-sm sm:text-base lg:text-lg text-[#6E6E73] leading-relaxed">
-                We enable our depositors to allocate their funds to specialized portfolios that hold securities of the same type.
-                The vast majority of these portfolios is managed actively, primarily internally.
-              </p>
-            </div>
+            {pageInfo?.introText && (
+              <div className="max-w-4xl mb-12 lg:mb-16">
+                <p className="text-sm sm:text-base lg:text-lg text-[#6E6E73] leading-relaxed">
+                  {pageInfo.introText}
+                </p>
+              </div>
+            )}
+
+            {statusError && (
+              <div className="max-w-4xl px-4 py-3 mb-8 text-sm text-red-600 border border-red-200 bg-red-50 rounded-xl">
+                {statusError}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-4 mb-12 sm:gap-5 lg:gap-6 lg:mb-16 md:grid-cols-2 lg:grid-cols-3">
               {assets.map((asset) => (
                 <AssetCard
                   key={asset.id}
                   asset={asset}
-                  onEdit={handleEdit}
+                  onEdit={canEdit ? handleEdit : undefined}
                   onClick={handleCardClick}
                   showNavigationIcon={asset.enabled}
-                  onToggleStatus={handleToggleStatus}
+                  onToggleStatus={canEdit ? handleToggleStatus : undefined}
                 />
               ))}
             </div>
@@ -153,8 +183,9 @@ export default function NetAssets() {
                 <div className="flex-shrink-0 w-0.5 h-0.5 lg:w-1 lg:h-1 mt-1.5 lg:mt-2 bg-[#1D1D1F] rounded-full" />
                 <div>
                   <p className="text-xs sm:text-sm text-[#6E6E73] leading-relaxed">
-                    <span className="font-medium text-[#1D1D1F]">Note:</span> Click on any enabled asset class to view its sub-entities.
-                    Disabled assets appear grayed out with a toggle switch — flip it to re-enable.
+                    <span className="font-medium text-[#1D1D1F]">Note:</span> Click on any enabled asset class that
+                    allows subclasses to view its subclasses.
+                    {canEdit && ' Disabled assets appear grayed out with a toggle switch — flip it to re-enable.'}
                   </p>
                 </div>
               </div>
@@ -164,25 +195,24 @@ export default function NetAssets() {
         <div className="hidden col-span-1 lg:block"></div>
       </div>
 
-      <EditAssetModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        asset={editingAsset}
-        onSave={handleSaveEdit}
-        onDelete={handleDelete}
-        onToggleStatus={handleToggleStatus}
-      />
+      {canEdit && (
+        <>
+          <EditAssetModal
+            isOpen={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            asset={editingAsset}
+            onSave={handleSaveEdit}
+            onDelete={handleDelete}
+            onToggleStatus={handleToggleStatus}
+          />
 
-      <AddAssetModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSave={handleAddAsset}
-      />
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-      `}</style>
+          <AddAssetModal
+            isOpen={showAddModal}
+            onClose={() => setShowAddModal(false)}
+            onSave={handleAddAsset}
+          />
+        </>
+      )}
     </div>
   );
 }

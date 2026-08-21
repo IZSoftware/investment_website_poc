@@ -17,6 +17,8 @@ export default function AssetCard({ asset, onEdit, onClick, showNavigationIcon =
     if (onToggleStatus) onToggleStatus(asset.id, !asset.enabled);
   };
 
+  const asAtDate = formatDisplayDate(asset.valuation?.asAtDate);
+
   return (
     <div
       onClick={handleCardClick}
@@ -27,29 +29,31 @@ export default function AssetCard({ asset, onEdit, onClick, showNavigationIcon =
           : 'cursor-default border-l-4 border-red-500 bg-red-50'}
       `}
     >
+      {/* Status pill and the row's action share one flex row so they never
+          overlap each other in the top-right corner. */}
       <div className="absolute flex items-center gap-2 top-4 right-4">
         <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${asset.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
           <div className={`w-1.5 h-1.5 rounded-full ${asset.enabled ? 'bg-emerald-500' : 'bg-red-500'}`} />
           <span>{asset.enabled ? 'Enabled' : 'Disabled'}</span>
         </div>
+
+        {asset.enabled
+          ? onEdit && (
+              <button onClick={handleEditClick} className="p-2 text-white transition-all bg-[#1D1D1F] rounded-lg opacity-0 group-hover:opacity-100 hover:bg-[#2D2D2F]">
+                <Edit2 size={18} />
+              </button>
+            )
+          : onToggleStatus && (
+              <button onClick={handleToggleClick} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all" title="Click to re-enable">
+                <Power size={14} />
+                Enable
+              </button>
+            )}
       </div>
 
-      <div className="absolute flex items-center gap-2 top-4 right-4">
-        {asset.enabled ? (
-          <button onClick={handleEditClick} className="p-2 text-white transition-all bg-[#1D1D1F] rounded-lg opacity-0 group-hover:opacity-100 hover:bg-[#2D2D2F]">
-            <Edit2 size={18} />
-          </button>
-        ) : (
-          <button onClick={handleToggleClick} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all" title="Click to re-enable this asset">
-            <Power size={16} />
-            Enable
-          </button>
-        )}
-      </div>
-
-      <div className="flex items-start justify-between mb-3">
-        <h3 className="text-xl font-semibold text-[#1D1D1F] pr-32">{asset.name}</h3>
-        {showNavigationIcon && asset.enabled && asset.allowsSubEntities && (
+      <div className="flex items-start justify-between gap-2 mt-10 mb-3">
+        <h3 className="text-xl font-semibold text-[#1D1D1F]">{asset.name}</h3>
+        {showNavigationIcon && asset.enabled && asset.allowsSubclasses && (
           <ChevronRight className="flex-shrink-0 text-[#6E6E73] group-hover:text-[#1D1D1F] transition-colors" size={24} />
         )}
       </div>
@@ -58,9 +62,11 @@ export default function AssetCard({ asset, onEdit, onClick, showNavigationIcon =
 
       <div>
         <div className="text-2xl font-semibold text-[#1D1D1F]">{asset.valuation?.displayText}</div>
-        <p className="text-xs text-[#6E6E73] mt-1 tracking-wide">
-          AS AT {formatDisplayDate(asset.valuation?.asAtDate).toUpperCase()}
-        </p>
+        {asAtDate && (
+          <p className="text-xs text-[#6E6E73] mt-1 tracking-wide">
+            AS AT {asAtDate.toUpperCase()}
+          </p>
+        )}
       </div>
     </div>
   );

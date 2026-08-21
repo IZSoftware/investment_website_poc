@@ -8,19 +8,13 @@ const CARD_ICONS = {
   settings: '/settings.png',
 };
 
+// Presentational copy only — title/subtitle/value all come from the API.
 const CARD_DESCRIPTIONS = {
   portfolioInvestment:
     "We invest in Clusters that provide strong long-term returns and have the ability to transform Africa's economy",
   netAssets: 'We take diversification into account in terms of risk factors',
   settings:
     'Our investments are strategically located around the world, in markets targeted for their performance potential.',
-};
-
-// Display-only overrides — the API's own `title` field for these two cards
-// is not used anymore; "settings" still uses whatever title the API returns.
-const CARD_TITLES = {
-  netAssets: 'Portfolio Investment',
-  portfolioInvestment: 'Cluster Allocation',
 };
 
 const CARD_ROUTES = {
@@ -36,12 +30,6 @@ const InvestorPortal = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const isDirectNavigation = !document.referrer;
-    if (!isDirectNavigation) {
-      navigate('/');
-      return;
-    }
-
     const fetchCluster = async () => {
       try {
         setLoading(true);
@@ -53,14 +41,14 @@ const InvestorPortal = () => {
           setError(response.message || 'Failed to load dashboard data');
         }
       } catch (err) {
-        setError(err?.message || 'Failed to load dashboard data');
+        setError(err.response?.data?.message || err?.message || 'Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
     };
 
     fetchCluster();
-  }, [navigate]);
+  }, []);
 
   const handleManageClick = (path) => {
     navigate(`/investor-portal/${path}`);
@@ -71,11 +59,11 @@ const InvestorPortal = () => {
       <div className="flex items-start mb-3 lg:mb-4">
         <img
           src={CARD_ICONS[cardKey]}
-          alt={cardData.title}
+          alt={cardData?.title || cardKey}
           className="flex-shrink-0 w-8 h-8 mr-3 sm:w-9 sm:h-9 lg:w-10 lg:h-10 lg:mr-4"
         />
         <h2 className="text-lg font-bold text-gray-900 sm:text-xl lg:text-xl">
-          {CARD_TITLES[cardKey] || cardData.title}
+          {cardData?.title}
         </h2>
       </div>
 
@@ -85,12 +73,12 @@ const InvestorPortal = () => {
 
       <div className="mb-1">
         <span className="text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
-          {cardData.value}
+          {cardData?.value}
         </span>
       </div>
 
       <p className="mb-4 text-xs text-gray-500 lg:mb-6 sm:text-sm lg:text-sm">
-        {cardData.subtitle}
+        {cardData?.subtitle}
       </p>
 
       <hr className="mb-3 border-t border-gray-200 lg:mb-4" />
@@ -139,9 +127,9 @@ const InvestorPortal = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-4 px-4 pb-10 sm:gap-6 lg:gap-8 sm:pb-12 lg:pb-16 sm:px-6 lg:px-0 md:grid-cols-3">
-            <Card cardKey="netAssets" cardData={clusterData.netAssets} />
-            <Card cardKey="portfolioInvestment" cardData={clusterData.portfolioInvestment} />
-            <Card cardKey="settings" cardData={clusterData.settings} />
+            <Card cardKey="netAssets" cardData={clusterData?.netAssets} />
+            <Card cardKey="portfolioInvestment" cardData={clusterData?.portfolioInvestment} />
+            <Card cardKey="settings" cardData={clusterData?.settings} />
           </div>
         </div>
         <div className="hidden col-span-1 lg:block"></div>

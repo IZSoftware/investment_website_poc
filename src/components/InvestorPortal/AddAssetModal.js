@@ -14,8 +14,8 @@ export default function AddAssetModal({ isOpen, onClose, onSave }) {
     unit: 'BILLIONS',
     allocationPercent: '',
     selectedDate: null,
-    subEntitiesVisible: true,
-    allowsSubEntities: true,
+    subclassesVisible: true,
+    allowsSubclasses: true,
   });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -36,10 +36,23 @@ export default function AddAssetModal({ isOpen, onClose, onSave }) {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
   };
 
+  // Server validation errors arrive as errors[] = [{field, message}].
+  const applyServerError = (err, fallback) => {
+    const list = err?.response?.data?.errors;
+    if (Array.isArray(list) && list.length > 0) {
+      const mapped = {};
+      list.forEach((item) => {
+        if (item?.field) mapped[item.field] = item.message;
+      });
+      setErrors((prev) => ({ ...prev, ...mapped }));
+    }
+    setSubmitError(err?.response?.data?.message || err?.message || fallback);
+  };
+
   const resetForm = () => {
     setFormData({
       name: '', description: '', currency: 'USD', amount: '', unit: 'BILLIONS',
-      allocationPercent: '', selectedDate: null, subEntitiesVisible: true, allowsSubEntities: true,
+      allocationPercent: '', selectedDate: null, subclassesVisible: true, allowsSubclasses: true,
     });
     setErrors({});
     setSubmitError(null);
@@ -70,8 +83,8 @@ export default function AddAssetModal({ isOpen, onClose, onSave }) {
       description: formData.description,
       valuation,
       enabled: true,
-      subEntitiesVisible: formData.subEntitiesVisible,
-      allowsSubEntities: formData.allowsSubEntities,
+      subclassesVisible: formData.subclassesVisible,
+      allowsSubclasses: formData.allowsSubclasses,
       sortOrder: 0,
     };
 
@@ -80,6 +93,8 @@ export default function AddAssetModal({ isOpen, onClose, onSave }) {
       setSubmitError(null);
       const response = await createAdminAsset(payload);
       if (response.success) {
+        // "Fund of Funds" assets come back with allowsSubclasses forced false —
+        // the parent stores what the server echoed, not what was requested.
         onSave(response.data);
         resetForm();
         onClose();
@@ -87,7 +102,7 @@ export default function AddAssetModal({ isOpen, onClose, onSave }) {
         setSubmitError(response.message || 'Failed to create asset');
       }
     } catch (err) {
-      setSubmitError(err?.message || 'Failed to create asset');
+      applyServerError(err, 'Failed to create asset');
     } finally {
       setSubmitting(false);
     }
@@ -201,33 +216,35 @@ export default function AddAssetModal({ isOpen, onClose, onSave }) {
 
             <div className="flex items-center justify-between p-4 bg-[#F5F5F7] rounded-xl">
               <div>
-                <label className="text-sm font-medium text-[#1D1D1F] block mb-1">Sub-Entities Visible</label>
-                <p className="text-xs text-[#6E6E73]">Show the sub-entities section for this asset</p>
+                <label className="text-sm font-medium text-[#1D1D1F] block mb-1">Subclasses Visible</label>
+                <p className="text-xs text-[#6E6E73]">Show the subclasses section for this asset</p>
               </div>
               <button
                 type="button"
-                onClick={() => handleInputChange('subEntitiesVisible', !formData.subEntitiesVisible)}
-                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.subEntitiesVisible ? 'bg-blue-500' : 'bg-[#D2D2D7]'}`}
+                onClick={() => handleInputChange('subclassesVisible', !formData.subclassesVisible)}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.subclassesVisible ? 'bg-blue-500' : 'bg-[#D2D2D7]'}`}
               >
-                <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.subEntitiesVisible ? 'translate-x-7' : 'translate-x-1'}`} />
+                <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.subclassesVisible ? 'translate-x-7' : 'translate-x-1'}`} />
               </button>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-[#F5F5F7] rounded-xl">
               <div>
-                <label className="text-sm font-medium text-[#1D1D1F] block mb-1">Allows Sub-Entities</label>
-                <p className="text-xs text-[#6E6E73]">Can this asset have child sub-entities at all?</p>
+                <label className="text-sm font-medium text-[#1D1D1F] block mb-1">Allows Subclasses</label>
+                <p className="text-xs text-[#6E6E73]">Can this asset hold subclasses at all?</p>
               </div>
               <button
                 type="button"
-                onClick={() => handleInputChange('allowsSubEntities', !formData.allowsSubEntities)}
-                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.allowsSubEntities ? 'bg-emerald-500' : 'bg-[#D2D2D7]'}`}
+                onClick={() => handleInputChange('allowsSubclasses', !formData.allowsSubclasses)}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.allowsSubclasses ? 'bg-emerald-500' : 'bg-[#D2D2D7]'}`}
               >
-                <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.allowsSubEntities ? 'translate-x-7' : 'translate-x-1'}`} />
+                <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${formData.allowsSubclasses ? 'translate-x-7' : 'translate-x-1'}`} />
               </button>
             </div>
 
-            {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+            {submitError && (
+              <p className="px-4 py-3 text-sm text-red-600 border border-red-200 bg-red-50 rounded-xl">{submitError}</p>
+            )}
           </div>
         </div>
 

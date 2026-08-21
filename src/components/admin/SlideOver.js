@@ -1,12 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
-const SlideOver = ({ open, title, onClose, children }) => {
+// 'md' keeps the historical width; 'lg' is for forms with nested editors (clusters).
+const WIDTH_CLASSES = { md: 'max-w-md', lg: 'max-w-2xl' };
+
+const SlideOver = ({ open, title, onClose, children, width = 'md' }) => {
+  useEffect(() => {
+    if (!open) return undefined;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose?.();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col">
+      <div className={`relative w-full ${WIDTH_CLASSES[width] ?? WIDTH_CLASSES.md} h-full bg-white shadow-2xl flex flex-col`}>
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200">
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700">

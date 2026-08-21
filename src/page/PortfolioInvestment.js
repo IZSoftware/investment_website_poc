@@ -2,39 +2,40 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Edit2, Plus, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import { getInvestorDashboardPortfolio, getInvestorSectors, updateAdminSectorStatus } from '../api/services';
+import {
+  getInvestorDashboardPortfolio,
+  getInvestorClusters,
+  updateAdminClusterStatus,
+} from '../api/services';
+import { formatDisplayDate } from '../utils/valuation';
+import { useAuth } from '../context/AuthContext';
 import EditSectorModal from '../components/InvestorPortal/EditSectorModal';
 import AddSectorModal from '../components/InvestorPortal/AddSectorModal';
-
-const formatDate = (isoDate) => {
-  if (!isoDate) return '';
-  try {
-    return new Date(isoDate).toLocaleDateString();
-  } catch {
-    return isoDate;
-  }
-};
 
 const PIE_PALETTE = ['#012060', '#2caffe', '#544fc5', '#00d4ff', '#f45b5b', '#91e8e1', '#f7a35c', '#8085e9'];
 
 export default function InvestmentPortfolio() {
   const navigate = useNavigate();
+  const { userRole } = useAuth();
+  const canEdit = userRole !== 'DEV';
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
   const [pageInfo, setPageInfo] = useState(null);
-  const [sectors, setSectors] = useState([]);
+  const [clusters, setClusters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [statusError, setStatusError] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const [portfolioRes, sectorsRes] = await Promise.all([
+      const [portfolioRes, clustersRes] = await Promise.all([
         getInvestorDashboardPortfolio(),
-        getInvestorSectors(),
+        getInvestorClusters(),
       ]);
 
       if (portfolioRes.success) {
@@ -43,13 +44,13 @@ export default function InvestmentPortfolio() {
         setError(portfolioRes.message || 'Failed to load portfolio summary');
       }
 
-      if (sectorsRes.success) {
-        setSectors(sectorsRes.data);
+      if (clustersRes.success) {
+        setClusters(clustersRes.data || []);
       } else {
-        setError((prev) => prev || sectorsRes.message || 'Failed to load clusters');
+        setError((prev) => prev || clustersRes.message || 'Failed to load clusters');
       }
     } catch (err) {
-      setError(err?.message || 'Failed to load investment portfolio data');
+      setError(err.response?.data?.message || err?.message || 'Failed to load investment portfolio data');
     } finally {
       setLoading(false);
     }
@@ -60,6 +61,7 @@ export default function InvestmentPortfolio() {
   }, [fetchData]);
 
   const handleEdit = (item) => {
+    if (!canEdit) return;
     setEditingItem(item);
     setShowEditModal(true);
   };
@@ -83,16 +85,19 @@ export default function InvestmentPortfolio() {
     await fetchData();
   };
 
-  const handleToggleStatus = async (sectorId, enabledStatus) => {
+  // Single place the status PATCH is fired from — the card button and the edit
+  // modal's toggle both delegate here.
+  const handleToggleStatus = async (clusterId, enabledStatus) => {
     try {
-      const response = await updateAdminSectorStatus({ id: sectorId, enabled: enabledStatus });
+      setStatusError(null);
+      const response = await updateAdminClusterStatus({ id: clusterId, enabled: enabledStatus });
       if (response.success) {
         await fetchData();
       } else {
-        console.error('Failed to update cluster status:', response.message);
+        setStatusError(response.message || 'Failed to update cluster status');
       }
     } catch (err) {
-      console.error('Failed to update cluster status:', err);
+      setStatusError(err.response?.data?.message || err?.message || 'Failed to update cluster status');
     }
   };
 
@@ -114,11 +119,11 @@ export default function InvestmentPortfolio() {
     );
   }
 
-  const activeSectors = sectors.filter((s) => s.enabled);
-  const pieData = activeSectors.map((s, idx) => ({
-    name: s.name,
-    value: s.valuation?.allocationPercent ?? 0,
-    displayText: s.valuation?.displayText,
+  const activeClusters = clusters.filter((c) => c.enabled);
+  const pieData = activeClusters.map((c, idx) => ({
+    name: c.name,
+    value: c.valuation?.allocationPercent ?? 0,
+    displayText: c.valuation?.displayText,
     color: PIE_PALETTE[idx % PIE_PALETTE.length],
   }));
 
@@ -136,18 +141,34 @@ export default function InvestmentPortfolio() {
               <span className="text-xs font-medium sm:text-sm">Back to Dashboard</span>
             </button>
 
-            <div className="flex flex-col items-start justify-between gap-4 mb-8 sm:flex-row sm:items-center lg:mb-12">
+            <div className="flex flex-col items-start justify-between gap-4 mb-6 sm:flex-row sm:items-center lg:mb-8">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#1D1D1F] tracking-tight">
-              CLUSTER ALLOCATION
+                {pageInfo?.title || 'CLUSTER ALLOCATION'}
               </h1>
-              <button
-                onClick={handleAdd}
-                className="inline-flex items-center gap-1.5 lg:gap-2 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
-              >
-                <Plus size={16} className="sm:w-[18px] sm:h-[18px] lg:w-5 lg:h-5" />
-                <span className="font-medium">Add Cluster</span>
-              </button>
+              {canEdit && (
+                <button
+                  onClick={handleAdd}
+                  className="inline-flex items-center gap-1.5 lg:gap-2 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
+                >
+                  <Plus size={16} className="sm:w-[18px] sm:h-[18px] lg:w-5 lg:h-5" />
+                  <span className="font-medium">Add Cluster</span>
+                </button>
+              )}
             </div>
+
+            {pageInfo?.introText && (
+              <div className="max-w-4xl mb-8 lg:mb-12">
+                <p className="text-sm sm:text-base lg:text-lg text-[#6E6E73] leading-relaxed">
+                  {pageInfo.introText}
+                </p>
+              </div>
+            )}
+
+            {statusError && (
+              <div className="max-w-4xl px-4 py-3 mb-8 text-sm text-red-600 border border-red-200 bg-red-50 rounded-xl">
+                {statusError}
+              </div>
+            )}
 
             {/* ── Cluster Allocation pie chart ── */}
             {pieData.length > 0 && (
@@ -211,37 +232,67 @@ export default function InvestmentPortfolio() {
                 Our Clusters Include:
               </h2>
               <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {sectors.map((sector) => (
+                {clusters.map((cluster) => (
                   <div
-                    key={sector.id}
-                    className={`bg-[#F5F5F7] rounded-xl lg:rounded-2xl p-6 sm:p-7 lg:p-8 relative group shadow-lg hover:shadow-xl transition-shadow ${!sector.enabled ? 'opacity-60' : ''}`}
+                    key={cluster.id}
+                    className={`bg-[#F5F5F7] rounded-xl lg:rounded-2xl p-6 sm:p-7 lg:p-8 relative group shadow-lg hover:shadow-xl transition-shadow ${!cluster.enabled ? 'opacity-60' : ''}`}
                   >
                     <div className="absolute flex items-center gap-2 top-3 right-3 lg:top-4 lg:right-4">
-                      {!sector.enabled && (
+                      {!cluster.enabled && (
                         <span className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-red-100 text-red-700">
                           Disabled
                         </span>
                       )}
-                      <button
-                        onClick={() => handleEdit(sector)}
-                        className="p-1.5 lg:p-2 text-white transition-all bg-black rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-800"
-                      >
-                        <Edit2 size={14} className="lg:w-[18px] lg:h-[18px]" />
-                      </button>
+                      {canEdit && (
+                        <button
+                          onClick={() => handleEdit(cluster)}
+                          className="p-1.5 lg:p-2 text-white transition-all bg-black rounded-lg opacity-0 group-hover:opacity-100 hover:bg-gray-800"
+                        >
+                          <Edit2 size={14} className="lg:w-[18px] lg:h-[18px]" />
+                        </button>
+                      )}
                     </div>
-                    <div className="mb-3 text-3xl lg:mb-4 lg:text-4xl">{sector.icon}</div>
+                    <div className="mb-3 text-3xl lg:mb-4 lg:text-4xl">{cluster.icon}</div>
                     <h3 className="text-lg lg:text-xl font-semibold text-[#1D1D1F] mb-2 lg:mb-3">
-                      {sector.name}
+                      {cluster.name}
                     </h3>
                     <p className="text-xs sm:text-sm text-[#6E6E73] leading-relaxed mb-4 lg:mb-6">
-                      {sector.publicDescription}
+                      {cluster.publicDescription}
                     </p>
+
+                    {cluster.companies?.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-4 lg:mb-6">
+                        {cluster.companies.map((company, idx) => (
+                          <span
+                            key={company?.id || `${company?.name}-${idx}`}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-full text-[11px] text-[#1D1D1F] border border-[#E5E5EA]"
+                          >
+                            {company?.logo && (
+                              <img src={company.logo} alt="" className="object-contain w-4 h-4 rounded-full" />
+                            )}
+                            {company?.link ? (
+                              <a
+                                href={company.link}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="hover:underline"
+                              >
+                                {company?.name}
+                              </a>
+                            ) : (
+                              company?.name
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
                     <div>
                       <div className="text-xl lg:text-2xl font-semibold text-[#1D1D1F]">
-                        {sector.valuation?.displayText}
+                        {cluster.valuation?.displayText}
                       </div>
                       <p className="text-xs text-[#6E6E73] mt-1">
-                        {formatDate(sector.valuation?.asAtDate)}
+                        {formatDisplayDate(cluster.valuation?.asAtDate)}
                       </p>
                     </div>
                   </div>
@@ -253,19 +304,23 @@ export default function InvestmentPortfolio() {
         <div className="hidden col-span-1 lg:block" />
       </div>
 
-      <EditSectorModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        sector={editingItem}
-        onSave={handleSaveEdit}
-        onDelete={handleDelete}
-        onToggleStatus={handleToggleStatus}
-      />
-      <AddSectorModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSave={handleSaveAdd}
-      />
+      {canEdit && (
+        <>
+          <EditSectorModal
+            isOpen={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            cluster={editingItem}
+            onSave={handleSaveEdit}
+            onDelete={handleDelete}
+            onToggleStatus={handleToggleStatus}
+          />
+          <AddSectorModal
+            isOpen={showAddModal}
+            onClose={() => setShowAddModal(false)}
+            onSave={handleSaveAdd}
+          />
+        </>
+      )}
     </div>
   );
 }

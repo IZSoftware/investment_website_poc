@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTwitter, FaLinkedinIn } from 'react-icons/fa';
+import { FaLinkedinIn } from 'react-icons/fa';
 import { FaPhone, FaEnvelope, FaLocationDot } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 

@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { createAdminAssetSubEntity } from '../../api/services';
+import { createAdminAssetSubclass } from '../../api/services';
 import { VALUATION_UNITS, CURRENCY_OPTIONS, buildValuation, formatAsAtDate } from '../../utils/valuation';
 
+// Creates one subclass directly under `assetId`. The portfolio tree is exactly
+// two levels deep — subclasses have no children of their own.
 export default function AddSubEntityModal({ isOpen, onClose, onSave, assetId }) {
   const [formData, setFormData] = useState({
     name: '',
@@ -23,7 +25,7 @@ export default function AddSubEntityModal({ isOpen, onClose, onSave, assetId }) 
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name) newErrors.name = 'Sub-entity name is required';
+    if (!formData.name) newErrors.name = 'Subclass name is required';
     if (!formData.amount) newErrors.amount = 'Valuation number is required';
     if (!formData.selectedDate) newErrors.date = 'Date is required';
     return newErrors;
@@ -32,6 +34,19 @@ export default function AddSubEntityModal({ isOpen, onClose, onSave, assetId }) 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
+  };
+
+  // Server validation errors arrive as errors[] = [{field, message}].
+  const applyServerError = (err, fallback) => {
+    const list = err?.response?.data?.errors;
+    if (Array.isArray(list) && list.length > 0) {
+      const mapped = {};
+      list.forEach((item) => {
+        if (item?.field) mapped[item.field] = item.message;
+      });
+      setErrors((prev) => ({ ...prev, ...mapped }));
+    }
+    setSubmitError(err?.response?.data?.message || err?.message || fallback);
   };
 
   const resetForm = () => {
@@ -63,31 +78,26 @@ export default function AddSubEntityModal({ isOpen, onClose, onSave, assetId }) 
       asAtDate: formatAsAtDate(formData.selectedDate),
     });
 
-    // NOTE: parentSubEntityId is left undefined — this modal only creates
-    // top-level sub-entities directly under the asset, not nested ones.
-    const payload = {
-      assetId,
-      name: formData.name,
-      description: formData.description,
-      parentSubEntityId: undefined,
-      valuation,
-      enabled: true,
-      sortOrder: 0,
-    };
-
     try {
       setSubmitting(true);
       setSubmitError(null);
-      const response = await createAdminAssetSubEntity(payload);
+      const response = await createAdminAssetSubclass({
+        assetId,
+        name: formData.name,
+        description: formData.description,
+        valuation,
+        enabled: true,
+        sortOrder: 0,
+      });
       if (response.success) {
         onSave(response.data);
         resetForm();
         onClose();
       } else {
-        setSubmitError(response.message || 'Failed to create sub-entity');
+        setSubmitError(response.message || 'Failed to create subclass');
       }
     } catch (err) {
-      setSubmitError(err?.message || 'Failed to create sub-entity');
+      applyServerError(err, 'Failed to create subclass');
     } finally {
       setSubmitting(false);
     }
@@ -99,8 +109,8 @@ export default function AddSubEntityModal({ isOpen, onClose, onSave, assetId }) 
       <div className="relative w-full max-w-2xl bg-white shadow-2xl rounded-2xl max-h-[90vh] flex flex-col" style={{ animation: 'scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
         <div className="flex items-center justify-between p-6 border-b border-[#D2D2D7] flex-shrink-0">
           <div>
-            <h3 className="text-xl font-semibold text-[#1D1D1F]">Add Sub-Entity</h3>
-            <p className="text-sm text-[#6E6E73] mt-1">Add a new sub-entity under this asset</p>
+            <h3 className="text-xl font-semibold text-[#1D1D1F]">Add Asset Subclass</h3>
+            <p className="text-sm text-[#6E6E73] mt-1">Add a new subclass under this asset</p>
           </div>
           <button onClick={handleCancel} className="p-2 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-all">
             <X size={20} />
@@ -111,13 +121,13 @@ export default function AddSubEntityModal({ isOpen, onClose, onSave, assetId }) 
           <div className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#1D1D1F] block">
-                Sub-Entity Name <span className="text-red-500">*</span>
+                Subclass Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="Sub-Entity Name"
+                placeholder="Subclass Name"
                 className={`w-full bg-white border ${errors.name ? 'border-red-500' : 'border-[#D2D2D7]'} rounded-xl px-4 py-3 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all`}
               />
               {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
@@ -182,7 +192,9 @@ export default function AddSubEntityModal({ isOpen, onClose, onSave, assetId }) 
               {errors.date && <p className="mt-1 text-xs text-red-500">{errors.date}</p>}
             </div>
 
-            {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+            {submitError && (
+              <p className="px-4 py-3 text-sm text-red-600 border border-red-200 bg-red-50 rounded-xl">{submitError}</p>
+            )}
           </div>
         </div>
 
@@ -191,7 +203,7 @@ export default function AddSubEntityModal({ isOpen, onClose, onSave, assetId }) 
             Cancel
           </button>
           <button onClick={handleSubmit} disabled={submitting} className="px-6 py-3 bg-[#1D1D1F] text-white font-medium rounded-xl hover:bg-[#2D2D2F] transition-all disabled:opacity-50">
-            {submitting ? 'Adding…' : 'Add Sub-Entity'}
+            {submitting ? 'Adding…' : 'Add Subclass'}
           </button>
         </div>
       </div>
@@ -199,6 +211,8 @@ export default function AddSubEntityModal({ isOpen, onClose, onSave, assetId }) 
       <style>{`
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .react-datepicker-wrapper { width: 100%; }
+        .react-datepicker__input-container { width: 100%; }
       `}</style>
     </div>
   );

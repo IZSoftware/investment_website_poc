@@ -1,47 +1,39 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import { Edit2, Plus, X, ArrowLeft, ChevronRight } from 'lucide-react';
+import { Edit2, Plus, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AddCountryModal from '../components/InvestorPortal/AddCountryModal';
+import EditCountryModal from '../components/InvestorPortal/EditCountryModal';
+import { useAuth } from '../context/AuthContext';
 import {
   getInvestorDashboardCountries,
   getInvestorCountries,
-  updateAdminCountry,
-  deleteAdminCountry,
+  updateAdminCountryStatus,
 } from '../api/services';
 import { getSupportedCountries } from '../data/data';
-import {
-  VALUATION_UNITS,
-  CURRENCY_OPTIONS,
-  buildValuation,
-  parseValuation,
-  formatAsAtDate,
-  formatDisplayDate,
-} from '../utils/valuation';
+import { formatDisplayDate } from '../utils/valuation';
+import { sortByOrder } from '../utils/apiHelpers';
+
+// Static reference picklist for country names — the API stores/returns a plain
+// `name` string, this list only shapes the input.
+const SUPPORTED_COUNTRIES = getSupportedCountries();
 
 export default function Market() {
   const navigate = useNavigate();
-  const [showEditModal, setShowEditModal] = useState(false);
+  const { userRole } = useAuth();
+  // DEV reads everything, writes nothing (README §8.1 capability matrix).
+  const canWrite = userRole !== 'DEV';
+
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
-  const [formData, setFormData] = useState({
-    countryName: '', numberOfYears: '', currency: 'USD', amount: '',
-    unit: 'BILLIONS', allocationPercent: '', selectedDate: null,
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState(null);
+  const [editingCountry, setEditingCountry] = useState(null);
 
   const [dashboardInfo, setDashboardInfo] = useState(null);
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState(null);
 
-  const supportedCountries = getSupportedCountries();
-
-  // Pulled out so it can be re-run after any create/edit/delete,
-  // keeping the summary cards and country list in sync with the server
-  // instead of only patching local state.
+  // Pulled out so it can be re-run after any create/edit/delete, keeping the
+  // summary cards and country list in sync with the server.
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -58,12 +50,12 @@ export default function Market() {
       }
 
       if (countriesRes.success) {
-        setCountries(countriesRes.data);
+        setCountries(sortByOrder(countriesRes.data || []));
       } else {
         setError((prev) => prev || countriesRes.message || 'Failed to load countries');
       }
     } catch (err) {
-      setError(err?.message || 'Failed to load market data');
+      setError(err.response?.data?.message || 'Failed to load market data');
     } finally {
       setLoading(false);
     }
@@ -73,91 +65,47 @@ export default function Market() {
     fetchData();
   }, [fetchData]);
 
-  const handleEdit = (country) => {
-    const parsedVal = parseValuation(country.valuation);
-    setEditingItem(country);
-    setFormData({
-      countryName: country.countryName || '',
-      numberOfYears: country.numberOfYears ?? '',
-      currency: parsedVal.currency,
-      amount: parsedVal.amount,
-      unit: parsedVal.unit,
-      allocationPercent: parsedVal.allocationPercent,
-      selectedDate: parsedVal.asAtDate,
-    });
-    setSubmitError(null);
-    setShowEditModal(true);
-  };
-
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSaveEdit = async () => {
-    const valuation = buildValuation({
-      currency: formData.currency,
-      amount: formData.amount,
-      unit: formData.unit,
-      allocationPercent: formData.allocationPercent,
-      asAtDate: formatAsAtDate(formData.selectedDate),
-    });
-
+  // Single owner of the status PATCH — the card button and the edit modal's
+  // toggle both delegate here so the call never fires twice for one click.
+  const handleToggleStatus = async (id, enabled) => {
+    setActionError(null);
+    setCountries((prev) => prev.map((c) => (c.id === id ? { ...c, enabled } : c)));
     try {
-      setSubmitting(true);
-      setSubmitError(null);
-      const response = await updateAdminCountry({
-        id: editingItem.id,
-        countryName: formData.countryName,
-        numberOfYears: Number(formData.numberOfYears),
-        valuation,
-        enabled: editingItem.enabled ?? true,
-        sortOrder: editingItem.sortOrder ?? 0,
-      });
-
+      const response = await updateAdminCountryStatus({ id, enabled });
       if (response.success) {
-        setShowEditModal(false);
-        setEditingItem(null);
-        await fetchData();
+        setCountries((prev) => prev.map((c) => (c.id === id ? { ...c, ...response.data } : c)));
       } else {
-        setSubmitError(response.message || 'Failed to save changes');
+        setActionError(response.message || 'Failed to update status');
+        await fetchData();
       }
     } catch (err) {
-      setSubmitError(err?.message || 'Failed to save changes');
-    } finally {
-      setSubmitting(false);
+      setActionError(err.response?.data?.message || 'Failed to update status');
+      await fetchData();
     }
   };
 
-  const handleSaveAdd = async () => {
-    setShowAddModal(false);
+  const handleSaved = async () => {
+    setEditingCountry(null);
     await fetchData();
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this country?')) return;
-    try {
-      setSubmitting(true);
-      const response = await deleteAdminCountry({ id });
-      if (response.success) {
-        setShowEditModal(false);
-        setEditingItem(null);
-        await fetchData();
-      } else {
-        setSubmitError(response.message || 'Failed to delete');
-      }
-    } catch (err) {
-      setSubmitError(err?.message || 'Failed to delete');
-    } finally {
-      setSubmitting(false);
-    }
+  const handleDeleted = async () => {
+    setEditingCountry(null);
+    await fetchData();
   };
 
   if (loading && !dashboardInfo) {
-    return <div className="flex items-center justify-center min-h-screen text-gray-500 bg-white">Loading market data…</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-500 bg-white">
+        Loading market data…
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="flex items-center justify-center min-h-screen text-red-500 bg-white">{error}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen text-red-500 bg-white">{error}</div>
+    );
   }
 
   return (
@@ -177,30 +125,40 @@ export default function Market() {
 
             <div className="flex flex-col items-start justify-between gap-4 mb-8 sm:flex-row sm:items-center lg:mb-12">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#1D1D1F] tracking-tight">
-                {dashboardInfo?.title || 'SETTINGS'}
+                {dashboardInfo?.title || 'MARKETS'}
               </h1>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-1.5 lg:gap-2 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
-              >
-                <Plus size={16} className="sm:w-[18px] sm:h-[18px] lg:w-5 lg:h-5" />
-                <span className="font-medium">Add Country</span>
-              </button>
+              {canWrite && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="inline-flex items-center gap-1.5 lg:gap-2 px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
+                >
+                  <Plus size={16} className="sm:w-[18px] sm:h-[18px] lg:w-5 lg:h-5" />
+                  <span className="font-medium">Add Country</span>
+                </button>
+              )}
             </div>
 
-            <div className="max-w-4xl mb-12 lg:mb-16">
-              <p className="text-sm sm:text-base lg:text-lg text-[#6E6E73] leading-relaxed">
-                {dashboardInfo?.introText}
-              </p>
-            </div>
+            {dashboardInfo?.introText && (
+              <div className="max-w-4xl mb-12 lg:mb-16">
+                <p className="text-sm sm:text-base lg:text-lg text-[#6E6E73] leading-relaxed">
+                  {dashboardInfo.introText}
+                </p>
+              </div>
+            )}
+
+            {actionError && (
+              <div className="px-4 py-3 mb-8 text-sm text-red-600 border border-red-200 bg-red-50 rounded-xl">
+                {actionError}
+              </div>
+            )}
 
             <div className="mb-10 lg:mb-12">
-              <h2 className="text-xl sm:text-2xl font-semibold text-[#1D1D1F] mb-4 lg:mb-6">NF Holding Overview</h2>
+              <h2 className="text-xl sm:text-2xl font-semibold text-[#1D1D1F] mb-4 lg:mb-6">Overview</h2>
               <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6 md:grid-cols-3">
                 <div className="bg-[#F5F5F7] rounded-xl lg:rounded-2xl p-6 sm:p-7 lg:p-8 shadow-lg border-l-4 border-emerald-500">
                   <h3 className="text-base sm:text-lg font-medium text-[#6E6E73] mb-2 lg:mb-4">Years</h3>
                   <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1D1D1F] mb-1 lg:mb-2">
-                    {dashboardInfo?.years}
+                    {dashboardInfo?.years ?? '—'}
                   </div>
                   <p className="text-xs sm:text-sm text-[#6E6E73]">of investing</p>
                 </div>
@@ -208,7 +166,7 @@ export default function Market() {
                 <div className="bg-[#F5F5F7] rounded-xl lg:rounded-2xl p-6 sm:p-7 lg:p-8 shadow-lg border-l-4 border-emerald-500">
                   <h3 className="text-base sm:text-lg font-medium text-[#6E6E73] mb-2 lg:mb-4">Total Countries</h3>
                   <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1D1D1F] mb-1 lg:mb-2">
-                    {dashboardInfo?.totalCountries}
+                    {dashboardInfo?.totalCountries ?? '—'}
                   </div>
                   <p className="text-xs sm:text-sm text-[#6E6E73]">active countries</p>
                 </div>
@@ -216,161 +174,94 @@ export default function Market() {
                 <div className="bg-[#F5F5F7] rounded-xl lg:rounded-2xl p-6 sm:p-7 lg:p-8 shadow-lg border-l-4 border-emerald-500">
                   <h3 className="text-base sm:text-lg font-medium text-[#6E6E73] mb-2 lg:mb-4">Total Value</h3>
                   <div className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1D1D1F] mb-1 lg:mb-2">
-                    {dashboardInfo?.totalValue?.displayText}
+                    {dashboardInfo?.totalValue?.displayText || '—'}
                   </div>
                   <p className="text-xs sm:text-sm text-[#6E6E73]">across all countries</p>
                 </div>
               </div>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-semibold text-[#1D1D1F] mb-4 lg:mb-8">Choose a Country</h2>
-            <div className="grid grid-cols-1 gap-4 mb-12 sm:gap-5 lg:gap-6 lg:mb-16 md:grid-cols-2 lg:grid-cols-3">
-              {countries.map((country) => (
-                <div
-                  key={country.id}
-                  className="bg-[#F5F5F7] rounded-xl lg:rounded-2xl p-6 sm:p-7 lg:p-8 relative group shadow-lg hover:shadow-xl transition-shadow flex flex-col h-full"
-                >
-                  <div className="absolute flex items-center gap-1.5 lg:gap-2 transition-all opacity-0 top-3 right-3 lg:top-4 lg:right-4 group-hover:opacity-100">
-                    <button onClick={() => handleEdit(country)} className="p-1.5 lg:p-2 text-white transition-all bg-black rounded-lg hover:bg-gray-800">
-                      <Edit2 size={14} className="lg:w-[18px] lg:h-[18px]" />
-                    </button>
-                    <button onClick={() => handleDelete(country.id)} className="p-1.5 lg:p-2 text-white transition-all bg-red-600 rounded-lg hover:bg-red-700">
-                      <X size={14} className="lg:w-[18px] lg:h-[18px]" />
-                    </button>
-                  </div>
-                  <div className="flex items-start gap-1.5 lg:gap-2 mb-3 lg:mb-4">
-                    <h3 className="text-lg lg:text-xl font-semibold text-[#1D1D1F]">{country.countryName}</h3>
-                    <ChevronRight size={16} className="lg:w-5 lg:h-5 text-[#6E6E73] mt-0.5 lg:mt-1" />
-                  </div>
-                  <p className="text-xs sm:text-sm text-[#6E6E73] mb-4 lg:mb-6 flex-grow">
-                    {country.numberOfYears} years
-                  </p>
-                  <div>
-                    <div className="text-xl lg:text-2xl font-semibold text-[#1D1D1F]">
-                      {country.valuation?.displayText}
+            <h2 className="text-xl sm:text-2xl font-semibold text-[#1D1D1F] mb-4 lg:mb-8">Countries</h2>
+
+            {countries.length === 0 ? (
+              <p className="mb-12 text-sm text-[#6E6E73] lg:mb-16">No countries have been added yet.</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 mb-12 sm:gap-5 lg:gap-6 lg:mb-16 md:grid-cols-2 lg:grid-cols-3">
+                {countries.map((country) => {
+                  const enabled = country.enabled ?? true;
+                  const asAt = formatDisplayDate(country.valuation?.asAtDate);
+                  return (
+                    <div
+                      key={country.id}
+                      className={`bg-[#F5F5F7] rounded-xl lg:rounded-2xl p-6 sm:p-7 lg:p-8 relative group shadow-lg hover:shadow-xl transition-shadow flex flex-col h-full border-l-4 ${enabled ? 'border-emerald-500' : 'border-red-500 bg-red-50'}`}
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-3 lg:mb-4">
+                        <h3 className="text-lg lg:text-xl font-semibold text-[#1D1D1F]">{country.name}</h3>
+                        {canWrite && (
+                          <button
+                            onClick={() => setEditingCountry(country)}
+                            className="p-1.5 lg:p-2 text-white transition-all bg-[#1D1D1F] rounded-lg opacity-0 hover:bg-[#2D2D2F] group-hover:opacity-100 flex-shrink-0"
+                            title="Edit country"
+                          >
+                            <Edit2 size={14} className="lg:w-[18px] lg:h-[18px]" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="mb-4 lg:mb-6">
+                        <span
+                          className={`inline-block px-2.5 py-1 text-xs font-medium rounded-full ${enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}
+                        >
+                          {enabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </div>
+
+                      <div className="mt-auto">
+                        <div className="text-xl lg:text-2xl font-semibold text-[#1D1D1F]">
+                          {country.valuation?.displayText || '—'}
+                        </div>
+                        {asAt && (
+                          <p className="text-xs text-[#6E6E73] mt-1 tracking-wide">
+                            AS AT {asAt.toUpperCase()}
+                          </p>
+                        )}
+                      </div>
+
+                      {canWrite && (
+                        <button
+                          onClick={() => handleToggleStatus(country.id, !enabled)}
+                          className={`mt-4 lg:mt-6 px-4 py-2 text-xs font-medium rounded-xl transition-all ${enabled ? 'text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-white' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
+                        >
+                          {enabled ? 'Disable' : 'Enable'}
+                        </button>
+                      )}
                     </div>
-                    <p className="text-xs text-[#6E6E73] mt-1 tracking-wide">
-                      AS AT {formatDisplayDate(country.valuation?.asAtDate).toUpperCase()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            )}
 
           </div>
         </div>
         <div className="hidden col-span-1 lg:block" />
       </div>
 
-      {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-          <div className="absolute inset-0 bg-[#1D1D1F]/40 backdrop-blur-sm" onClick={() => setShowEditModal(false)} />
-          <div className="relative w-full max-w-2xl bg-white shadow-2xl rounded-xl lg:rounded-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 sm:p-5 lg:p-6 border-b border-[#D2D2D7]">
-              <h3 className="text-lg sm:text-xl font-semibold text-[#1D1D1F]">Edit Country</h3>
-              <button onClick={() => setShowEditModal(false)} className="p-1.5 lg:p-2 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-all">
-                <X size={16} className="lg:w-5 lg:h-5" />
-              </button>
-            </div>
-            <div className="p-4 space-y-4 sm:p-5 lg:p-6 lg:space-y-6">
-              <div className="space-y-1.5 lg:space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">Country Name</label>
-                <select
-                  value={formData.countryName}
-                  onChange={(e) => handleInputChange('countryName', e.target.value)}
-                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all appearance-none"
-                  style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236E6E73' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
-                >
-                  <option value="">Select Country</option>
-                  {supportedCountries.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-
-              <div className="space-y-1.5 lg:space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">
-                  Number of Years <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number" min="1" max="100"
-                  value={formData.numberOfYears}
-                  onChange={(e) => handleInputChange('numberOfYears', e.target.value)}
-                  placeholder="Enter number of years"
-                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
-                />
-              </div>
-
-              <div className="space-y-1.5 lg:space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">
-                  Valuation <span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-12 gap-3">
-                  <div className="col-span-3">
-                    <select value={formData.currency} onChange={(e) => handleInputChange('currency', e.target.value)} className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent">
-                      {CURRENCY_OPTIONS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-                    </select>
-                  </div>
-                  <div className="col-span-5">
-                    <input type="number" value={formData.amount} onChange={(e) => handleInputChange('amount', e.target.value)} placeholder="0.00" min="0" step="0.01" className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all" />
-                  </div>
-                  <div className="col-span-4">
-                    <select value={formData.unit} onChange={(e) => handleInputChange('unit', e.target.value)} className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent">
-                      {VALUATION_UNITS.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-1.5 lg:space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">Allocation %</label>
-                <input type="number" min="0" max="100" step="0.01" value={formData.allocationPercent} onChange={(e) => handleInputChange('allocationPercent', e.target.value)} className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all" />
-              </div>
-
-              <div className="space-y-1.5 lg:space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-[#1D1D1F] block">As At Date</label>
-                <DatePicker
-                  selected={formData.selectedDate}
-                  onChange={(date) => handleInputChange('selectedDate', date)}
-                  dateFormat="MMMM d, yyyy"
-                  placeholderText="Select date"
-                  className="w-full bg-white border border-[#D2D2D7] rounded-xl px-3 py-2 sm:py-3 text-sm sm:text-base text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent"
-                  showMonthDropdown
-                  showYearDropdown
-                  dropdownMode="select"
-                  yearDropdownItemNumber={15}
-                  scrollableYearDropdown
-                  maxDate={new Date()}
-                />
-              </div>
-
-              {submitError && <p className="text-sm text-red-500">{submitError}</p>}
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-5 lg:p-6 border-t border-[#D2D2D7]">
-              <button onClick={() => handleDelete(editingItem?.id)} className="px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 text-xs sm:text-sm font-medium text-red-600 transition-all hover:text-red-700 hover:bg-red-50 rounded-xl w-full sm:w-auto">
-                Delete Country
-              </button>
-              <div className="flex flex-col w-full gap-2 sm:flex-row sm:gap-3 sm:w-auto">
-                <button onClick={() => setShowEditModal(false)} className="px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 text-xs sm:text-sm font-medium text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-xl transition-all">
-                  Cancel
-                </button>
-                <button onClick={handleSaveEdit} disabled={submitting} className="px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 bg-[#1D1D1F] text-white font-medium rounded-xl hover:bg-[#2D2D2F] transition-all text-xs sm:text-sm disabled:opacity-50">
-                  {submitting ? 'Saving…' : 'Save Changes'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       <AddCountryModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
-        onSave={handleSaveAdd}
-        supportedCountries={supportedCountries}
+        onSave={handleSaved}
+        supportedCountries={SUPPORTED_COUNTRIES}
       />
 
-      <style>{`
-        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-      `}</style>
+      <EditCountryModal
+        isOpen={Boolean(editingCountry)}
+        onClose={() => setEditingCountry(null)}
+        country={editingCountry}
+        onSave={handleSaved}
+        onDelete={handleDeleted}
+        onToggleStatus={handleToggleStatus}
+        supportedCountries={SUPPORTED_COUNTRIES}
+      />
     </div>
   );
 }

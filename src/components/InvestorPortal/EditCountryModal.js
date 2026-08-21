@@ -1,27 +1,17 @@
 import { useState, useEffect } from 'react';
-import { X, Power } from 'lucide-react';
+import { X, Power, Trash2 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { createAdminCountry } from '../../api/services';
+import { updateAdminCountry, deleteAdminCountry } from '../../api/services';
 import {
   VALUATION_UNITS,
   CURRENCY_OPTIONS,
   buildValuation,
+  parseValuation,
   formatAsAtDate,
 } from '../../utils/valuation';
 
 const CUSTOM_NAME = '__custom__';
-
-const EMPTY_FORM = {
-  name: '',
-  currency: 'USD',
-  amount: '',
-  unit: 'BILLIONS',
-  allocationPercent: '',
-  selectedDate: null,
-  enabled: true,
-  sortOrder: 0,
-};
 
 // Maps server validation errors[] = [{field, message}] onto local field keys.
 // Anything that doesn't match a known field is surfaced in the general error line.
@@ -38,23 +28,57 @@ function mapServerErrors(list) {
   return { mapped, unmatched };
 }
 
-export default function AddCountryModal({ isOpen, onClose, onSave, supportedCountries = [] }) {
-  const [formData, setFormData] = useState(EMPTY_FORM);
+// NOTE on the status toggle: it does NOT call the API itself — it delegates to
+// the `onToggleStatus` prop, same as the card's own toggle button. This keeps
+// the actual PATCH call in exactly one place (the parent page) so it never
+// fires twice for the same click.
+export default function EditCountryModal({
+  isOpen,
+  onClose,
+  country,
+  onSave,
+  onDelete,
+  onToggleStatus,
+  supportedCountries = [],
+}) {
+  const [formData, setFormData] = useState({
+    name: '',
+    currency: 'USD',
+    amount: '',
+    unit: 'BILLIONS',
+    allocationPercent: '',
+    selectedDate: null,
+    enabled: true,
+    sortOrder: 0,
+  });
   const [useCustomName, setUseCustomName] = useState(false);
   const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) {
-      setFormData(EMPTY_FORM);
-      setUseCustomName(false);
+    if (country) {
+      const parsedVal = parseValuation(country.valuation);
+      setFormData({
+        name: country.name || '',
+        currency: parsedVal.currency,
+        amount: parsedVal.amount,
+        unit: parsedVal.unit,
+        allocationPercent: parsedVal.allocationPercent,
+        selectedDate: parsedVal.asAtDate,
+        enabled: country.enabled ?? true,
+        sortOrder: country.sortOrder ?? 0,
+      });
+      setUseCustomName(Boolean(country.name) && !supportedCountries.includes(country.name));
       setErrors({});
       setSubmitError(null);
+      setShowDeleteConfirm(false);
     }
-  }, [isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !country) return null;
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -68,6 +92,12 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
     } else {
       handleChange('name', value);
     }
+  };
+
+  const handleToggleStatus = () => {
+    const newStatus = !formData.enabled;
+    setFormData((prev) => ({ ...prev, enabled: newStatus }));
+    if (onToggleStatus) onToggleStatus(country.id, newStatus);
   };
 
   const handleSubmit = async () => {
@@ -89,7 +119,8 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
       setSubmitError(null);
       setErrors({});
 
-      const response = await createAdminCountry({
+      const response = await updateAdminCountry({
+        id: country.id,
         name: formData.name.trim(),
         valuation,
         enabled: formData.enabled,
@@ -102,14 +133,32 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
       } else {
         const { mapped, unmatched } = mapServerErrors(response.errors);
         setErrors(mapped);
-        setSubmitError([response.message || 'Failed to add country', ...unmatched].join(' — '));
+        setSubmitError([response.message || 'Failed to save changes', ...unmatched].join(' — '));
       }
     } catch (err) {
       const { mapped, unmatched } = mapServerErrors(err.response?.data?.errors);
       setErrors(mapped);
       setSubmitError(
-        [err.response?.data?.message || 'Failed to add country', ...unmatched].join(' — ')
+        [err.response?.data?.message || 'Failed to save changes', ...unmatched].join(' — ')
       );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      setSubmitting(true);
+      setSubmitError(null);
+      const response = await deleteAdminCountry({ id: country.id });
+      if (response.success) {
+        onDelete(country.id);
+        onClose();
+      } else {
+        setSubmitError(response.message || 'Failed to delete');
+      }
+    } catch (err) {
+      setSubmitError(err.response?.data?.message || 'Failed to delete');
     } finally {
       setSubmitting(false);
     }
@@ -128,10 +177,7 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
         style={{ animation: 'scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
         <div className="flex items-center justify-between p-6 border-b border-[#D2D2D7] flex-shrink-0">
-          <div>
-            <h3 className="text-xl font-semibold text-[#1D1D1F]">Add Country</h3>
-            <p className="text-sm text-[#6E6E73] mt-1">Add a new country to your portfolio</p>
-          </div>
+          <h3 className="text-xl font-semibold text-[#1D1D1F]">Edit Country</h3>
           <button
             onClick={onClose}
             className="p-2 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-all"
@@ -152,13 +198,13 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
                 </label>
                 <p className="text-xs text-[#6E6E73]">
                   {formData.enabled
-                    ? 'Country will be enabled and visible'
-                    : 'Country will be created disabled and hidden'}
+                    ? 'Country is currently enabled and visible'
+                    : 'Country is currently disabled and hidden'}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => handleChange('enabled', !formData.enabled)}
+                onClick={handleToggleStatus}
                 className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.enabled ? 'bg-emerald-500' : 'bg-[#D2D2D7]'}`}
               >
                 <span
@@ -174,13 +220,13 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
             </label>
             {!useCustomName ? (
               <select
-                value={formData.name}
+                value={supportedCountries.includes(formData.name) ? formData.name : ''}
                 onChange={(e) => handleNameSelect(e.target.value)}
                 className={`w-full bg-white border ${errors.name ? 'border-red-500' : 'border-[#D2D2D7]'} rounded-xl px-4 py-3 text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all`}
               >
                 <option value="">Select Country</option>
-                {supportedCountries.map((country) => (
-                  <option key={country} value={country}>{country}</option>
+                {supportedCountries.map((c) => (
+                  <option key={c} value={c}>{c}</option>
                 ))}
                 <option value={CUSTOM_NAME}>Other (enter manually)…</option>
               </select>
@@ -268,7 +314,7 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
               onChange={(date) => handleChange('selectedDate', date)}
               dateFormat="MMMM d, yyyy"
               placeholderText="Select date"
-              className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-3 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
+              className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-3 text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent"
               wrapperClassName="w-full"
               showMonthDropdown
               showYearDropdown
@@ -295,20 +341,49 @@ export default function AddCountryModal({ isOpen, onClose, onSave, supportedCoun
           {submitError && <p className="text-sm text-red-500">{submitError}</p>}
         </div>
 
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-[#D2D2D7] flex-shrink-0">
-          <button
-            onClick={onClose}
-            className="px-6 py-3 text-sm font-medium text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-xl transition-all"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="px-6 py-3 bg-[#1D1D1F] text-white font-medium rounded-xl hover:bg-[#2D2D2F] transition-all disabled:opacity-50"
-          >
-            {submitting ? 'Adding…' : 'Add Country'}
-          </button>
+        <div className="flex items-center justify-between p-6 border-t border-[#D2D2D7] flex-shrink-0">
+          {!showDeleteConfirm ? (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex items-center gap-2 px-6 py-3 text-sm font-medium text-red-600 transition-all hover:text-red-700 hover:bg-red-50 rounded-xl"
+            >
+              <Trash2 size={16} />
+              Delete Country
+            </button>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-[#6E6E73]">Are you sure?</span>
+              <button
+                onClick={handleDelete}
+                disabled={submitting}
+                className="px-4 py-2 text-sm font-medium text-white transition-all bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-sm font-medium text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="px-6 py-3 text-sm font-medium text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-xl transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="px-6 py-3 bg-[#1D1D1F] text-white font-medium rounded-xl hover:bg-[#2D2D2F] transition-all disabled:opacity-50"
+            >
+              {submitting ? 'Saving…' : 'Save Changes'}
+            </button>
+          </div>
         </div>
       </div>
 

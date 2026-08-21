@@ -2,77 +2,107 @@ import { useState, useEffect } from 'react';
 import { X, Power, Trash2, Plus as PlusIcon } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { updateAdminSector, deleteAdminSector } from '../../api/services';
+import { updateAdminCluster, deleteAdminCluster } from '../../api/services';
 import { VALUATION_UNITS, CURRENCY_OPTIONS, buildValuation, parseValuation, formatAsAtDate } from '../../utils/valuation';
+import { ICON_OPTIONS } from './clusterIcons';
 
-const ICON_OPTIONS = [
-  { icon: '🏭', name: 'Manufacturing' },
-  { icon: '📊', name: 'Investment' },
-  { icon: '🏥', name: 'Healthcare' },
-  { icon: '🌾', name: 'Agriculture' },
-  { icon: '🎓', name: 'Education' },
-  { icon: '💻', name: 'Technology' },
-  { icon: '⚡', name: 'Energy' },
-  { icon: '🔋', name: 'Power' },
-  { icon: '💰', name: 'Finance' },
-  { icon: '🏨', name: 'Hospitality' },
-  { icon: '🏢', name: 'Real Estate' },
-];
+let rowSeq = 0;
+const nextRowKey = () => `row-${rowSeq++}`;
 
-export default function EditSectorModal({ isOpen, onClose, sector, onSave, onDelete, onToggleStatus }) {
+// Existing companies keep their id so the whole-list replace does not orphan
+// them; brand-new rows are sent without one. A legacy string entry (older
+// documents stored plain names) degrades to a name-only row.
+const toCompanyRows = (companies) =>
+  (companies || []).map((company) =>
+    typeof company === 'string'
+      ? { key: nextRowKey(), id: undefined, name: company, link: '', logo: '' }
+      : {
+          key: nextRowKey(),
+          id: company?.id,
+          name: company?.name || '',
+          link: company?.link || '',
+          logo: company?.logo || '',
+        }
+  );
+
+const buildCompanies = (rows) =>
+  rows
+    .filter((row) => row.name.trim())
+    .map((row) => {
+      const company = { name: row.name.trim() };
+      if (row.id) company.id = row.id;
+      if (row.link.trim()) company.link = row.link.trim();
+      if (row.logo.trim()) company.logo = row.logo.trim();
+      return company;
+    });
+
+export default function EditSectorModal({ isOpen, onClose, cluster, onSave, onDelete, onToggleStatus }) {
   const [formData, setFormData] = useState({
-    name: '', icon: '🏭', description: '', publicDescription: '', companies: [],
+    name: '', icon: '🏭', description: '', publicDescription: '',
     currency: 'USD', amount: '', unit: 'BILLIONS', allocationPercent: '', selectedDate: null, enabled: true,
   });
-  const [companyInput, setCompanyInput] = useState('');
+  const [companyRows, setCompanyRows] = useState([]);
   const [errors, setErrors] = useState({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
   useEffect(() => {
-    if (sector) {
-      const parsedVal = parseValuation(sector.valuation);
+    if (cluster) {
+      const parsedVal = parseValuation(cluster.valuation);
       setFormData({
-        name: sector.name || '',
-        icon: sector.icon || '🏭',
-        description: sector.description || '',
-        publicDescription: sector.publicDescription || '',
-        companies: sector.companies || [],
+        name: cluster.name || '',
+        icon: cluster.icon || '🏭',
+        description: cluster.description || '',
+        publicDescription: cluster.publicDescription || '',
         currency: parsedVal.currency,
         amount: parsedVal.amount,
         unit: parsedVal.unit,
         allocationPercent: parsedVal.allocationPercent,
         selectedDate: parsedVal.asAtDate,
-        enabled: sector.enabled ?? true,
+        enabled: cluster.enabled ?? true,
       });
+      setCompanyRows(toCompanyRows(cluster.companies));
+      setErrors({});
       setSubmitError(null);
       setShowDeleteConfirm(false);
     }
-  }, [sector]);
+  }, [cluster]);
 
-  if (!isOpen || !sector) return null;
+  if (!isOpen || !cluster) return null;
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
   };
 
-  const addCompany = () => {
-    const trimmed = companyInput.trim();
-    if (trimmed && !formData.companies.includes(trimmed)) {
-      handleInputChange('companies', [...formData.companies, trimmed]);
+  // Server validation errors arrive as errors[] = [{field, message}].
+  const applyServerError = (err, fallback) => {
+    const list = err?.response?.data?.errors;
+    if (Array.isArray(list) && list.length > 0) {
+      const mapped = {};
+      list.forEach((item) => {
+        if (item?.field) mapped[item.field] = item.message;
+      });
+      setErrors((prev) => ({ ...prev, ...mapped }));
     }
-    setCompanyInput('');
+    setSubmitError(err?.response?.data?.message || err?.message || fallback);
   };
 
-  const removeCompany = (company) => {
-    handleInputChange('companies', formData.companies.filter((c) => c !== company));
+  const addCompanyRow = () =>
+    setCompanyRows((prev) => [...prev, { key: nextRowKey(), id: undefined, name: '', link: '', logo: '' }]);
+
+  const updateCompanyRow = (key, field, value) => {
+    setCompanyRows((prev) => prev.map((row) => (row.key === key ? { ...row, [field]: value } : row)));
+  };
+
+  const removeCompanyRow = (key) => {
+    setCompanyRows((prev) => prev.filter((row) => row.key !== key));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name) newErrors.name = 'Sector name is required';
+    if (!formData.name) newErrors.name = 'Cluster name is required';
     if (!formData.amount) newErrors.amount = 'Valuation number is required';
     if (!formData.selectedDate) newErrors.date = 'Date is required';
     return newErrors;
@@ -96,16 +126,16 @@ export default function EditSectorModal({ isOpen, onClose, sector, onSave, onDel
     try {
       setSubmitting(true);
       setSubmitError(null);
-      const response = await updateAdminSector({
-        id: sector.id,
+      const response = await updateAdminCluster({
+        id: cluster.id,
         name: formData.name,
         icon: formData.icon,
         description: formData.description,
         publicDescription: formData.publicDescription,
-        companies: formData.companies,
+        companies: buildCompanies(companyRows),
         valuation,
         enabled: formData.enabled,
-        sortOrder: sector.sortOrder ?? 0,
+        sortOrder: cluster.sortOrder ?? 0,
       });
 
       if (response.success) {
@@ -115,7 +145,7 @@ export default function EditSectorModal({ isOpen, onClose, sector, onSave, onDel
         setSubmitError(response.message || 'Failed to save changes');
       }
     } catch (err) {
-      setSubmitError(err?.message || 'Failed to save changes');
+      applyServerError(err, 'Failed to save changes');
     } finally {
       setSubmitting(false);
     }
@@ -125,24 +155,26 @@ export default function EditSectorModal({ isOpen, onClose, sector, onSave, onDel
     try {
       setSubmitting(true);
       setSubmitError(null);
-      const response = await deleteAdminSector({ id: sector.id });
+      const response = await deleteAdminCluster({ id: cluster.id });
       if (response.success) {
-        onDelete(sector.id);
+        onDelete(cluster.id);
         onClose();
       } else {
         setSubmitError(response.message || 'Failed to delete');
       }
     } catch (err) {
-      setSubmitError(err?.message || 'Failed to delete');
+      applyServerError(err, 'Failed to delete');
     } finally {
       setSubmitting(false);
     }
   };
 
+  // Delegates the PATCH to the parent page — the card button and this toggle
+  // share one call site.
   const handleToggleStatus = () => {
     const newStatus = !formData.enabled;
     setFormData((prev) => ({ ...prev, enabled: newStatus }));
-    if (onToggleStatus) onToggleStatus(sector.id, newStatus);
+    if (onToggleStatus) onToggleStatus(cluster.id, newStatus);
   };
 
   return (
@@ -152,8 +184,8 @@ export default function EditSectorModal({ isOpen, onClose, sector, onSave, onDel
       <div className="relative w-full max-w-2xl bg-white shadow-2xl rounded-2xl max-h-[90vh] flex flex-col" style={{ animation: 'scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
         <div className="flex items-center justify-between p-6 border-b border-[#D2D2D7] flex-shrink-0">
           <div>
-            <h3 className="text-xl font-semibold text-[#1D1D1F]">Edit Sector</h3>
-            <p className="text-sm text-[#6E6E73] mt-1">Edit sector information</p>
+            <h3 className="text-xl font-semibold text-[#1D1D1F]">Edit Cluster</h3>
+            <p className="text-sm text-[#6E6E73] mt-1">Edit cluster information</p>
           </div>
           <button onClick={onClose} className="p-2 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-all">
             <X size={20} />
@@ -167,11 +199,11 @@ export default function EditSectorModal({ isOpen, onClose, sector, onSave, onDel
                 <label className="text-sm font-medium text-[#1D1D1F] block mb-1">
                   <div className="flex items-center gap-2">
                     <Power size={16} className={formData.enabled ? 'text-emerald-500' : 'text-[#6E6E73]'} />
-                    Sector Status
+                    Cluster Status
                   </div>
                 </label>
                 <p className="text-xs text-[#6E6E73]">
-                  {formData.enabled ? 'Sector is currently enabled and visible' : 'Sector is currently disabled and hidden'}
+                  {formData.enabled ? 'Cluster is currently enabled and visible' : 'Cluster is currently disabled and hidden'}
                 </p>
               </div>
               <button type="button" onClick={handleToggleStatus} className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 ${formData.enabled ? 'bg-emerald-500' : 'bg-[#D2D2D7]'}`}>
@@ -181,13 +213,13 @@ export default function EditSectorModal({ isOpen, onClose, sector, onSave, onDel
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#1D1D1F] block">
-                Sector Name <span className="text-red-500">*</span>
+                Cluster Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="Sector Name"
+                placeholder="Cluster Name"
                 className={`w-full bg-white border ${errors.name ? 'border-red-500' : 'border-[#D2D2D7]'} rounded-xl px-4 py-3 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all`}
               />
               {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
@@ -250,31 +282,55 @@ export default function EditSectorModal({ isOpen, onClose, sector, onSave, onDel
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#1D1D1F] block">Companies</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={companyInput}
-                  onChange={(e) => setCompanyInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCompany(); } }}
-                  placeholder="Company name"
-                  className="flex-1 bg-white border border-[#D2D2D7] rounded-xl px-4 py-3 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
-                />
-                <button type="button" onClick={addCompany} className="px-4 py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all">
-                  <PlusIcon size={18} />
-                </button>
-              </div>
-              {formData.companies.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.companies.map((company) => (
-                    <span key={company} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F5F5F7] rounded-full text-sm text-[#1D1D1F]">
-                      {company}
-                      <button type="button" onClick={() => removeCompany(company)} className="text-[#6E6E73] hover:text-red-600">
-                        <X size={14} />
+              <p className="text-xs text-[#6E6E73]">
+                Saving replaces the whole list — remove a row to drop that company.
+              </p>
+              {errors.companies && <p className="mt-1 text-xs text-red-500">{errors.companies}</p>}
+              <div className="space-y-3">
+                {companyRows.map((row) => (
+                  <div key={row.key} className="p-3 space-y-2 bg-[#F5F5F7] rounded-xl">
+                    <div className="flex items-start gap-2">
+                      <input
+                        type="text"
+                        value={row.name}
+                        onChange={(e) => updateCompanyRow(row.key, 'name', e.target.value)}
+                        placeholder="Company name"
+                        className="flex-1 bg-white border border-[#D2D2D7] rounded-xl px-4 py-2.5 text-sm text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeCompanyRow(row.key)}
+                        title="Remove company"
+                        className="p-2.5 text-red-600 transition-all rounded-xl hover:bg-red-50"
+                      >
+                        <Trash2 size={16} />
                       </button>
-                    </span>
-                  ))}
-                </div>
-              )}
+                    </div>
+                    <input
+                      type="url"
+                      value={row.link}
+                      onChange={(e) => updateCompanyRow(row.key, 'link', e.target.value)}
+                      placeholder="Website (optional)"
+                      className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-2.5 text-sm text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
+                    />
+                    <input
+                      type="url"
+                      value={row.logo}
+                      onChange={(e) => updateCompanyRow(row.key, 'logo', e.target.value)}
+                      placeholder="Logo URL (optional)"
+                      className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-2.5 text-sm text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
+                    />
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={addCompanyRow}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-[#1D1D1F] border border-[#D2D2D7] rounded-xl hover:bg-[#F5F5F7] transition-all"
+              >
+                <PlusIcon size={16} />
+                Add Company
+              </button>
             </div>
 
             <div className="space-y-2">
@@ -298,7 +354,9 @@ export default function EditSectorModal({ isOpen, onClose, sector, onSave, onDel
               {errors.date && <p className="mt-1 text-xs text-red-500">{errors.date}</p>}
             </div>
 
-            {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+            {submitError && (
+              <p className="px-4 py-3 text-sm text-red-600 border border-red-200 bg-red-50 rounded-xl">{submitError}</p>
+            )}
           </div>
         </div>
 
@@ -306,7 +364,7 @@ export default function EditSectorModal({ isOpen, onClose, sector, onSave, onDel
           {!showDeleteConfirm ? (
             <button onClick={() => setShowDeleteConfirm(true)} className="flex items-center gap-2 px-6 py-3 text-sm font-medium text-red-600 transition-all hover:text-red-700 hover:bg-red-50 rounded-xl">
               <Trash2 size={16} />
-              Delete Sector
+              Delete Cluster
             </button>
           ) : (
             <div className="flex items-center gap-3">
@@ -333,6 +391,8 @@ export default function EditSectorModal({ isOpen, onClose, sector, onSave, onDel
       <style>{`
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .react-datepicker-wrapper { width: 100%; }
+        .react-datepicker__input-container { width: 100%; }
       `}</style>
     </div>
   );

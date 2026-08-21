@@ -1,23 +1,25 @@
 import { useState } from 'react';
-import { X, Plus as PlusIcon } from 'lucide-react';
+import { X, Plus as PlusIcon, Trash2 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { createAdminSector } from '../../api/services';
+import { createAdminCluster } from '../../api/services';
 import { VALUATION_UNITS, CURRENCY_OPTIONS, buildValuation, formatAsAtDate } from '../../utils/valuation';
+import { ICON_OPTIONS } from './clusterIcons';
 
-const ICON_OPTIONS = [
-  { icon: '🏭', name: 'Manufacturing' },
-  { icon: '📊', name: 'Investment' },
-  { icon: '🏥', name: 'Healthcare' },
-  { icon: '🌾', name: 'Agriculture' },
-  { icon: '🎓', name: 'Education' },
-  { icon: '💻', name: 'Technology' },
-  { icon: '⚡', name: 'Energy' },
-  { icon: '🔋', name: 'Power' },
-  { icon: '💰', name: 'Finance' },
-  { icon: '🏨', name: 'Hospitality' },
-  { icon: '🏢', name: 'Real Estate' },
-];
+let rowSeq = 0;
+const newCompanyRow = () => ({ key: `row-${rowSeq++}`, name: '', link: '', logo: '' });
+
+// The backend replaces the whole companies list on every write, so the editor
+// always sends every row it holds; rows without a name are dropped.
+const buildCompanies = (rows) =>
+  rows
+    .filter((row) => row.name.trim())
+    .map((row) => {
+      const company = { name: row.name.trim() };
+      if (row.link.trim()) company.link = row.link.trim();
+      if (row.logo.trim()) company.logo = row.logo.trim();
+      return company;
+    });
 
 export default function AddSectorModal({ isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -25,14 +27,13 @@ export default function AddSectorModal({ isOpen, onClose, onSave }) {
     icon: '🏭',
     description: '',
     publicDescription: '',
-    companies: [],
     currency: 'USD',
     amount: '',
     unit: 'BILLIONS',
     allocationPercent: '',
     selectedDate: null,
   });
-  const [companyInput, setCompanyInput] = useState('');
+  const [companyRows, setCompanyRows] = useState([]);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
@@ -41,7 +42,7 @@ export default function AddSectorModal({ isOpen, onClose, onSave }) {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name) newErrors.name = 'Sector name is required';
+    if (!formData.name) newErrors.name = 'Cluster name is required';
     if (!formData.amount) newErrors.amount = 'Valuation number is required';
     if (!formData.selectedDate) newErrors.date = 'Date is required';
     return newErrors;
@@ -52,24 +53,35 @@ export default function AddSectorModal({ isOpen, onClose, onSave }) {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: null }));
   };
 
-  const addCompany = () => {
-    const trimmed = companyInput.trim();
-    if (trimmed && !formData.companies.includes(trimmed)) {
-      handleInputChange('companies', [...formData.companies, trimmed]);
+  // Server validation errors arrive as errors[] = [{field, message}].
+  const applyServerError = (err, fallback) => {
+    const list = err?.response?.data?.errors;
+    if (Array.isArray(list) && list.length > 0) {
+      const mapped = {};
+      list.forEach((item) => {
+        if (item?.field) mapped[item.field] = item.message;
+      });
+      setErrors((prev) => ({ ...prev, ...mapped }));
     }
-    setCompanyInput('');
+    setSubmitError(err?.response?.data?.message || err?.message || fallback);
   };
 
-  const removeCompany = (company) => {
-    handleInputChange('companies', formData.companies.filter((c) => c !== company));
+  const addCompanyRow = () => setCompanyRows((prev) => [...prev, newCompanyRow()]);
+
+  const updateCompanyRow = (key, field, value) => {
+    setCompanyRows((prev) => prev.map((row) => (row.key === key ? { ...row, [field]: value } : row)));
+  };
+
+  const removeCompanyRow = (key) => {
+    setCompanyRows((prev) => prev.filter((row) => row.key !== key));
   };
 
   const resetForm = () => {
     setFormData({
-      name: '', icon: '🏭', description: '', publicDescription: '', companies: [],
+      name: '', icon: '🏭', description: '', publicDescription: '',
       currency: 'USD', amount: '', unit: 'BILLIONS', allocationPercent: '', selectedDate: null,
     });
-    setCompanyInput('');
+    setCompanyRows([]);
     setErrors({});
     setSubmitError(null);
   };
@@ -94,30 +106,28 @@ export default function AddSectorModal({ isOpen, onClose, onSave }) {
       asAtDate: formatAsAtDate(formData.selectedDate),
     });
 
-    const payload = {
-      name: formData.name,
-      icon: formData.icon,
-      description: formData.description,
-      publicDescription: formData.publicDescription,
-      companies: formData.companies,
-      valuation,
-      enabled: true,
-      sortOrder: 0,
-    };
-
     try {
       setSubmitting(true);
       setSubmitError(null);
-      const response = await createAdminSector(payload);
+      const response = await createAdminCluster({
+        name: formData.name,
+        icon: formData.icon,
+        description: formData.description,
+        publicDescription: formData.publicDescription,
+        companies: buildCompanies(companyRows),
+        valuation,
+        enabled: true,
+        sortOrder: 0,
+      });
       if (response.success) {
         onSave(response.data);
         resetForm();
         onClose();
       } else {
-        setSubmitError(response.message || 'Failed to create sector');
+        setSubmitError(response.message || 'Failed to create cluster');
       }
     } catch (err) {
-      setSubmitError(err?.message || 'Failed to create sector');
+      applyServerError(err, 'Failed to create cluster');
     } finally {
       setSubmitting(false);
     }
@@ -129,8 +139,8 @@ export default function AddSectorModal({ isOpen, onClose, onSave }) {
       <div className="relative w-full max-w-2xl bg-white shadow-2xl rounded-2xl max-h-[90vh] flex flex-col" style={{ animation: 'scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
         <div className="flex items-center justify-between p-6 border-b border-[#D2D2D7] flex-shrink-0">
           <div>
-            <h3 className="text-xl font-semibold text-[#1D1D1F]">Add Sector</h3>
-            <p className="text-sm text-[#6E6E73] mt-1">Add a new sector to your portfolio</p>
+            <h3 className="text-xl font-semibold text-[#1D1D1F]">Add Cluster</h3>
+            <p className="text-sm text-[#6E6E73] mt-1">Add a new cluster to your portfolio</p>
           </div>
           <button onClick={handleCancel} className="p-2 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] rounded-lg transition-all">
             <X size={20} />
@@ -141,13 +151,13 @@ export default function AddSectorModal({ isOpen, onClose, onSave }) {
           <div className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#1D1D1F] block">
-                Sector Name <span className="text-red-500">*</span>
+                Cluster Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="Sector Name"
+                placeholder="Cluster Name"
                 className={`w-full bg-white border ${errors.name ? 'border-red-500' : 'border-[#D2D2D7]'} rounded-xl px-4 py-3 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all`}
               />
               {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
@@ -210,31 +220,52 @@ export default function AddSectorModal({ isOpen, onClose, onSave }) {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#1D1D1F] block">Companies</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={companyInput}
-                  onChange={(e) => setCompanyInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCompany(); } }}
-                  placeholder="Company name"
-                  className="flex-1 bg-white border border-[#D2D2D7] rounded-xl px-4 py-3 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
-                />
-                <button type="button" onClick={addCompany} className="px-4 py-3 bg-[#1D1D1F] text-white rounded-xl hover:bg-[#2D2D2F] transition-all">
-                  <PlusIcon size={18} />
-                </button>
-              </div>
-              {formData.companies.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.companies.map((company) => (
-                    <span key={company} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F5F5F7] rounded-full text-sm text-[#1D1D1F]">
-                      {company}
-                      <button type="button" onClick={() => removeCompany(company)} className="text-[#6E6E73] hover:text-red-600">
-                        <X size={14} />
+              {errors.companies && <p className="mt-1 text-xs text-red-500">{errors.companies}</p>}
+              <div className="space-y-3">
+                {companyRows.map((row) => (
+                  <div key={row.key} className="p-3 space-y-2 bg-[#F5F5F7] rounded-xl">
+                    <div className="flex items-start gap-2">
+                      <input
+                        type="text"
+                        value={row.name}
+                        onChange={(e) => updateCompanyRow(row.key, 'name', e.target.value)}
+                        placeholder="Company name"
+                        className="flex-1 bg-white border border-[#D2D2D7] rounded-xl px-4 py-2.5 text-sm text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeCompanyRow(row.key)}
+                        title="Remove company"
+                        className="p-2.5 text-red-600 transition-all rounded-xl hover:bg-red-50"
+                      >
+                        <Trash2 size={16} />
                       </button>
-                    </span>
-                  ))}
-                </div>
-              )}
+                    </div>
+                    <input
+                      type="url"
+                      value={row.link}
+                      onChange={(e) => updateCompanyRow(row.key, 'link', e.target.value)}
+                      placeholder="Website (optional)"
+                      className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-2.5 text-sm text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
+                    />
+                    <input
+                      type="url"
+                      value={row.logo}
+                      onChange={(e) => updateCompanyRow(row.key, 'logo', e.target.value)}
+                      placeholder="Logo URL (optional)"
+                      className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-2.5 text-sm text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all"
+                    />
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={addCompanyRow}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-[#1D1D1F] border border-[#D2D2D7] rounded-xl hover:bg-[#F5F5F7] transition-all"
+              >
+                <PlusIcon size={16} />
+                Add Company
+              </button>
             </div>
 
             <div className="space-y-2">
@@ -258,7 +289,9 @@ export default function AddSectorModal({ isOpen, onClose, onSave }) {
               {errors.date && <p className="mt-1 text-xs text-red-500">{errors.date}</p>}
             </div>
 
-            {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+            {submitError && (
+              <p className="px-4 py-3 text-sm text-red-600 border border-red-200 bg-red-50 rounded-xl">{submitError}</p>
+            )}
           </div>
         </div>
 
@@ -267,7 +300,7 @@ export default function AddSectorModal({ isOpen, onClose, onSave }) {
             Cancel
           </button>
           <button onClick={handleSubmit} disabled={submitting} className="px-6 py-3 bg-[#1D1D1F] text-white font-medium rounded-xl hover:bg-[#2D2D2F] transition-all disabled:opacity-50">
-            {submitting ? 'Adding…' : 'Add Sector'}
+            {submitting ? 'Adding…' : 'Add Cluster'}
           </button>
         </div>
       </div>

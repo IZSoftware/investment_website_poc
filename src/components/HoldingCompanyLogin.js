@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, ArrowRight, ShieldAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getSiteInfo } from '../api/services';
 import ForgotPasswordModal from '../components/InvestorPortal/ForgotPasswordModal';
 import LetterChallengeInput, { ChallengeTimer } from './auth/LetterChallengeInput';
 
@@ -31,6 +32,24 @@ export default function HoldingCompanyLogin() {
 
   // Calm cooldown UX after a 429 (backend enforces the real rules)
   const [cooldownSecondsLeft, setCooldownSecondsLeft] = useState(0);
+
+  // Public site stats for the marketing panel — no auth, failures stay silent
+  const [siteInfo, setSiteInfo] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const envelope = await getSiteInfo();
+        if (!cancelled && envelope.success) setSiteInfo(envelope.data);
+      } catch (err) {
+        // Marketing copy only — leave the placeholders in place.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const resetChallenge = () => {
     setStep('email');
@@ -197,21 +216,27 @@ export default function HoldingCompanyLogin() {
 
                     <div className="grid grid-cols-3 gap-4">
                       <div className="bg-[#F5F5F7] rounded-xl p-3 xl:p-4">
-                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">$4.2B</div>
+                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">
+                          {siteInfo?.totalPortfolioValue?.displayText || '—'}
+                        </div>
                         <div className="text-[10px] text-[#6E6E73] uppercase tracking-wide font-medium whitespace-nowrap">
-                          NET ASSETS
+                          PORTFOLIO VALUE
                         </div>
                       </div>
                       <div className="bg-[#F5F5F7] rounded-xl p-3 xl:p-4">
-                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">14+</div>
-                        <div className="text-[10px] text-[#6E6E73] uppercase tracking-wide font-medium whitespace-nowrap">
-                          PORTFOLIO COMPANIES
+                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">
+                          {siteInfo?.totalClusters ?? '—'}
                         </div>
-                      </div>
-                      <div className="bg-[#F5F5F7] rounded-xl p-3 xl:p-4">
-                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">5</div>
                         <div className="text-[10px] text-[#6E6E73] uppercase tracking-wide font-medium whitespace-nowrap">
                           CORE CLUSTERS
+                        </div>
+                      </div>
+                      <div className="bg-[#F5F5F7] rounded-xl p-3 xl:p-4">
+                        <div className="text-xl font-semibold text-[#1D1D1F] mb-1 xl:text-2xl">
+                          {siteInfo?.totalCountries ?? '—'}
+                        </div>
+                        <div className="text-[10px] text-[#6E6E73] uppercase tracking-wide font-medium whitespace-nowrap">
+                          COUNTRIES
                         </div>
                       </div>
                     </div>
