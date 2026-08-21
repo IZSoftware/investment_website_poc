@@ -476,9 +476,9 @@ export const getAdminCountries = async () => {
 };
 
 // POST /api/admin/countries
-export const createAdminCountry = async ({ countryName, numberOfYears, valuation, enabled, sortOrder }) => {
+export const createAdminCountry = async ({ name, valuation, enabled, sortOrder }) => {
   try {
-    const response = await api.post("/api/admin/countries", { countryName, numberOfYears, valuation, enabled, sortOrder });
+    const response = await api.post("/api/admin/countries", { name, valuation, enabled, sortOrder });
     return response.data;
   } catch (error) {
     throw error;
@@ -486,14 +486,15 @@ export const createAdminCountry = async ({ countryName, numberOfYears, valuation
 };
 
 // PUT /api/admin/countries/{id}
-export const updateAdminCountry = async ({ id, countryName, numberOfYears, valuation, enabled, sortOrder }) => {
+export const updateAdminCountry = async ({ id, name, valuation, enabled, sortOrder }) => {
   try {
-    const response = await api.put(`/api/admin/countries/${id}`, { countryName, numberOfYears, valuation, enabled, sortOrder });
+    const response = await api.put(`/api/admin/countries/${id}`, { name, valuation, enabled, sortOrder });
     return response.data;
   } catch (error) {
     throw error;
   }
 };
+ 
 
 // DELETE /api/admin/countries/{id}
 export const deleteAdminCountry = async ({ id }) => {

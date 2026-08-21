@@ -4,7 +4,7 @@ import {
   ComposedChart, Line, PieChart, Pie, Cell,
   ResponsiveContainer
 } from 'recharts';
-import { portfolioKPI, getChartData } from '../data/data';
+import { portfolioKPI } from '../data/data';
 import { getSiteInfoAbout, getSiteInfoCluster, getSiteInfoPortfolio } from '../api/services';
 import { formatDisplayDate } from '../utils/valuation';
 
@@ -28,6 +28,7 @@ const PortfolioPage = () => {
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [countries, setCountries] = useState([]);
   const [performanceData, setPerformanceData] = useState(null);
+  const [usdKesRate, setUsdKesRate] = useState(129.5);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,6 +66,9 @@ const PortfolioPage = () => {
         console.log('Performance API Response:', res);
         if (isMounted && res?.data) {
           setPerformanceData(res.data);
+          if (res.data.usdKesRate?.kesValue) {
+            setUsdKesRate(res.data.usdKesRate.kesValue);
+          }
         }
       } catch (error) {
         console.error('Failed to load performance data:', error);
@@ -88,7 +92,6 @@ const PortfolioPage = () => {
   const { investorRelations } = portfolioKPI;
 
   const getKeyFacts = () => {
-    // If no performance data, return fallback values
     if (!performanceData) {
       return {
         kes: {
@@ -117,15 +120,15 @@ const PortfolioPage = () => {
     }
 
     const p = performanceData;
-    const usdKesRate = p.usdKesRate?.kesValue || 129.5;
+    const rate = usdKesRate || 129.5;
     
     const portfolioInUSD = p.groupConsolidatedPortfolio ?? 0;
     const revenueInUSD = p.groupConsolidatedRevenue ?? 0;
     const debtInUSD = p.groupConsolidatedDebt ?? 0;
     
-    const portfolioInKES = portfolioInUSD * usdKesRate;
-    const revenueInKES = revenueInUSD * usdKesRate;
-    const debtInKES = debtInUSD * usdKesRate;
+    const portfolioInKES = portfolioInUSD * rate;
+    const revenueInKES = revenueInUSD * rate;
+    const debtInKES = debtInUSD * rate;
     
     const gearingValue = p.groupConsolidatedGearing;
     const gearingDisplay = gearingValue !== undefined && gearingValue !== null 
@@ -184,73 +187,25 @@ const PortfolioPage = () => {
     return !latest || d > latest ? d : latest;
   }, null);
 
+  // ✅ ALWAYS return empty array - NO STATIC DATA
+  const buildChartData = () => {
+    return [];
+  };
+
   const renderChart = () => {
-    switch (activeKPI) {
-      case 'rev':
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={getChartData('revenue', activeCurrency)}
-              margin={{ top: 20, right: 20, left: 10, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar
-                dataKey="value"
-                fill="#012060"
-                name={activeCurrency === 'kes' ? 'Revenue (KES M)' : 'Revenue (USD M)'}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        );
+    const chartData = buildChartData();
 
-      case 'netShare':
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={getChartData('netShare')}
-              margin={{ top: 20, right: 20, left: 10, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="value" fill="#2caffe" name="Net Share per Share (KES)" />
-            </BarChart>
-          </ResponsiveContainer>
-        );
-
-      case 'gearing':
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart
-              data={getChartData('gearing', activeCurrency)}
-              margin={{ top: 20, right: 20, left: 10, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" />
-              <YAxis domain={[0, 100]} unit="%" />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="gearing"
-                stroke="#544fc5"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                name="Gearing %"
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        );
-
-      default:
-        return null;
-    }
+    // ✅ Always show "No historical data" message
+    return (
+      <div className="flex flex-col items-center justify-center h-[300px] text-gray-400">
+        <p className="mb-2 text-lg font-medium">No Historical Data</p>
+        <p className="max-w-md text-sm text-center">
+          Historical performance data is not available yet.
+          <br />
+          <span className="text-xs text-gray-400">Data will appear here once available</span>
+        </p>
+      </div>
+    );
   };
 
   if (loading) {
@@ -314,7 +269,12 @@ const PortfolioPage = () => {
               </div>
             </div>
 
-            <div className="mb-4 text-sm text-gray-500 sm:mb-6 sm:text-base">As at {kf?.asAtDate || 'Current'}</div>
+            <div className="mb-4 text-sm text-gray-500 sm:mb-6 sm:text-base">
+              As at {kf?.asAtDate || 'Current'}
+              <span className="px-2 py-1 ml-2 text-xs bg-gray-100 rounded">
+                {activeCurrency.toUpperCase()} values
+              </span>
+            </div>
 
             <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
 
@@ -441,9 +401,9 @@ const PortfolioPage = () => {
                 <div className="mb-4 sm:mb-6">
                   <ul className="flex flex-wrap gap-1.5 sm:gap-2">
                     {[
-                      { key: 'rev',      label: 'PORTFOLIO' },
-                      { key: 'netShare', label: 'REVENUE' },
-                      { key: 'gearing',  label: 'GEARING' },
+                      { key: 'rev', label: 'REVENUE' },
+                      { key: 'netShare', label: 'NET SHARE' },
+                      { key: 'gearing', label: 'GEARING' },
                     ].map(({ key, label }) => (
                       <li
                         key={key}

@@ -162,6 +162,9 @@ const AdminUsdKesRates = () => {
                 <p className="text-lg font-light text-gray-500 sm:text-xl lg:text-2xl">
                   Manage exchange rates for portfolio valuation
                 </p>
+                <p className="mt-2 text-sm text-blue-600">
+                  ⚠️ KES value is the exchange rate. USD value is typically 1.00.
+                </p>
               </div>
               {isAdmin && (
                 <button
@@ -182,7 +185,7 @@ const AdminUsdKesRates = () => {
           )}
 
           <div className="px-4 pb-16 sm:px-6 lg:px-0">
-            <div className="overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg">
+            <div className="overflow-hidden bg-white border border-gray-200 shadow-lg rounded-xl">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -209,7 +212,7 @@ const AdminUsdKesRates = () => {
                       )}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
+                  <tbody className="bg-white divide-y divide-gray-200">
                     {loading ? (
                       <tr>
                         <td colSpan={isAdmin ? 6 : 5} className="px-6 py-8 text-center text-gray-400">
@@ -218,8 +221,14 @@ const AdminUsdKesRates = () => {
                       </tr>
                     ) : rates.length === 0 ? (
                       <tr>
-                        <td colSpan={isAdmin ? 6 : 5} className="px-6 py-8 text-center text-gray-400">
-                          No rates found. Click "Add Rate" to create one.
+                        <td colSpan={isAdmin ? 6 : 5} className="px-6 py-8 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <p className="text-gray-400">No USD/KES rates found</p>
+                            <p className="max-w-md text-xs text-gray-400">
+                              Click "Add Rate" to create the first exchange rate.
+                              This rate is used to convert USD values to KES on the public site.
+                            </p>
+                          </div>
                         </td>
                       </tr>
                     ) : (
@@ -283,14 +292,14 @@ const AdminUsdKesRates = () => {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="w-full max-w-md p-6 mx-4 bg-white shadow-2xl rounded-2xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">
                 {editingId ? 'Edit Rate' : 'Add Rate'}
               </h2>
               <button
                 onClick={handleCloseModal}
-                className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                className="p-1 text-gray-400 transition-colors hover:text-gray-600"
               >
                 <X size={24} />
               </button>
@@ -300,7 +309,7 @@ const AdminUsdKesRates = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block mb-1 text-sm font-medium text-gray-700">
                       Month *
                     </label>
                     <input
@@ -314,7 +323,7 @@ const AdminUsdKesRates = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block mb-1 text-sm font-medium text-gray-700">
                       Year *
                     </label>
                     <input
@@ -330,7 +339,7 @@ const AdminUsdKesRates = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
                     KES Value *
                   </label>
                   <input
@@ -339,12 +348,13 @@ const AdminUsdKesRates = () => {
                     value={formData.kesValue}
                     onChange={(e) => setFormData({ ...formData, kesValue: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                    placeholder="Enter KES exchange rate"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
                     USD Value
                   </label>
                   <input
@@ -354,7 +364,7 @@ const AdminUsdKesRates = () => {
                     onChange={(e) => setFormData({ ...formData, usdValue: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                   />
-                  <p className="text-xs text-gray-400 mt-1">Default is 1</p>
+                  <p className="mt-1 text-xs text-gray-400">Default is 1.00 USD</p>
                 </div>
 
                 <div className="flex items-center">
@@ -378,14 +388,14 @@ const AdminUsdKesRates = () => {
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-black rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    className="flex-1 px-4 py-2 text-sm font-medium text-white transition-colors bg-black rounded-lg hover:bg-gray-800 disabled:opacity-50"
                   >
                     {submitting ? 'Saving...' : editingId ? 'Update' : 'Create'}
                   </button>
