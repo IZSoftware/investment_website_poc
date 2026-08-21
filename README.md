@@ -2,6 +2,41 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Environment
+
+The API base URL is compiled into the bundle by Create React App, so it is a
+**build-time** setting — a Cloud Run environment variable set at deploy time never
+reaches the browser.
+
+| Variable | Purpose |
+| --- | --- |
+| `REACT_APP_API_BASE_URL` | Investors Portal backend origin, no trailing slash. |
+| `DISABLE_ESLINT_PLUGIN` | `true` in CI: otherwise CRA turns lint warnings into build failures when `CI=true`. |
+| `FAST_REFRESH` | `false`; dev server only. |
+
+- Local development: `.env.development.local` (git-ignored), e.g.
+  `REACT_APP_API_BASE_URL=http://localhost:8080`.
+- Production builds: committed `.env.production`. The Docker build passes the same
+  values as build args; a real environment variable always wins over the file.
+
+## Deployment (Cloud Build -> Cloud Run)
+
+Pushing to `develop` runs the `Investors-Portal-Web-Trigger` Cloud Build trigger,
+which uses `cloudbuild.yaml` in this repo to build the image, push it to Artifact
+Registry, and deploy Cloud Run service **`investors-portal-web`** in
+`europe-west1` (project `izepr-405023`) — the same shape as the backend pipeline.
+
+The image is a two-stage build: `node:20-alpine` runs `npm ci && npm run build`,
+then `nginx:1.27-alpine` serves `build/` with an SPA fallback so React Router
+routes survive a hard refresh. nginx listens on Cloud Run's `$PORT` (8080).
+
+Overridable substitutions (defaults live in `cloudbuild.yaml`, so a manual
+`gcloud builds submit --config cloudbuild.yaml .` behaves the same):
+`_REGION`, `_REPO`, `_SERVICE`, `_API_BASE_URL`.
+
+Backend CORS must list the deployed origin (`app.cors.allowed-origins` /
+`CORS_ALLOWED_ORIGINS` on the backend service).
+
 ## Available Scripts
 
 In the project directory, you can run:
