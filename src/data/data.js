@@ -321,23 +321,11 @@ export const investmentPortfolio = {
 };
 
 // 7. PORTFOLIO KPI
+// Key facts and the chart series now come from the API — /api/site/info/portfolio for the
+// current period and /api/site/info/portfolio/history for the series. Only the investor-relations
+// contact block is still static, because no endpoint serves it.
 export const portfolioKPI = {
-  keyFacts: {
-    kes: { aum: 520000, aumUnit: 'M', revenue: 38000, revenueUnit: 'M', debt: 14768, debtUnit: 'M', gearing: '29.4%', roa: '4.2%', operatingCountries: 4, lastUpdated: '31-Dec-2025', asAtDate: 'July 30, 2026' },
-    usd: { aum: 5000,   aumUnit: 'M', revenue: 823,   revenueUnit: 'M', debt: 328,   debtUnit: 'M', gearing: '29.4%', roa: '4.2%', operatingCountries: 4, lastUpdated: '31-Dec-2025', asAtDate: 'July 30, 2026' }
-  },
   investorRelations: { name: 'Charles', tel: '(+254) 71234567', email: 'investor@nf-holding.com' },
-  portfolioTotals: { kes: 'KES 520,000 M', usd: 'USD 5,000 M', asAtDate: 'July 30, 2026' },
-  pieChartSectors: sectorsData.map(s => ({ name: s.title.charAt(0) + s.title.slice(1).toLowerCase(), value: s.portfolioPct, color: s.color })),
-  revenueData: {
-    kes: [{ year: '2021', value: 22578 },{ year: '2022', value: 28525 },{ year: '2023', value: 33000 },{ year: '2024', value: 36000 },{ year: '2025', value: 38000 }],
-    usd: [{ year: '2021', value: 448 },{ year: '2022', value: 562 },{ year: '2023', value: 650 },{ year: '2024', value: 740 },{ year: '2025', value: 823 }]
-  },
-  netShareData: [{ year: '2021', value: 0 },{ year: '2022', value: 0.21 },{ year: '2023', value: 0.28 },{ year: '2024', value: 0.32 },{ year: '2025', value: 0.32 }],
-  netDebtGearingData: {
-    kes: [{ year: '2021', netDebt: 14157, gearing: 39.0 },{ year: '2022', netDebt: 13134, gearing: 33.2 },{ year: '2023', netDebt: 12064, gearing: 28.6 },{ year: '2024', netDebt: 11303, gearing: 25.1 },{ year: '2025', netDebt: 14768, gearing: 29.4 }],
-    usd: [{ year: '2021', netDebt: 333, gearing: 39.0 },{ year: '2022', netDebt: 297, gearing: 33.2 },{ year: '2023', netDebt: 265, gearing: 28.6 },{ year: '2024', netDebt: 238, gearing: 25.1 },{ year: '2025', netDebt: 328, gearing: 29.4 }]
-  }
 };
 
 // 8. LEARN ABOUT US
@@ -385,7 +373,7 @@ export const aboutPage = {
     { year: '2021', event: 'NF Holdings Group founded in Nairobi' },
     { year: '2022', event: 'First major infrastructure investment' },
     { year: '2023', event: 'Expansion into 4 African countries' },
-    { year: '2024', event: 'Crossed $2.5 B AUM milestone' },
+    { year: '2024', event: 'Crossed $2.5 B total portfolio milestone' },
     { year: '2025', event: 'Reached $5.0 B TOTAL PORTFOLIO' },
   ],
   orbitAssets: [
@@ -395,7 +383,7 @@ export const aboutPage = {
     { id: 're',     label: 'Real\nEstate',            pct: '20%', value: '$1.0 B', color: '#9e7a8a', subs: [{ label: 'Residential', value: '$0.45 B' }, { label: 'Land', value: '$0.20 B' }, { label: 'Commercial', value: '$0.35 B' }] },
     { id: 'fof',    label: 'Fund of\nFunds',          pct: '10%', value: '$0.5 B', color: '#7a9e8a', subs: [] },
   ],
-  totalAUM: '$5.0 B',
+  totalPortfolio: '$5.0 B',
   breakdown: {
     sfi:    [{ name: 'Sovereign Bonds', desc: 'Long-term investment instruments issued by governments.', value: '$0.9 B' }, { name: 'Sovereign Bills', desc: 'Short-term instruments with maturity under one year.', value: '$0.6 B' }],
     credit: [{ name: 'Corporate Loan', desc: 'Direct lending to corporate entities.', value: '$0.6 B' }, { name: 'Corporate Bonds', desc: 'Fixed income securities issued by corporations.', value: '$0.4 B' }],
@@ -446,17 +434,6 @@ export const getClusterBySector   = (sectorId) => clusters.find(c => c.sectorId 
 
 export const getSectorsAsPortfolioCards = () =>
   sectorsData.map((s, i) => ({ id: i + 1, icon: s.icon, title: s.title, description: s.description, value: s.portfolioValue, date: s.date, valueDescription: 'Total Value', sectorId: s.id }));
-
-export const getPieChartSectors = () => portfolioKPI.pieChartSectors;
-
-export const getChartData = (type, currency = 'kes') => {
-  switch (type) {
-    case 'revenue':  return portfolioKPI.revenueData[currency] || [];
-    case 'netShare': return portfolioKPI.netShareData;
-    case 'gearing':  return portfolioKPI.netDebtGearingData[currency] || [];
-    default:         return [];
-  }
-};
 
 export const getTotalMarketsValue = (countries = marketsData.countries) => {
   let total = 0;

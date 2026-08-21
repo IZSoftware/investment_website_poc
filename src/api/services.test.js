@@ -317,6 +317,41 @@ describe("uploads", () => {
   });
 });
 
+describe("public site services — canonical paths", () => {
+  test("getSiteInfoPortfolio → GET /api/site/info/portfolio with month/year params", async () => {
+    await services.getSiteInfoPortfolio({ month: 3, year: 2020 });
+    expect(api.get).toHaveBeenCalledWith("/api/site/info/portfolio", {
+      params: { month: 3, year: 2020 },
+    });
+  });
+
+  test("getSiteInfoPortfolioHistory → GET /api/site/info/portfolio/history", async () => {
+    await services.getSiteInfoPortfolioHistory({ limit: 10 });
+    expect(api.get).toHaveBeenCalledWith("/api/site/info/portfolio/history", {
+      params: { fromYear: undefined, toYear: undefined, granularity: undefined, limit: 10 },
+    });
+  });
+
+  test("getSiteInfoPortfolioHistory passes the full window through", async () => {
+    await services.getSiteInfoPortfolioHistory({
+      fromYear: 2021,
+      toYear: 2025,
+      granularity: "MONTHLY",
+      limit: 60,
+    });
+    expect(api.get).toHaveBeenCalledWith("/api/site/info/portfolio/history", {
+      params: { fromYear: 2021, toYear: 2025, granularity: "MONTHLY", limit: 60 },
+    });
+  });
+
+  test("getSiteInfoPortfolioHistory called bare sends no params", async () => {
+    await services.getSiteInfoPortfolioHistory();
+    expect(api.get).toHaveBeenCalledWith("/api/site/info/portfolio/history", {
+      params: { fromYear: undefined, toYear: undefined, granularity: undefined, limit: undefined },
+    });
+  });
+});
+
 describe("dead API names stay dead", () => {
   test.each([
     "verifyOtp",

@@ -18,7 +18,7 @@ const LearnAboutUs = () => {
 
   const [investmentCards, setInvestmentCards] = useState([]);
   const [stats, setStats] = useState([
-    { value: 'Loading...', label: 'Assets Under Management' },
+    { value: 'Loading...', label: 'Total Portfolio' },
     { value: 'Loading...', label: 'Clusters' },
     { value: 'Loading...', label: 'Continents' },
     { value: 'Loading...', label: 'Countries' },
@@ -50,7 +50,7 @@ const LearnAboutUs = () => {
 
           // ✅ Stats from data
           setStats([
-            { value: data.totalPortfolioValue?.displayText ?? 'N/A', label: 'Assets Under Management' },
+            { value: data.totalPortfolioValue?.displayText ?? 'N/A', label: 'Total Portfolio' },
             { value: data.totalClusters ?? 0, label: 'Clusters' },
             { value: 0, label: 'Continents' }, // Not in API - keep static
             { value: data.totalCountries ?? 0, label: 'Countries' },

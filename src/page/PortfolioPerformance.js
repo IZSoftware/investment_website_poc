@@ -4,11 +4,19 @@ import {
   ComposedChart, Line, PieChart, Pie, Cell,
   ResponsiveContainer
 } from 'recharts';
-import { portfolioKPI, getChartData } from '../data/data';
-import { getSiteInfoAbout, getSiteInfoCluster, getSiteInfoPortfolio } from '../api/services';
+import { portfolioKPI } from '../data/data';
+import {
+  getSiteInfoAbout,
+  getSiteInfoCluster,
+  getSiteInfoPortfolio,
+  getSiteInfoPortfolioHistory,
+} from '../api/services';
 import { formatDisplayDate } from '../utils/valuation';
 
 const PIE_PALETTE = ['#012060', '#2caffe', '#544fc5', '#00d4ff', '#f45b5b', '#91e8e1', '#f7a35c', '#8085e9'];
+
+/** Years of KPI history to chart. The API caps and orders the series; this is just the window. */
+const HISTORY_YEARS = 10;
 
 const UNIT_TO_MILLIONS = { THOUSANDS: 0.001, MILLIONS: 1, BILLIONS: 1000 };
 const normalizeToMillions = (valuation) => {
@@ -23,11 +31,12 @@ const formatMillionsAsUsd = (totalMillions) => {
 
 const PortfolioPage = () => {
   const [activeCurrency, setActiveCurrency] = useState('kes');
-  const [activeKPI, setActiveKPI] = useState('rev');
+  const [activeKPI, setActiveKPI] = useState('portfolio');
 
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [countries, setCountries] = useState([]);
   const [performanceData, setPerformanceData] = useState(null);
+  const [historyPoints, setHistoryPoints] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -71,12 +80,24 @@ const PortfolioPage = () => {
       }
     };
 
+    const fetchHistory = async () => {
+      try {
+        const res = await getSiteInfoPortfolioHistory({ limit: HISTORY_YEARS });
+        if (isMounted && Array.isArray(res?.data?.points)) {
+          setHistoryPoints(res.data.points);
+        }
+      } catch (error) {
+        console.error('Failed to load performance history:', error);
+      }
+    };
+
     const fetchAll = async () => {
       setLoading(true);
       await Promise.all([
         fetchPortfolio(),
         fetchCountries(),
         fetchPerformance(),
+        fetchHistory(),
       ]);
       setLoading(false);
     };
@@ -93,8 +114,8 @@ const PortfolioPage = () => {
       return {
         kes: {
           asAtDate: 'Current',
-          aum: 'N/A',
-          aumUnit: '',
+          totalPortfolio: 'N/A',
+          totalPortfolioUnit: '',
           revenue: 'N/A',
           revenueUnit: '',
           debt: 'N/A',
@@ -104,8 +125,8 @@ const PortfolioPage = () => {
         },
         usd: {
           asAtDate: 'Current',
-          aum: 'N/A',
-          aumUnit: '',
+          totalPortfolio: 'N/A',
+          totalPortfolioUnit: '',
           revenue: 'N/A',
           revenueUnit: '',
           debt: 'N/A',
@@ -142,8 +163,8 @@ const PortfolioPage = () => {
     return {
       kes: {
         asAtDate: asAtDate,
-        aum: portfolioInKES >= 1000000000 ? (portfolioInKES / 1000000000).toFixed(1) : (portfolioInKES / 1000000).toFixed(1),
-        aumUnit: portfolioInKES >= 1000000000 ? 'B' : 'M',
+        totalPortfolio: portfolioInKES >= 1000000000 ? (portfolioInKES / 1000000000).toFixed(1) : (portfolioInKES / 1000000).toFixed(1),
+        totalPortfolioUnit: portfolioInKES >= 1000000000 ? 'B' : 'M',
         revenue: revenueInKES >= 1000000000 ? (revenueInKES / 1000000000).toFixed(1) : (revenueInKES / 1000000).toFixed(1),
         revenueUnit: revenueInKES >= 1000000000 ? 'B' : 'M',
         debt: debtInKES >= 1000000000 ? (debtInKES / 1000000000).toFixed(1) : (debtInKES / 1000000).toFixed(1),
@@ -153,8 +174,8 @@ const PortfolioPage = () => {
       },
       usd: {
         asAtDate: asAtDate,
-        aum: portfolioInUSD >= 1000000000 ? (portfolioInUSD / 1000000000).toFixed(1) : (portfolioInUSD / 1000000).toFixed(1),
-        aumUnit: portfolioInUSD >= 1000000000 ? 'B' : 'M',
+        totalPortfolio: portfolioInUSD >= 1000000000 ? (portfolioInUSD / 1000000000).toFixed(1) : (portfolioInUSD / 1000000).toFixed(1),
+        totalPortfolioUnit: portfolioInUSD >= 1000000000 ? 'B' : 'M',
         revenue: revenueInUSD >= 1000000000 ? (revenueInUSD / 1000000000).toFixed(1) : (revenueInUSD / 1000000).toFixed(1),
         revenueUnit: revenueInUSD >= 1000000000 ? 'B' : 'M',
         debt: debtInUSD >= 1000000000 ? (debtInUSD / 1000000000).toFixed(1) : (debtInUSD / 1000000).toFixed(1),
@@ -184,53 +205,91 @@ const PortfolioPage = () => {
     return !latest || d > latest ? d : latest;
   }, null);
 
+  // Stored figures are USD (§6.4/§6.5). A KES series converts each point at the rate recorded
+  // for its own period, which is why the endpoint sends one rate per point, not one per series.
+  const toMillions = (amount, kesRate) => {
+    if (amount === null || amount === undefined) return null;
+    if (activeCurrency === 'kes') {
+      // No rate on record for that period means there is no honest KES figure for it. Dropping
+      // the point beats plotting the USD number under a KES axis.
+      if (!kesRate) return null;
+      return Number(((amount * kesRate) / 1_000_000).toFixed(2));
+    }
+    return Number((amount / 1_000_000).toFixed(2));
+  };
+
+  const moneySeries = (field) =>
+    historyPoints
+      .map((p) => ({ year: String(p.year), value: toMillions(p[field], p.usdKesRate?.kesValue) }))
+      .filter((point) => point.value !== null);
+
+  const gearingSeries = historyPoints
+    .filter((p) => p.groupConsolidatedGearing !== null && p.groupConsolidatedGearing !== undefined)
+    .map((p) => ({ year: String(p.year), gearing: Number(p.groupConsolidatedGearing) }));
+
+  const ChartPlaceholder = ({ children }) => (
+    <div className="flex items-center justify-center h-[300px] px-4 text-sm text-center text-gray-500">
+      {children}
+    </div>
+  );
+
+  const currencyUnit = activeCurrency === 'kes' ? 'KES M' : 'USD M';
+
   const renderChart = () => {
+    if (!historyPoints.length) {
+      return (
+        <ChartPlaceholder>
+          No performance history has been published yet.
+        </ChartPlaceholder>
+      );
+    }
+
     switch (activeKPI) {
-      case 'rev':
+      case 'portfolio': {
+        const data = moneySeries('groupConsolidatedPortfolio');
+        if (!data.length) {
+          return <ChartPlaceholder>No portfolio figures recorded for these periods.</ChartPlaceholder>;
+        }
         return (
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={getChartData('revenue', activeCurrency)}
-              margin={{ top: 20, right: 20, left: 10, bottom: 5 }}
-            >
+            <BarChart data={data} margin={{ top: 20, right: 20, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar
-                dataKey="value"
-                fill="#012060"
-                name={activeCurrency === 'kes' ? 'Revenue (KES M)' : 'Revenue (USD M)'}
-              />
+              <Bar dataKey="value" fill="#012060" name={`Portfolio Value (${currencyUnit})`} />
             </BarChart>
           </ResponsiveContainer>
         );
+      }
 
-      case 'netShare':
+      case 'revenue': {
+        const data = moneySeries('groupConsolidatedRevenue');
+        if (!data.length) {
+          return <ChartPlaceholder>No revenue figures recorded for these periods.</ChartPlaceholder>;
+        }
         return (
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={getChartData('netShare')}
-              margin={{ top: 20, right: 20, left: 10, bottom: 5 }}
-            >
+            <BarChart data={data} margin={{ top: 20, right: 20, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="value" fill="#2caffe" name="Net Share per Share (KES)" />
+              <Bar dataKey="value" fill="#2caffe" name={`Revenue (${currencyUnit})`} />
             </BarChart>
           </ResponsiveContainer>
         );
+      }
 
-      case 'gearing':
+      case 'gearing': {
+        if (!gearingSeries.length) {
+          return <ChartPlaceholder>No gearing figures recorded for these periods.</ChartPlaceholder>;
+        }
         return (
           <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart
-              data={getChartData('gearing', activeCurrency)}
-              margin={{ top: 20, right: 20, left: 10, bottom: 5 }}
-            >
+            <ComposedChart data={gearingSeries} margin={{ top: 20, right: 20, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" />
               <YAxis domain={[0, 100]} unit="%" />
@@ -247,6 +306,7 @@ const PortfolioPage = () => {
             </ComposedChart>
           </ResponsiveContainer>
         );
+      }
 
       default:
         return null;
@@ -325,8 +385,8 @@ const PortfolioPage = () => {
                 </span>
                 <strong className="block my-1 text-xl font-bold text-black sm:my-2 sm:text-2xl lg:text-3xl">
                   <span className="text-sm text-gray-500 sm:text-base">{activeCurrency.toUpperCase()} </span>
-                  {kf?.aum || 'N/A'}
-                  <span className="text-sm font-bold sm:text-base lg:text-lg"> {kf?.aumUnit || ''}</span>
+                  {kf?.totalPortfolio || 'N/A'}
+                  <span className="text-sm font-bold sm:text-base lg:text-lg"> {kf?.totalPortfolioUnit || ''}</span>
                 </strong>
               </div>
 
@@ -441,9 +501,9 @@ const PortfolioPage = () => {
                 <div className="mb-4 sm:mb-6">
                   <ul className="flex flex-wrap gap-1.5 sm:gap-2">
                     {[
-                      { key: 'rev',      label: 'PORTFOLIO' },
-                      { key: 'netShare', label: 'REVENUE' },
-                      { key: 'gearing',  label: 'GEARING' },
+                      { key: 'portfolio', label: 'PORTFOLIO' },
+                      { key: 'revenue',   label: 'REVENUE' },
+                      { key: 'gearing',   label: 'GEARING' },
                     ].map(({ key, label }) => (
                       <li
                         key={key}

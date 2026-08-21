@@ -36,7 +36,7 @@ const emptySettings = {
   chairmanMessage: '',
   usdToLocalCurrencyRateId: '',
   hero: { headline: '', subheadline: '', rotatingTags: [], ctaLabel: '' },
-  companyStats: { aum: '', sectorsCount: 0, continentsCount: 0, countriesCount: 0, employeesLabel: '', portfolioCompaniesCount: 0 },
+  companyStats: { totalPortfolio: '', sectorsCount: 0, continentsCount: 0, countriesCount: 0, employeesLabel: '', portfolioCompaniesCount: 0 },
   contact: { officeAddress: '', phones: [], email: '', businessHours: '' },
   socialLinks: [],
   footerQuickLinks: [],
@@ -443,9 +443,9 @@ const AdminSettings = () => {
 
               <SectionCard
                 title="Company Stats"
-                note="Reference figures only — the public site computes its own counts. Only AUM, continents and the employees label are authoritative."
+                note="Reference figures only — the public site computes its own counts. Only Total Portfolio, continents and the employees label are authoritative."
               >
-                <Field label="AUM (e.g. $6.0 B)" value={form.companyStats.aum} onChange={(v) => updateNested('companyStats', 'aum', v)} disabled={disabled} />
+                <Field label="Total Portfolio (e.g. $6.0 B)" value={form.companyStats.totalPortfolio} onChange={(v) => updateNested('companyStats', 'totalPortfolio', v)} disabled={disabled} />
                 <Field label="Clusters Count" type="number" value={form.companyStats.sectorsCount} onChange={(v) => updateNested('companyStats', 'sectorsCount', v)} disabled={disabled} />
                 <Field label="Continents Count" type="number" value={form.companyStats.continentsCount} onChange={(v) => updateNested('companyStats', 'continentsCount', v)} disabled={disabled} />
                 <Field label="Countries Count" type="number" value={form.companyStats.countriesCount} onChange={(v) => updateNested('companyStats', 'countriesCount', v)} disabled={disabled} />

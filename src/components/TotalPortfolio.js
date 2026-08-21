@@ -132,7 +132,7 @@ const TotalPortfolioPage = () => {
 
         if (siteRes?.data) {
           setStats({
-            aum: siteRes.data.totalPortfolioValue?.displayText ?? 'N/A',
+            totalPortfolio: siteRes.data.totalPortfolioValue?.displayText ?? 'N/A',
             countriesCount: siteRes.data.totalCountries ?? 0,
             sectorsCount: siteRes.data.totalClusters ?? 0,
           });
@@ -141,7 +141,7 @@ const TotalPortfolioPage = () => {
         console.error('Failed to load site stats:', err);
         if (isMounted) {
           setStats({
-            aum: 'N/A',
+            totalPortfolio: 'N/A',
             countriesCount: 0,
             sectorsCount: 0,
           });
@@ -218,7 +218,7 @@ const TotalPortfolioPage = () => {
               <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
                 <div className="text-center">
                   <div className="mb-6 text-5xl font-bold text-[#0A2540] md:text-6xl lg:text-7xl font-sans">
-                    {stats?.aum ?? '—'}
+                    {stats?.totalPortfolio ?? '—'}
                   </div>
                   <div className="font-sans text-xl font-medium text-gray-700">
                     Net assets as at {formatDisplayDate(portfolioCategories[0]?.value?.asAtDate) || 'July 30, 2026'}

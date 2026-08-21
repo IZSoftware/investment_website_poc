@@ -35,7 +35,7 @@ const getColorForAsset = (name) => {
   return fallbackColors[Math.floor(Math.random() * fallbackColors.length)];
 };
 
-function AssetOrbit({ assets, totalAUM, aumDate }) {
+function AssetOrbit({ assets, totalPortfolio, portfolioDate }) {
   const [active, setActive] = useState(null);
   const activeAsset = active ? assets.find(a => a.id === active) : null;
 
@@ -123,7 +123,7 @@ function AssetOrbit({ assets, totalAUM, aumDate }) {
 
       <div className="orbit-mobile">
         <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "#666", marginBottom: 4 }}>
-          Asset Classes · Total {totalAUM}
+          Asset Classes · Total {totalPortfolio}
         </p>
         <div className="leg-grid">
           {assets.map(a => (
@@ -177,8 +177,8 @@ function AssetOrbit({ assets, totalAUM, aumDate }) {
             })}
             <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 120, height: 120, borderRadius: "50%", background: "#f8f7f5", border: "1.5px solid #e8e3dd", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
               <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: ".12em", textTransform: "uppercase", color: "#777", marginBottom: 4 }}>{activeAsset ? "SELECTED" : "TOTAL PORTFOLIO"}</span>
-              <span style={{ fontSize: activeAsset ? 16 : 20, fontWeight: 700, color: "#000", lineHeight: 1, transition: "font-size .2s", textAlign: "center" }}>{activeAsset ? activeAsset.pct : totalAUM}</span>
-              <span style={{ fontSize: 9, color: "#777", marginTop: 4, textAlign: "center", lineHeight: 1.4 }}>{activeAsset ? activeAsset.value : aumDate || "Dec 31, 2025"}</span>
+              <span style={{ fontSize: activeAsset ? 16 : 20, fontWeight: 700, color: "#000", lineHeight: 1, transition: "font-size .2s", textAlign: "center" }}>{activeAsset ? activeAsset.pct : totalPortfolio}</span>
+              <span style={{ fontSize: 9, color: "#777", marginTop: 4, textAlign: "center", lineHeight: 1.4 }}>{activeAsset ? activeAsset.value : portfolioDate || "Dec 31, 2025"}</span>
             </div>
           </div>
         </div>
@@ -209,8 +209,8 @@ export default function AboutPage() {
   ]);
   const [milestones, setMilestones] = useState([]);
   const [assets, setAssets] = useState([]);
-  const [totalAUM, setTotalAUM] = useState('Loading...');
-  const [aumDate, setAumDate] = useState('');
+  const [totalPortfolio, setTotalPortfolio] = useState('Loading...');
+  const [portfolioDate, setPortfolioDate] = useState('');
 
   // Static Who We Are content
   const whoWeAre = {
@@ -237,7 +237,7 @@ export default function AboutPage() {
   useEffect(() => {
     let isMounted = true;
 
-    // Fetch about data (assets, timeline, AUM)
+    // Fetch about data (assets, timeline, total portfolio)
     const fetchAboutData = async () => {
       try {
         const aboutRes = await getSiteInfoAbout();
@@ -248,14 +248,14 @@ export default function AboutPage() {
 
         // Total portfolio value from about
         if (aboutData.totalPortfolioValue?.displayText) {
-          setTotalAUM(aboutData.totalPortfolioValue.displayText);
+          setTotalPortfolio(aboutData.totalPortfolioValue.displayText);
         }
 
-        // AUM date
+        // Total-portfolio as-at date
         if (aboutData.totalPortfolioValue?.asAtDate) {
           const date = new Date(aboutData.totalPortfolioValue.asAtDate);
           const formattedDate = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-          setAumDate(formattedDate);
+          setPortfolioDate(formattedDate);
         }
 
         // Assets with subclasses
@@ -319,13 +319,13 @@ export default function AboutPage() {
 
         setStats((prev) => {
           // Get current TOTAL PORTFOLIO value from prev state (set by about data)
-          const currentAUM = prev.find(s => s.label === 'TOTAL PORTFOLIO')?.value || siteData.totalPortfolioValue?.displayText || 'N/A';
+          const currentTotal = prev.find(s => s.label === 'TOTAL PORTFOLIO')?.value || siteData.totalPortfolioValue?.displayText || 'N/A';
           const countries = siteData.totalCountries != null ? String(siteData.totalCountries) : 'N/A';
           const companies = siteData.totalCompanies != null ? String(siteData.totalCompanies) : 'N/A';
           const clusters = siteData.totalClusters != null ? String(siteData.totalClusters) : 'N/A';
 
           return [
-            { value: currentAUM, label: 'TOTAL PORTFOLIO' },
+            { value: currentTotal, label: 'TOTAL PORTFOLIO' },
             { value: countries, label: 'COUNTRIES' },
             { value: companies, label: 'PORTFOLIO COMPANIES' },
             { value: clusters, label: 'CORE CLUSTERS' }
@@ -463,12 +463,12 @@ export default function AboutPage() {
           <p className="eyebrow">Portfolio Structure</p>
           <h2 className="heading">Asset Allocation</h2>
           <p style={{ fontSize: "clamp(12px, 1.4vw, 14.5px)", color: "#666", marginTop: 4, lineHeight: 1.6 }}>
-            As at {aumDate || 'July 30, 2026'} · TOTAL PORTFOLIO {totalAUM} · Sub-entities orbit around each parent asset
+            As at {portfolioDate || 'July 30, 2026'} · TOTAL PORTFOLIO {totalPortfolio} · Sub-entities orbit around each parent asset
           </p>
         </div>
         <div className="orbit-section">
           {assets.length > 0 ? (
-            <AssetOrbit assets={assets} totalAUM={totalAUM} aumDate={aumDate} />
+            <AssetOrbit assets={assets} totalPortfolio={totalPortfolio} portfolioDate={portfolioDate} />
           ) : (
             <div style={{ padding: 40, textAlign: 'center', color: '#666' }}>
               Loading portfolio data...

@@ -78,6 +78,15 @@ export const getSiteInfoPortfolio = async ({ month, year } = {}) => {
   return response.data;
 };
 
+// GET /api/site/info/portfolio/history?fromYear=&toYear=&granularity=&limit=
+// Whole KPI series in one read, oldest point first, each carrying its own period's USD/KES rate.
+export const getSiteInfoPortfolioHistory = async ({ fromYear, toYear, granularity, limit } = {}) => {
+  const response = await api.get("/api/site/info/portfolio/history", {
+    params: { fromYear, toYear, granularity, limit },
+  });
+  return response.data;
+};
+
 // POST /api/site/newsletter
 export const subscribeSiteNewsletter = async ({ fullName, email, consent, website, captchaToken }) => {
   const response = await api.post("/api/site/newsletter", {
