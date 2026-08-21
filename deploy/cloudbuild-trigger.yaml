@@ -1,0 +1,30 @@
+# Cloud Build trigger for this app: every push to `develop` builds and deploys the
+# Cloud Run service `investors-portal-web` using cloudbuild.yaml at the repo root.
+#
+# Import it (idempotent — re-importing updates the existing trigger):
+#
+#   gcloud builds triggers import \
+#     --source=deploy/cloudbuild-trigger.yaml \
+#     --region=europe-west1 \
+#     --project=izepr-405023
+#
+# Prerequisite: this repository has to be connected to Cloud Build's GitHub App
+# first (Cloud Build > Triggers > Connect repository, or grant the "Google Cloud
+# Build" GitHub App access to IZSoftware/investment_website_poc). Without it the
+# import fails with FAILED_PRECONDITION: Repository mapping does not exist.
+#
+# The service account is the one every other trigger in this project uses; the
+# legacy <project-number>@cloudbuild.gserviceaccount.com identity lacks
+# run.services.get and cannot deploy.
+
+name: Investors-Portal-Web-Trigger
+description: Investors Portal Web Trigger for CICD
+github:
+  owner: IZSoftware
+  name: investment_website_poc
+  push:
+    branch: ^develop$
+filename: cloudbuild.yaml
+serviceAccount: projects/izepr-405023/serviceAccounts/885787520862-compute@developer.gserviceaccount.com
+tags:
+  - develop
