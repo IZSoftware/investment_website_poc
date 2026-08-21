@@ -2,6 +2,8 @@
 // All 13 E2E scenarios (see scratchpad e2e-spec.md). Sequential, sharing one
 // browser. Pages: publicPage (1-2), adminPage (3-7, 11-12), investorPage (7-9),
 // plus throwaway tabs for forgot-password (10) and the DEV login (13).
+const fs = require('fs');
+const path = require('path');
 const {
   CFG,
   sleep,
@@ -741,6 +743,101 @@ async function forgotPassword(ctx) {
   await page.close();
 }
 
+/**
+ * Every image field — cluster logos, the news image, the chairman photo — goes through one
+ * upload service function, and it was silently broken: the axios instance defaults
+ * Content-Type to application/json, axios then serialized the FormData to
+ * `{"file":{},"folder":"news"}`, and the API answered 500 with the bytes never leaving the
+ * browser. Nothing caught it because no scenario had ever attached a file. Asserting on the
+ * request the browser actually sends is what keeps that honest.
+ */
+async function adminUpload(ctx) {
+  const { state } = ctx;
+  const page = await ensureAdminPage(ctx);
+  state.lastPage = page;
+
+  const png = path.join(CFG.SHOTS_DIR, `upload-${state.runId}.png`);
+  fs.mkdirSync(path.dirname(png), { recursive: true });
+  fs.writeFileSync(png, Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==',
+    'base64'
+  ));
+
+  const calls = [];
+  const onRequest = (r) => {
+    if (r.url().includes('/api/admin/uploads') && r.method() === 'POST') {
+      calls.push({ contentType: r.headers()['content-type'] || '' });
+    }
+  };
+  const onResponse = (r) => {
+    if (r.url().includes('/api/admin/uploads') && r.request().method() === 'POST') {
+      const last = calls[calls.length - 1];
+      if (!last) return;
+      last.status = r.status();
+      // Keep objectName: uploads go to a real bucket, so the file has to be removed
+      // again or every run leaves litter behind.
+      r.json()
+        .then((body) => { last.objectName = body?.data?.objectName; })
+        .catch(() => {});
+    }
+  };
+  page.on('request', onRequest);
+  page.on('response', onResponse);
+
+  try {
+    await goto(page, '/admin-portal/content/news');
+    await waitForText(page, 'News');
+    await clickByText(page, 'button', 'Add Article');
+    await page.waitForSelector('input[type="file"]');
+    const input = await page.$('input[type="file"]');
+    await input.uploadFile(png);
+
+    let settled = false;
+    for (let i = 0; i < 60 && !settled; i += 1) {
+      settled = calls.some((c) => c.status);
+      if (!settled) await sleep(250);
+    }
+    assert(settled, 'the upload request never completed');
+
+    const call = calls[calls.length - 1];
+    assert(
+      /multipart\/form-data/.test(call.contentType),
+      `upload was not sent as multipart (Content-Type: "${call.contentType}") — the file bytes get dropped`
+    );
+    assert(/boundary=/.test(call.contentType),
+      `multipart Content-Type carries no boundary, so the server cannot parse it: "${call.contentType}"`);
+    assert(call.status === 200, `upload answered ${call.status}, expected 200`);
+
+    // The returned URL has to land in the field, or the article saves without its image.
+    const url = await pollFor(page, 'uploaded url in the field', () => {
+      const el = [...document.querySelectorAll('input[type="text"]')]
+        .find((i) => /^https?:\/\//.test(i.value || ''));
+      return el ? el.value : false;
+    }, { timeout: 15000 });
+    assert(/^https?:\/\//.test(url), `the field did not receive the uploaded URL: "${url}"`);
+  } finally {
+    page.off('request', onRequest);
+    page.off('response', onResponse);
+    fs.rmSync(png, { force: true });
+    await clickByText(page, 'button', 'Cancel', { within: OVERLAY, exact: true }).catch(() => {});
+
+    // Delete the uploaded object so runs do not accumulate files in the bucket. Done
+    // from the page so it reuses the session's own bearer token.
+    const objectName = calls.map((c) => c.objectName).filter(Boolean).pop();
+    if (objectName) {
+      await page
+        .evaluate(async (name, api) => {
+          const token = sessionStorage.getItem('auth:accessToken');
+          await fetch(`${api}/api/admin/uploads?objectName=${encodeURIComponent(name)}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        }, objectName, CFG.API_URL)
+        .catch(() => {});
+    }
+  }
+}
+
 async function audit(ctx) {
   const { state } = ctx;
   const page = await ensureAdminPage(ctx);
@@ -859,6 +956,7 @@ function buildScenarios() {
     { name: 'investor-dashboard', fn: investorDashboard },
     { name: 'investor-crud', fn: investorCrud },
     { name: 'forgot-password', fn: forgotPassword },
+    { name: 'admin-upload', fn: adminUpload },
     { name: 'audit', fn: audit },
     { name: 'login-locks', fn: loginLocks },
     { name: 'rbac-smoke', fn: rbacSmoke },

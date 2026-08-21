@@ -140,12 +140,16 @@ export default function ProfilePage() {
         <div className="hidden col-span-1 lg:block" />
       </div>
 
-      {/* The modal owns the whole email → challenge → new-password flow and
-          routes to the sign-in page on completion. */}
+      {/* The modal owns the whole email → challenge → new-password flow. Changing the
+          password does not invalidate this session server-side, so end it here: the
+          page promises re-authentication, and leaving the old tokens live would keep a
+          session going on credentials the user just replaced. `logout()` clears both
+          tokens and redirects to the right portal's sign-in. */}
       <ForgotPasswordModal
         isOpen={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
         initialEmail={userEmail}
+        onCompleted={logout}
       />
     </div>
   );

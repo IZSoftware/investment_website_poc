@@ -23,6 +23,19 @@ export const buildValuation = ({ currency, amount, unit, allocationPercent, asAt
   asAtDate,
 });
 
+// "YYYY-MM-DD" -> a Date at LOCAL midnight on that same calendar day.
+//
+// `new Date('2026-06-15')` is parsed as UTC midnight while formatAsAtDate below reads
+// local calendar fields, so anywhere west of UTC the pair walks the date one day
+// backwards every time a record is opened and saved. asAtDate is a plain calendar date
+// with no zone attached, so it has to be read as one.
+export const parseCalendarDate = (value) => {
+  if (!value) return null;
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value));
+  if (!parts) return new Date(value);
+  return new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
+};
+
 // Turns an API `valuation` object into flat form-field values for editing.
 export const parseValuation = (valuation) => {
   if (!valuation) {
@@ -33,7 +46,7 @@ export const parseValuation = (valuation) => {
     amount: valuation.amount ?? '',
     unit: valuation.unit || 'BILLIONS',
     allocationPercent: valuation.allocationPercent ?? '',
-    asAtDate: valuation.asAtDate ? new Date(valuation.asAtDate) : null,
+    asAtDate: parseCalendarDate(valuation.asAtDate),
   };
 };
 
@@ -50,7 +63,11 @@ export const formatAsAtDate = (date) => {
 export const formatDisplayDate = (asAtDate) => {
   if (!asAtDate) return '';
   try {
-    return new Date(asAtDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    // Read as a calendar date, not UTC midnight, or the day shown slips backwards
+    // west of UTC.
+    const d = parseCalendarDate(asAtDate);
+    if (!d) return '';
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   } catch {
     return asAtDate;
   }

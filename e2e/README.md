@@ -1,6 +1,6 @@
 # End-to-end tests
 
-Thirteen scenarios driving real Chrome against a real backend: the public site,
+Fourteen scenarios driving real Chrome against a real backend: the public site,
 both sign-in portals (credentials + letter challenge), invite onboarding through
 the emailed set-password link, the investor portal and its portfolio CRUD, the
 admin console, and the role matrix.
@@ -53,7 +53,7 @@ performance scenario walks candidate periods until it finds a free one.
 - `helpers.js` — config, browser/page setup with console and API-failure
   collectors, DOM utilities, challenge solving, mail-link reading, direct API
   calls for fast provisioning.
-- `scenarios.js` — the thirteen scenarios and their shared page factories.
+- `scenarios.js` — the fourteen scenarios and their shared page factories.
 
 Waits go through `pollFor` (evaluated from Node) rather than
 `page.waitForFunction` for anything that settles after a same-tab route change:

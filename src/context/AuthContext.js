@@ -54,22 +54,26 @@ export const AuthProvider = ({ children }) => {
     const email = user.email || "";
     const name = user.fullName || "";
 
+    // The normalized form is what gets stored and handed out. Pages gate on an exact
+    // match (`ALLOWED_ROLES.includes(userRole)`, `userRole !== 'DEV'`), so keeping a raw
+    // `ROLE_ADMIN` or a lowercase value would let the router admit someone that the
+    // navbar and every page then treat as having no permissions at all.
     const normalizedRole = String(role).toUpperCase().replace(/^ROLE_/, "");
     const portal = ADMIN_PORTAL_ROLES.includes(normalizedRole) ? "admin" : "investor";
 
     setUserEmail(email);
-    setUserRole(role);
+    setUserRole(normalizedRole);
     setFullName(name);
     setLoginPortal(portal);
     setIsAuthenticated(true);
 
     sessionStorage.setItem(STORAGE_KEYS.AUTH, "true");
     sessionStorage.setItem(STORAGE_KEYS.EMAIL, email);
-    sessionStorage.setItem(STORAGE_KEYS.ROLE, role);
+    sessionStorage.setItem(STORAGE_KEYS.ROLE, normalizedRole);
     sessionStorage.setItem(STORAGE_KEYS.PORTAL, portal);
     sessionStorage.setItem(STORAGE_KEYS.FULL_NAME, name);
 
-    return { role, portal };
+    return { role: normalizedRole, portal };
   }, []);
 
   // Phase 1 — the service returns the envelope {success,message,data:{challenge?,auth?},errors}

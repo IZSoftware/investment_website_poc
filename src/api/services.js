@@ -486,16 +486,24 @@ export const getAdminAudit = async ({ page = 0, size = 20 } = {}) => {
 // ============================================================
 
 // POST /api/admin/uploads — multipart; `folder` is a FORM FIELD, not a query
-// param. No manual Content-Type: axios must set the multipart boundary itself.
-// → data: { url, objectName, originalFilename, contentType, sizeBytes }
+// param. → data: { url, objectName, originalFilename, contentType, sizeBytes }
 // Keep `objectName` — it's the only way to delete the file later. Max 5 MB.
+//
+// Content-Type is explicitly unset rather than left alone: this instance defaults
+// it to application/json, and axios then serializes FormData to JSON — the request
+// leaves as {"file":{},"folder":"news"} with the bytes dropped and the API answers
+// 500. Passing undefined lets the browser set multipart/form-data with its
+// boundary. Do NOT hardcode "multipart/form-data" either: without the boundary the
+// server cannot parse the parts.
 export const uploadFile = async ({ file, folder = "" }) => {
   const formData = new FormData();
   formData.append("file", file);
   if (folder) {
     formData.append("folder", folder);
   }
-  const response = await api.post("/api/admin/uploads", formData);
+  const response = await api.post("/api/admin/uploads", formData, {
+    headers: { "Content-Type": undefined },
+  });
   return response.data;
 };
 

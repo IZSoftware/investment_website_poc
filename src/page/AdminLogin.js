@@ -322,6 +322,7 @@ export default function AdminLogin() {
       <ForgotPasswordModal
         isOpen={showForgotModal}
         onClose={() => setShowForgotModal(false)}
+        signInPath="/admin-portal/login"
       />
     </>
   );

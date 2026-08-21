@@ -7,7 +7,17 @@ import LetterChallengeInput, { ChallengeTimer } from "../auth/LetterChallengeInp
 const CHALLENGE_TTL_SECONDS = 180;
 const COOLDOWN_SECONDS = 5 * 60;
 
-export default function ForgotPasswordModal({ isOpen, onClose, initialEmail }) {
+// `signInPath` is where "Go to Sign In" lands, and `onCompleted` fires once the new
+// password is set. Both exist because this modal is opened from three places: the
+// investor login, the admin login (which must not send staff to the investor page),
+// and the profile page (which has a live session to tear down afterwards).
+export default function ForgotPasswordModal({
+  isOpen,
+  onClose,
+  initialEmail,
+  signInPath = "/investor-portal/login",
+  onCompleted,
+}) {
   const navigate = useNavigate();
   const [step, setStep] = useState("email");
   const [email, setEmail] = useState("");
@@ -174,7 +184,12 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail }) {
           <button
             onClick={() => {
               onClose();
-              navigate("/investor-portal/login");
+              if (onCompleted) {
+                // The caller owns what happens next (e.g. ending the current session).
+                onCompleted();
+                return;
+              }
+              navigate(signInPath);
             }}
             className="w-full bg-[#1D1D1F] text-white font-medium py-4 rounded-xl hover:bg-[#2D2D2F]"
           >

@@ -275,18 +275,30 @@ describe("admin ops services", () => {
 });
 
 describe("uploads", () => {
-  test("uploadFile posts multipart FormData with file AND folder fields, no explicit Content-Type", async () => {
+  test("uploadFile posts multipart FormData with file AND folder fields", async () => {
     const file = new File(["contents"], "logo.png", { type: "image/png" });
     await services.uploadFile({ file, folder: "clusters" });
 
     expect(api.post).toHaveBeenCalledTimes(1);
-    const [path, formData, config] = api.post.mock.calls[0];
+    const [path, formData] = api.post.mock.calls[0];
     expect(path).toBe("/api/admin/uploads");
     expect(formData).toBeInstanceOf(FormData);
     expect(formData.get("file")).toBe(file);
     expect(formData.get("folder")).toBe("clusters");
-    // axios must set the multipart boundary itself — no config/headers passed.
-    expect(config).toBeUndefined();
+  });
+
+  // The instance defaults Content-Type to application/json, and axios then turns
+  // FormData into JSON — the file bytes never leave the browser and the API 500s.
+  // Clearing the header is what lets the browser set the multipart boundary, so
+  // this assertion is the regression guard, not a style preference.
+  test("uploadFile clears the JSON Content-Type so the browser sets the boundary", async () => {
+    const file = new File(["contents"], "logo.png", { type: "image/png" });
+    await services.uploadFile({ file, folder: "clusters" });
+
+    const config = api.post.mock.calls[0][2];
+    expect(config).toBeDefined();
+    expect("Content-Type" in config.headers).toBe(true);
+    expect(config.headers["Content-Type"]).toBeUndefined();
   });
 
   test("uploadFile omits the folder field when folder is empty", async () => {

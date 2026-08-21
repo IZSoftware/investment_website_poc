@@ -46,7 +46,9 @@ export default function AssetSubclasses() {
         ]);
 
         if (assetsRes.success) {
-          const found = (assetsRes.data || []).find((a) => a.id === assetId);
+          // Route params are always strings; compare as strings so the match cannot
+          // hinge on how the id happens to be serialized.
+          const found = (assetsRes.data || []).find((a) => String(a.id) === String(assetId));
           setParentAsset(found || null);
         }
 

@@ -5,16 +5,39 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer-core');
 
-const SCRATCHPAD =
-  'C:/Users/byrdf/AppData/Local/Temp/claude/C--Users-byrdf-OneDrive-Documents-IZSOFTWARE-2025-family-investment-backend-family-investment-backend/8ae21d66-b16a-4e49-b5b9-92bf3121aa05/scratchpad';
+// Chrome lives wherever puppeteer cached it, and the version is part of that path, so
+// it is discovered rather than pinned to one machine. CHROME_PATH overrides.
+function findChrome() {
+  const home = process.env.USERPROFILE || process.env.HOME || '';
+  const cache = path.join(home, '.cache', 'puppeteer', 'chrome');
+  try {
+    const build = fs
+      .readdirSync(cache)
+      .filter((d) => /^(win64|win32|linux|mac)-/.test(d))
+      .sort()
+      .pop();
+    if (!build) return null;
+    const candidates = [
+      path.join(cache, build, 'chrome-win64', 'chrome.exe'),
+      path.join(cache, build, 'chrome-win32', 'chrome.exe'),
+      path.join(cache, build, 'chrome-linux64', 'chrome'),
+      path.join(cache, build, 'chrome-mac-x64', 'Google Chrome for Testing.app',
+        'Contents', 'MacOS', 'Google Chrome for Testing'),
+      path.join(cache, build, 'chrome-mac-arm64', 'Google Chrome for Testing.app',
+        'Contents', 'MacOS', 'Google Chrome for Testing'),
+    ];
+    return candidates.find((exe) => fs.existsSync(exe)) || null;
+  } catch {
+    return null; // no puppeteer cache on this machine
+  }
+}
 
 const CFG = {
   APP_URL: process.env.APP_URL || 'http://localhost:3000',
   API_URL: process.env.API_URL || 'http://localhost:8080',
-  CHROME_PATH:
-    process.env.CHROME_PATH ||
-    'C:/Users/byrdf/.cache/puppeteer/chrome/win64-148.0.7778.167/chrome-win64/chrome.exe',
-  MAILS_DIR: process.env.MAILS_DIR || path.join(SCRATCHPAD, 'mails'),
+  CHROME_PATH: process.env.CHROME_PATH || findChrome(),
+  // Where the local SMTP sink drops .eml files — the invite link is read off disk.
+  MAILS_DIR: process.env.MAILS_DIR || path.join(__dirname, 'mails'),
   LETTER_MAPPING:
     process.env.E2E_LETTER_MAPPING ||
     'A=1,B=2,C=3,D=4,E=5,F=6,G=7,H=8,I=9,J=0,K=1,L=2,M=3,N=4,O=5,P=6,Q=7,R=8,S=9,T=0,U=1,V=2,W=3,X=4,Y=5,Z=6',
@@ -43,6 +66,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 /* ---------------- browser ---------------- */
 
 async function launchBrowser() {
+  if (!CFG.CHROME_PATH) {
+    throw new Error(
+      'No Chrome found. Run `npx puppeteer browsers install chrome` or set CHROME_PATH.'
+    );
+  }
   return puppeteer.launch({
     headless: 'new',
     executablePath: CFG.CHROME_PATH,
