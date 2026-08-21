@@ -14,7 +14,6 @@ const Footer = () => {
   ];
 
   const socialMedia = [
-    { name: "Twitter", icon: <FaTwitter />, url: "https://twitter.com/NF Holdinggroup" },
     { name: "LinkedIn", icon: <FaLinkedinIn />, url: "https://linkedin.com/company/NF Holdinggroup" }
   ];
 
@@ -87,7 +86,7 @@ const Footer = () => {
                       <span className="mr-3 text-lg text-[#1C1F26]">
                         <FaLocationDot />
                       </span>
-                      <span>Westlands, Nairobi</span>
+                      <span>Ushuru Pension Plaza, Nairobi, Kenya</span>
                     </div>
                   </div>
                 </div>

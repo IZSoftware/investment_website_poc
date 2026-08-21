@@ -14,7 +14,7 @@ const Objectives = () => {
             <div className="py-12 border-b border-gray-200">
               <div className="text-left">
                 <h1 className="text-5xl font-bold text-gray-900 md:text-6xl lg:text-7xl">
-                  Depositors and Total Portfolio team
+                  Investment Approach
                 </h1>
               </div>
             </div>
@@ -49,61 +49,6 @@ const Objectives = () => {
                       </p>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Activities Section */}
-            <div className="py-16 border-b border-gray-200">
-              <div className="mb-12">
-                <h3 className="text-4xl font-bold text-gray-900 md:text-5xl">
-                  Our activities
-                </h3>
-              </div>
-              
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                <div className="p-6 transition-all duration-300 bg-white shadow-md rounded-xl hover:bg-gray-50 hover:shadow-lg">
-                  <div className="mb-6">
-                    <h4 className="text-xl font-semibold text-gray-900 md:text-2xl">
-                      DEPOSITOR ADVISORY SERVICES
-                    </h4>
-                  </div>
-                  <p className="text-justify text-gray-600">
-                    Help our clients establish their investment policies by thoroughly understanding their needs and leveraging our long investment track record.
-                  </p>
-                </div>
-                
-                <div className="p-6 transition-all duration-300 bg-white shadow-md rounded-xl hover:bg-gray-50 hover:shadow-lg">
-                  <div className="mb-6">
-                    <h4 className="text-xl font-semibold text-gray-900 md:text-2xl">
-                      PORTFOLIO CONSTRUCTION
-                    </h4>
-                  </div>
-                  <p className="text-justify text-gray-600">
-                    Optimize the strategic allocation of long-term assets to improve the risk-return profile of the total portfolio, while conducting integrated monitoring of the portfolio.
-                  </p>
-                </div>
-                
-                <div className="p-6 transition-all duration-300 bg-white shadow-md rounded-xl hover:bg-gray-50 hover:shadow-lg">
-                  <div className="mb-6">
-                    <h4 className="text-xl font-semibold text-gray-900 md:text-2xl">
-                      CURRENCY MANAGEMENT
-                    </h4>
-                  </div>
-                  <p className="text-justify text-gray-600">
-                    Manage NF Holding exposure to foreign currencies to ensure optimal positioning and provide the total portfolio with a diversification effect.
-                  </p>
-                </div>
-                
-                <div className="p-6 transition-all duration-300 bg-white shadow-md rounded-xl hover:bg-gray-50 hover:shadow-lg">
-                  <div className="mb-6">
-                    <h4 className="text-xl font-semibold text-gray-900 md:text-2xl">
-                      ECONOMIC AND FINANCIAL ANALYSIS
-                    </h4>
-                  </div>
-                  <p className="text-justify text-gray-600">
-                    Analyze global macroeconomic conditions and financial market developments to support investment activities.
-                  </p>
                 </div>
               </div>
             </div>
