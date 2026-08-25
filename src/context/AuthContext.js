@@ -13,6 +13,8 @@ const STORAGE_KEYS = {
   FULL_NAME: "auth:fullName",
 };
 
+const LOGIN_PATH = "/portal-login";
+
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
@@ -133,9 +135,9 @@ export const AuthProvider = ({ children }) => {
   // Now logout clears state/storage and lets React Router perform a normal
   // client-side navigation via the `navigate` function passed in by the
   // caller (AdminNavbar / InvestorNavbar). No full page reload, no race.
+  //
+  // Single shared login page now — destination no longer branches by portal.
   const logout = useCallback(async (navigate) => {
-    const portal = sessionStorage.getItem(STORAGE_KEYS.PORTAL) || "investor";
-
     try {
       const rt = getRefreshToken();
       if (rt) {
@@ -159,14 +161,12 @@ export const AuthProvider = ({ children }) => {
       sessionStorage.removeItem(STORAGE_KEYS.PORTAL);
       sessionStorage.removeItem(STORAGE_KEYS.FULL_NAME);
 
-      const destination = portal === "admin" ? "/admin-portal/login" : "/investor-portal/login";
-
       if (navigate) {
-        navigate(destination, { replace: true });
+        navigate(LOGIN_PATH, { replace: true });
       } else {
         // Fallback only if a caller forgets to pass navigate — still works,
         // just loses the "no hard reload" benefit for that one call site.
-        window.location.href = destination;
+        window.location.href = LOGIN_PATH;
       }
     }
   }, []);

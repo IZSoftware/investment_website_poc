@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { changePassword } from "../api/services";
 
 const EyeIcon = ({ open }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -99,18 +101,20 @@ function PasswordStrengthBar({ password }) {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  
-  // Updated user information
+  const { userEmail, userRole, fullName } = useAuth();
+
+  // Real logged-in user info instead of hardcoded values
   const user = {
-    fullName: "Investor NF Holding ",
-    email: "investor@nf-holding.com",
-    role: "Investor",
+    fullName: fullName || "—",
+    email: userEmail || "—",
+    role: userRole || "—",
   };
 
   const [form, setForm] = useState({ current: "", newPass: "", confirm: "" });
   const [show, setShow] = useState({ current: false, newPass: false, confirm: false });
   const [touched, setTouched] = useState({ current: false, newPass: false, confirm: false });
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const rules = validate(form.newPass);
@@ -119,18 +123,38 @@ export default function ProfilePage() {
   const canSubmit = form.current && allRulesMet && form.confirm && passwordsMatch;
 
   const toggle = (field) => setShow(s => ({ ...s, [field]: !s[field] }));
-  const handleChange = (field) => (e) => { setForm(f => ({ ...f, [field]: e.target.value })); setSubmitStatus(null); };
+  const handleChange = (field) => (e) => {
+    setForm(f => ({ ...f, [field]: e.target.value }));
+    setSubmitStatus(null);
+    setErrorMessage("");
+  };
   const handleBlur = (field) => () => setTouched(t => ({ ...t, [field]: true }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || loading) return;
+
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1400));
-    setLoading(false);
-    setSubmitStatus("success");
-    setForm({ current: "", newPass: "", confirm: "" });
-    setTouched({ current: false, newPass: false, confirm: false });
+    setSubmitStatus(null);
+    setErrorMessage("");
+
+    try {
+      await changePassword({
+        currentPassword: form.current,
+        newPassword: form.newPass,
+      });
+
+      setSubmitStatus("success");
+      setForm({ current: "", newPass: "", confirm: "" });
+      setTouched({ current: false, newPass: false, confirm: false });
+    } catch (err) {
+      setSubmitStatus("error");
+      setErrorMessage(
+        err.response?.data?.message || "Unable to update password. Please check your current password and try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const ruleItems = [
@@ -292,6 +316,11 @@ export default function ProfilePage() {
           color: #2d7a4f; border-radius: 12px; padding: 16px 20px;
           display: flex; align-items: flex-start; gap: 14px;
         }
+        .error-banner {
+          background: #fdecec; border: 1.5px solid #f3b3b3;
+          color: #b3261e; border-radius: 12px; padding: 16px 20px;
+          display: flex; align-items: flex-start; gap: 14px;
+        }
         .divider { height: 1px; background: #ede9e4; }
         .section-tag {
           font-size: 11px; font-weight: 600; letter-spacing: 0.13em;
@@ -354,7 +383,9 @@ export default function ProfilePage() {
                       boxShadow: "0 8px 32px rgba(0,0,0,0.3)"
                     }}>
                       <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 34, color: "#fff", userSelect: "none" }}>
-                        {user.fullName.split(" ").map(n => n[0]).join("")}
+                        {user.fullName !== "—"
+                          ? user.fullName.split(" ").filter(Boolean).map(n => n[0]).join("").slice(0, 2).toUpperCase()
+                          : "—"}
                       </span>
                     </div>
                     <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 24, color: "#fff", fontWeight: 400, marginBottom: 6 }}>
@@ -362,7 +393,6 @@ export default function ProfilePage() {
                     </h2>
                     <p style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", letterSpacing: "0.04em" }}>{user.role}</p>
                   </div>
-                  {/* Stats section removed as requested */}
                 </div>
 
                 {/* Personal Information Card */}
@@ -447,6 +477,18 @@ export default function ProfilePage() {
                       <div>
                         <p style={{ fontWeight: 600, fontSize: 15 }}>Password updated successfully</p>
                         <p style={{ fontSize: 13.5, opacity: 0.75, marginTop: 3 }}>Your account is now secured with your new password.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {submitStatus === "error" && (
+                    <div className="error-banner fade-in" style={{ marginBottom: 32 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#f8d7d7", display: "flex", alignItems: "center", justifyContent: "center", color: "#b3261e", flexShrink: 0 }}>
+                        <XIcon size={16} />
+                      </div>
+                      <div>
+                        <p style={{ fontWeight: 600, fontSize: 15 }}>Password update failed</p>
+                        <p style={{ fontSize: 13.5, opacity: 0.85, marginTop: 3 }}>{errorMessage}</p>
                       </div>
                     </div>
                   )}

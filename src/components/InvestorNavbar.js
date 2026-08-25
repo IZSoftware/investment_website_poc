@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Home } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const InvestorNavbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -19,9 +21,8 @@ const InvestorNavbar = () => {
   }, []);
 
   const handleLogout = () => {
-    console.log('Logging out...');
     setIsDropdownOpen(false);
-    navigate('/investor-portal/login');
+    logout(navigate);
   };
 
   const handleProfileClick = () => {
@@ -35,9 +36,9 @@ const InvestorNavbar = () => {
 
   // SIMPLE CHECK: Look at the current URL path
   const currentPath = window.location.pathname;
-  const isLoginPage = currentPath === '/investor-portal/login';
+  const isLoginPage = currentPath === '/portal-login';
   const isOtpPage = currentPath === '/investor-portal/verify-otp';
-  
+
   // Only show avatar if NOT on login page AND NOT on OTP page
   const showAvatar = !isLoginPage && !isOtpPage;
 

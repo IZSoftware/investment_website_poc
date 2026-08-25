@@ -380,18 +380,6 @@ export default function HoldingCompanyLogin() {
                               </span>
                             </div>
                           </div>
-
-                          <div className="text-center">
-                            <p className="text-sm text-[#6E6E73]">
-                              Need access?{' '}
-                              <button
-                                type="button"
-                                className="text-[#1D1D1F] hover:text-[#6E6E73] transition-colors font-medium underline underline-offset-2"
-                              >
-                                Contact your administrator
-                              </button>
-                            </p>
-                          </div>
                         </div>
                       )}
 

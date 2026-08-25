@@ -1393,3 +1393,27 @@ export const updateAdminAssetSubclassStatus = async ({ id, enabled }) => {
     throw error;
   }
 };
+
+export const changePassword = async ({ currentPassword, newPassword }) => {
+  try {
+    const response = await api.post("/api/account/password", {
+      currentPassword,
+      newPassword
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// GET /api/site/info/portfolio/history
+export const getSiteInfoPortfolioHistory = async ({ fromYear, toYear, granularity, limit } = {}) => {
+  try {
+    const response = await api.get("/api/site/info/portfolio/history", {
+      params: { fromYear, toYear, granularity, limit }
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
