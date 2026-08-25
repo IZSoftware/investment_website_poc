@@ -24,7 +24,7 @@ const getColorForAsset = (name) => {
     'fund of funds': '#C62828',
     'fund': '#E53935',
   };
-  
+
   const lowerName = name.toLowerCase();
   for (const [key, color] of Object.entries(colorMap)) {
     if (lowerName.includes(key)) {
@@ -37,6 +37,7 @@ const getColorForAsset = (name) => {
 
 function AssetOrbit({ assets, totalAUM, aumDate }) {
   const [active, setActive] = useState(null);
+  const [scale, setScale] = useState(1);
   const activeAsset = active ? assets.find(a => a.id === active) : null;
 
   const MAIN_R   = 200;
@@ -44,6 +45,32 @@ function AssetOrbit({ assets, totalAUM, aumDate }) {
   const SIZE_BASE       = 100;
   const SIZE_MULTIPLIER = 2;
   const SUB_ORBIT_OFFSET = 10;
+  const SCENE_BUFFER = 24;
+
+  const maxPct = assets.length > 0
+    ? Math.max(...assets.map(a => parseFloat(a.pct) || 0))
+    : 0;
+  const maxBubbleHalf = (SIZE_BASE + maxPct * SIZE_MULTIPLIER) / 2;
+  const hasSubs = assets.some(a => a.subs.length > 0);
+  const subReach = hasSubs ? (maxBubbleHalf + SUB_ORBIT_OFFSET + SUB_SIZE / 2) : maxBubbleHalf;
+  const maxReach = MAIN_R + subReach;
+  const sceneSize = (maxReach + SCENE_BUFFER) * 2;
+
+  useEffect(() => {
+    const computeScale = () => {
+      const w = window.innerWidth;
+      if (w < 900) return 0.6;
+      if (w < 1280) return 0.75;
+      if (w < 1600) return 0.9;
+      return 1;
+    };
+    const handleResize = () => setScale(computeScale());
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const scaledSize = Math.round(sceneSize * scale);
 
   return (
     <>
@@ -58,10 +85,8 @@ function AssetOrbit({ assets, totalAUM, aumDate }) {
         }
         .orbit-scene {
           position: relative;
-          width: ${(MAIN_R + SIZE_BASE + 200 + SUB_SIZE + 50) * 2}px;
-          height: ${(MAIN_R + SIZE_BASE + 200 + SUB_SIZE + 50) * 2}px;
-          max-width: 100%;
-          aspect-ratio: 1;
+          width: ${sceneSize}px;
+          height: ${sceneSize}px;
           flex-shrink: 0;
         }
         .asset-wrap {
@@ -104,7 +129,7 @@ function AssetOrbit({ assets, totalAUM, aumDate }) {
         .ring { position: absolute; border-radius: 50%; pointer-events: none; top: 50%; left: 50%; }
         .asset-pct { font-size: 16px; font-weight: 700; color: #fff; line-height: 1; }
         .asset-lbl { font-size: 7.5px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(255,255,255,0.85); text-align: center; line-height: 1.3; white-space: pre-line; margin-top: 3px; }
-        .sub-lbl   { font-size: 6.5px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(255,255,255,0.92); text-align: center; line-height: 1.3; white-space: pre-line; }
+        .sub-lbl   { font-size: 6.5px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(255,255,255,0.92); text-align: center; line-height: 1.3; }
         .sub-val   { font-size: 6px; color: rgba(255,255,255,0.65); margin-top: 1px; }
         .orbit-desktop { display: none; }
         .orbit-mobile  { display: flex; flex-direction: column; gap: 10px; width: 100%; }
@@ -119,6 +144,122 @@ function AssetOrbit({ assets, totalAUM, aumDate }) {
         .leg-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
         .leg-nm  { font-size: 15px; font-weight: 600; color: #000; }
         .leg-vl  { font-size: 13px; color: #666; margin-top: 3px; }
+
+        @keyframes skeletonPulse {
+          0%, 100% { opacity: 0.45; }
+          50% { opacity: 0.9; }
+        }
+
+        .skeleton {
+          background: linear-gradient(
+            90deg,
+            #e8e8e8 25%,
+            #f3f3f3 50%,
+            #e8e8e8 75%
+          );
+          background-size: 200% 100%;
+          animation: skeletonShimmer 1.5s ease-in-out infinite;
+        }
+
+        @keyframes skeletonShimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+
+        .stat-skeleton {
+          height: 36px;
+          width: 80px;
+          border-radius: 6px;
+        }
+
+        .timeline-skeleton {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+
+        .timeline-skeleton-row {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+        }
+
+        .timeline-skeleton-dot {
+          width: 11px;
+          height: 11px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          margin-top: 3px;
+        }
+
+        .timeline-skeleton-content {
+          flex: 1;
+        }
+
+        .asset-loading {
+          width: 100%;
+          min-height: 420px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .asset-loading-inner {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 18px;
+        }
+
+        .asset-loading-orbit {
+          position: relative;
+          width: 150px;
+          height: 150px;
+          border: 1px solid #e4e0db;
+          border-radius: 50%;
+          animation: skeletonPulse 1.6s ease-in-out infinite;
+        }
+
+        .asset-loading-orbit::before,
+        .asset-loading-orbit::after {
+          content: '';
+          position: absolute;
+          border-radius: 50%;
+          background: #e5e1dc;
+        }
+
+        .asset-loading-orbit::before {
+          width: 46px;
+          height: 46px;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .asset-loading-orbit::after {
+          width: 18px;
+          height: 18px;
+          top: 8px;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+
+        .asset-loading-text {
+          width: 150px;
+          height: 10px;
+          border-radius: 6px;
+        }
+
+        .breakdown-skeleton {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .breakdown-skeleton-card {
+          height: 58px;
+          border-radius: 10px;
+        }
       `}</style>
 
       <div className="orbit-mobile">
@@ -139,8 +280,11 @@ function AssetOrbit({ assets, totalAUM, aumDate }) {
       </div>
 
       <div className="orbit-desktop">
-        <div style={{ overflowX: "auto", overflowY: "hidden", maxWidth: "100%" }}>
-          <div className="orbit-scene">
+        <div style={{ width: scaledSize, height: scaledSize, position: "relative", flexShrink: 0, maxWidth: "100%" }}>
+          <div
+            className="orbit-scene"
+            style={{ position: "absolute", top: 0, left: 0, transform: `scale(${scale})`, transformOrigin: "top left" }}
+          >
             <div className="ring" style={{ width: MAIN_R*2, height: MAIN_R*2, marginLeft: -MAIN_R, marginTop: -MAIN_R, border: "1px dashed rgba(196,160,120,0.3)" }} />
             <div className="ring" style={{ width: (MAIN_R+28)*2, height: (MAIN_R+28)*2, marginLeft: -(MAIN_R+28), marginTop: -(MAIN_R+28), border: "0.5px dotted rgba(196,160,120,0.1)" }} />
             {assets.map((asset, i) => {
@@ -201,43 +345,42 @@ function AssetOrbit({ assets, totalAUM, aumDate }) {
 export default function AboutPage() {
   const [expanded, setExpanded] = useState(null);
   const { hero } = aboutPage;
+
   const [stats, setStats] = useState([
-    { value: 'Loading...', label: 'TOTAL PORTFOLIO' },  
+    { value: 'Loading...', label: 'TOTAL PORTFOLIO' },
     { value: 'Loading...', label: 'COUNTRIES' },
     { value: 'Loading...', label: 'PORTFOLIO COMPANIES' },
     { value: 'Loading...', label: 'CORE CLUSTERS' }
   ]);
+
   const [milestones, setMilestones] = useState([]);
   const [assets, setAssets] = useState([]);
   const [totalAUM, setTotalAUM] = useState('Loading...');
   const [aumDate, setAumDate] = useState('');
 
-  // Static Who We Are content
   const whoWeAre = {
     para1: "NF Holdings is a pan-African family-owned investment holding company with investment in various sectors in East Africa.",
     para2: "NF Holdings is inspired by our mission to create a legacy, for all Africans who will inherit the Africa we are building today. We create, grow and preserve value for our stakeholders – while driving Africa's sustainable economic and social development."
   };
 
-  // Static Core Values
   const staticValues = [
-    { 
-      label: 'Execution', 
-      body: 'Have a burning desire and will to see projects through to absolute completion in a timely, efficient, and cost-effective manner. Translating ambition into tangible outcomes.' 
+    {
+      label: 'Execution',
+      body: 'Have a burning desire and will to see projects through to absolute completion in a timely, efficient, and cost-effective manner. Translating ambition into tangible outcomes.'
     },
-    { 
-      label: 'Integrity', 
-      body: 'Committing to honesty, loyalty, accountability, and an open culture that values a modest and responsible profile.' 
+    {
+      label: 'Integrity',
+      body: 'Committing to honesty, loyalty, accountability, and an open culture that values a modest and responsible profile.'
     },
-    { 
-      label: 'People at Heart', 
-      body: 'Fostering mutual respect, cross-collaboration, and genuine care for every colleague to build a strong organization.' 
+    {
+      label: 'People at Heart',
+      body: 'Fostering mutual respect, cross-collaboration, and genuine care for every colleague to build a strong organization.'
     },
   ];
 
   useEffect(() => {
     let isMounted = true;
 
-    // Fetch about data (assets, timeline, AUM)
     const fetchAboutData = async () => {
       try {
         const aboutRes = await getSiteInfoAbout();
@@ -246,19 +389,16 @@ export default function AboutPage() {
         const aboutData = aboutRes?.data;
         if (!aboutData) return;
 
-        // Total portfolio value from about
         if (aboutData.totalPortfolioValue?.displayText) {
           setTotalAUM(aboutData.totalPortfolioValue.displayText);
         }
 
-        // AUM date
         if (aboutData.totalPortfolioValue?.asAtDate) {
           const date = new Date(aboutData.totalPortfolioValue.asAtDate);
           const formattedDate = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
           setAumDate(formattedDate);
         }
 
-        // Assets with subclasses
         if (Array.isArray(aboutData.assets) && aboutData.assets.length > 0) {
           const transformedAssets = aboutData.assets.map(asset => {
             const color = getColorForAsset(asset.name);
@@ -286,7 +426,6 @@ export default function AboutPage() {
           setAssets(transformedAssets);
         }
 
-        // Timeline
         if (Array.isArray(aboutData.timeline) && aboutData.timeline.length > 0) {
           const mapped = aboutData.timeline.map((t) => ({
             year: String(t.year),
@@ -295,7 +434,6 @@ export default function AboutPage() {
           setMilestones(mapped);
         }
 
-        // Seed TOTAL PORTFOLIO stat from about data
         if (aboutData.totalPortfolioValue?.displayText) {
           setStats((prev) => prev.map((s) =>
             s.label === 'TOTAL PORTFOLIO'
@@ -308,7 +446,6 @@ export default function AboutPage() {
       }
     };
 
-    // Fetch site stats (countries, clusters, companies)
     const fetchSiteStats = async () => {
       try {
         const siteRes = await getSiteInfo();
@@ -318,7 +455,6 @@ export default function AboutPage() {
         if (!siteData) return;
 
         setStats((prev) => {
-          // Get current TOTAL PORTFOLIO value from prev state (set by about data)
           const currentAUM = prev.find(s => s.label === 'TOTAL PORTFOLIO')?.value || siteData.totalPortfolioValue?.displayText || 'N/A';
           const countries = siteData.totalCountries != null ? String(siteData.totalCountries) : 'N/A';
           const companies = siteData.totalCompanies != null ? String(siteData.totalCompanies) : 'N/A';
@@ -336,7 +472,6 @@ export default function AboutPage() {
       }
     };
 
-    // Run both independently
     fetchAboutData();
     fetchSiteStats();
 
@@ -399,6 +534,117 @@ export default function AboutPage() {
         .val-logo { width: 50px; height: 50px; object-fit: contain; margin-bottom: 8px; }
         .val-lbl  { font-size: clamp(13px, 1.5vw, 15px); font-weight: 600; color: #000; margin-bottom: 6px; }
         .val-body { font-size: clamp(12px, 1.3vw, 13.5px); color: #555; line-height: 1.65; text-align: center; }
+
+        @keyframes skeletonShimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+
+        .skeleton {
+          background: linear-gradient(
+            90deg,
+            #e8e8e8 25%,
+            #f5f5f5 50%,
+            #e8e8e8 75%
+          );
+          background-size: 200% 100%;
+          animation: skeletonShimmer 1.5s ease-in-out infinite;
+        }
+
+        .stat-skeleton {
+          height: 36px;
+          width: 80px;
+          border-radius: 6px;
+        }
+
+        .timeline-skeleton {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+
+        .timeline-skeleton-row {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+        }
+
+        .timeline-skeleton-dot {
+          width: 11px;
+          height: 11px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          margin-top: 3px;
+        }
+
+        .timeline-skeleton-content {
+          flex: 1;
+        }
+
+        .asset-loading {
+          width: 100%;
+          min-height: 420px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .asset-loading-inner {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 18px;
+        }
+
+        .asset-loading-orbit {
+          position: relative;
+          width: 150px;
+          height: 150px;
+          border: 1px solid #e4e0db;
+          border-radius: 50%;
+          animation: skeletonPulse 1.6s ease-in-out infinite;
+        }
+
+        .asset-loading-orbit::before,
+        .asset-loading-orbit::after {
+          content: '';
+          position: absolute;
+          border-radius: 50%;
+          background: #e5e1dc;
+        }
+
+        .asset-loading-orbit::before {
+          width: 46px;
+          height: 46px;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+        .asset-loading-orbit::after {
+          width: 18px;
+          height: 18px;
+          top: 8px;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+
+        .asset-loading-text {
+          width: 150px;
+          height: 10px;
+          border-radius: 6px;
+        }
+
+        .breakdown-skeleton {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .breakdown-skeleton-card {
+          height: 58px;
+          border-radius: 10px;
+        }
       `}</style>
 
       {/* Hero Section */}
@@ -423,7 +669,11 @@ export default function AboutPage() {
           <div className="stat-band">
             {stats.map((s, i) => (
               <div key={i} className="stat-cell">
-                <div className="stat-val">{s.value}</div>
+                {s.value === 'Loading...' ? (
+                  <div className="skeleton stat-skeleton" />
+                ) : (
+                  <div className="stat-val">{s.value}</div>
+                )}
                 <div className="stat-lbl">{s.label}</div>
               </div>
             ))}
@@ -440,6 +690,7 @@ export default function AboutPage() {
             <p style={{ fontSize: "clamp(13px, 1.5vw, 16px)", color: "#333", lineHeight: 1.75, marginBottom: 12, textAlign: "justify" }}>{whoWeAre.para1}</p>
             <p style={{ fontSize: "clamp(13px, 1.5vw, 16px)", color: "#333", lineHeight: 1.75, textAlign: "justify" }}>{whoWeAre.para2}</p>
           </div>
+
           <div>
             <p className="eyebrow" style={{ marginBottom: 12 }}>Our Journey</p>
             <div className="tl">
@@ -450,7 +701,18 @@ export default function AboutPage() {
                   <div className="tl-ev">{m.event}</div>
                 </div>
               )) : (
-                <div style={{ color: '#666', fontSize: 13 }}>Loading milestones...</div>
+                <div className="timeline-skeleton">
+                  {[1, 2, 3].map((item) => (
+                    <div key={item} className="timeline-skeleton-row">
+                      <div className="skeleton timeline-skeleton-dot" />
+                      <div className="timeline-skeleton-content">
+                        <div className="skeleton" style={{ width: 55, height: 10, borderRadius: 5, marginBottom: 7 }} />
+                        <div className="skeleton" style={{ width: '90%', height: 10, borderRadius: 5, marginBottom: 5 }} />
+                        <div className="skeleton" style={{ width: '70%', height: 10, borderRadius: 5 }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -458,27 +720,31 @@ export default function AboutPage() {
       </div></div></div>
 
       {/* Asset Allocation */}
-      <div className="pg"><div className="col"><div className="sec">
-        <div style={{ marginBottom: "clamp(12px, 2vw, 24px)" }}>
+      <div className="pg"><div className="col"><div className="sec" style={{ paddingBottom: 4 }}>
+        <div style={{ marginBottom: "clamp(6px, 1.2vw, 14px)" }}>
           <p className="eyebrow">Portfolio Structure</p>
           <h2 className="heading">Asset Allocation</h2>
           <p style={{ fontSize: "clamp(12px, 1.4vw, 14.5px)", color: "#666", marginTop: 4, lineHeight: 1.6 }}>
             As at {aumDate || 'July 30, 2026'} · TOTAL PORTFOLIO {totalAUM} · Sub-entities orbit around each parent asset
           </p>
         </div>
+
         <div className="orbit-section">
           {assets.length > 0 ? (
             <AssetOrbit assets={assets} totalAUM={totalAUM} aumDate={aumDate} />
           ) : (
-            <div style={{ padding: 40, textAlign: 'center', color: '#666' }}>
-              Loading portfolio data...
+            <div className="asset-loading">
+              <div className="asset-loading-inner">
+                <div className="asset-loading-orbit" />
+                <div className="skeleton asset-loading-text" />
+              </div>
             </div>
           )}
         </div>
       </div></div></div>
 
       {/* Asset Breakdown */}
-      <div className="pg"><div className="col"><div className="sec">
+      <div className="pg"><div className="col"><div className="sec" style={{ paddingTop: 4 }}>
         <div style={{ marginBottom: "clamp(12px, 2vw, 24px)" }}>
           <p className="eyebrow">Deep Dive</p>
           <h2 className="heading">Asset Breakdown</h2>
@@ -486,10 +752,12 @@ export default function AboutPage() {
             Tap each asset class to explore constituent sub-entities.
           </p>
         </div>
+
         <div className="acc">
           {assets.length > 0 ? assets.map(asset => {
             const subs   = asset.subs || [];
             const isOpen = expanded === asset.id;
+
             return (
               <div key={asset.id} className="acc-card">
                 <button className="acc-hd" onClick={() => setExpanded(isOpen ? null : asset.id)}>
@@ -499,6 +767,7 @@ export default function AboutPage() {
                   <span className="acc-bdg" style={{ background: asset.color }}>{asset.pct}</span>
                   {subs.length > 0 && <span className="acc-chev" style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▼</span>}
                 </button>
+
                 {isOpen && subs.length > 0 && (
                   <div className="acc-subs">
                     {subs.map((s, i) => (
@@ -513,6 +782,7 @@ export default function AboutPage() {
                     ))}
                   </div>
                 )}
+
                 {isOpen && subs.length === 0 && (
                   <div style={{ padding: "0 16px 12px 36px", fontSize: 13, color: "#666", fontStyle: "italic" }}>
                     Direct allocation — no sub-entities.
@@ -521,8 +791,10 @@ export default function AboutPage() {
               </div>
             );
           }) : (
-            <div style={{ padding: 20, textAlign: 'center', color: '#666' }}>
-              Loading asset breakdown...
+            <div className="breakdown-skeleton">
+              {[1, 2, 3, 4].map((item) => (
+                <div key={item} className="skeleton breakdown-skeleton-card" />
+              ))}
             </div>
           )}
         </div>
@@ -534,10 +806,12 @@ export default function AboutPage() {
           <p className="eyebrow">What Drives Us</p>
           <h2 className="heading">Our Core Values</h2>
         </div>
+
         <div className="val-grid">
           {staticValues.map((v, i) => {
             const key = v.label.toLowerCase();
             const logo = valueLogos[key] || '/default-value-logo.png';
+
             return (
               <div key={i} className="val-card">
                 <img src={logo} alt={v.label} className="val-logo" />

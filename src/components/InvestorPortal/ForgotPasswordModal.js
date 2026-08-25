@@ -211,7 +211,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }) {
           <button
             onClick={() => {
               onClose();
-              navigate("/investor-portal/login");
+              navigate("/portal-login");
             }}
             className="w-full bg-[#1D1D1F] text-white font-medium py-4 rounded-xl hover:bg-[#2D2D2F]"
           >

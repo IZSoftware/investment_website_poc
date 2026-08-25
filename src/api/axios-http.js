@@ -42,12 +42,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     // Log requests in development
     if (process.env.NODE_ENV === 'development') {
       console.log(`[API Request] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, config.data || '');
     }
-    
+
     return config;
   },
   (error) => {
@@ -69,6 +69,8 @@ const flushQueue = (newAccessToken, error) => {
   });
   queuedRequests = [];
 };
+
+const LOGIN_PATH = "/portal-login";
 
 api.interceptors.response.use(
   (response) => {
@@ -100,8 +102,8 @@ api.interceptors.response.use(
     if (!refreshToken) {
       clearTokens();
       // Only redirect if not already on login page
-      if (!window.location.href.includes('/login')) {
-        window.location.href = "/investor-portal/login";
+      if (!window.location.href.includes(LOGIN_PATH)) {
+        window.location.href = LOGIN_PATH;
       }
       return Promise.reject(error);
     }
@@ -124,7 +126,7 @@ api.interceptors.response.use(
         `${process.env.REACT_APP_API_BASE_URL}/api/auth/refresh`,
         { refreshToken }
       );
-      
+
       // Handle different response structures
       const accessToken = data.data?.accessToken || data.accessToken;
       const newRefreshToken = data.data?.refreshToken || data.refreshToken;
@@ -144,10 +146,10 @@ api.interceptors.response.use(
       isRefreshing = false;
       flushQueue(null, refreshError);
       clearTokens();
-      
+
       // Only redirect if not already on login page
-      if (!window.location.href.includes('/login')) {
-        window.location.href = "/investor-portal/login";
+      if (!window.location.href.includes(LOGIN_PATH)) {
+        window.location.href = LOGIN_PATH;
       }
       return Promise.reject(refreshError);
     }
