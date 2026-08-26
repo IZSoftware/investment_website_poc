@@ -14,11 +14,14 @@ const LearnAboutUs = () => {
   const navigate = useNavigate();
   const [hoveredId, setHoveredId] = useState(null);
 
-  // Static content from data
+  // Static content
   const heading = "Who We Are";
+
   const intro =
     "NF Holdings is a pan-African family-owned investment holding company with investment in various sectors in East Africa. NF Holdings is inspired by our mission to create a legacy, for all Africans who will inherit the Africa we are building today. We create, grow and preserve value for our stakeholders – while driving Africa's sustainable economic and social development.";
+
   const exploreButtonLabel = "Explore Our Portfolio";
+
   const portfolioStatementBase =
     "We are committed to building enduring value through responsible investments that enhance lives and support Africa's transformation. Our portfolio was valued at";
 
@@ -30,7 +33,6 @@ const LearnAboutUs = () => {
   const [stats, setStats] = useState([
     { value: null, label: "Total Portfolio" },
     { value: null, label: "Clusters" },
-    { value: null, label: "Continents" },
     { value: null, label: "Countries" },
     { value: null, label: "Portfolio Companies" },
   ]);
@@ -47,7 +49,11 @@ const LearnAboutUs = () => {
         if (isMounted && res?.data) {
           const data = res.data;
 
-          // Clusters from data.clusters
+          /*
+           * ---------------------------------------
+           * CLUSTERS
+           * ---------------------------------------
+           */
           if (Array.isArray(data.clusters) && data.clusters.length > 0) {
             const mapped = data.clusters.map((cluster) => ({
               id: cluster.id,
@@ -56,7 +62,8 @@ const LearnAboutUs = () => {
               image: getClusterImageByName(cluster.name),
               category: cluster.value?.displayText ?? "",
               description:
-                cluster.description || `Explore our ${cluster.name} cluster`,
+                cluster.description ||
+                `Explore our ${cluster.name} cluster`,
             }));
 
             setInvestmentCards(mapped);
@@ -64,21 +71,39 @@ const LearnAboutUs = () => {
 
           setClustersLoading(false);
 
-          // Stats from data
+          /*
+           * ---------------------------------------
+           * STATISTICS
+           * ---------------------------------------
+           *
+           * Continents has intentionally been removed.
+           */
           setStats([
             {
               value: data.totalPortfolioValue?.displayText ?? "N/A",
               label: "Total Portfolio",
             },
-            { value: data.totalClusters ?? 0, label: "Clusters" },
-            { value: 0, label: "Continents" },
-            { value: data.totalCountries ?? 0, label: "Countries" },
-            { value: data.totalCompanies ?? 0, label: "Portfolio Companies" },
+            {
+              value: data.totalClusters ?? 0,
+              label: "Clusters",
+            },
+            {
+              value: data.totalCountries ?? 0,
+              label: "Countries",
+            },
+            {
+              value: data.totalCompanies ?? 0,
+              label: "Portfolio Companies",
+            },
           ]);
 
           setStatsLoading(false);
 
-          // Portfolio statement
+          /*
+           * ---------------------------------------
+           * PORTFOLIO STATEMENT
+           * ---------------------------------------
+           */
           if (data.totalPortfolioValue) {
             const asOfDate = data.lastUpdateTime
               ? new Date(data.lastUpdateTime).toLocaleDateString("en-US", {
@@ -89,7 +114,7 @@ const LearnAboutUs = () => {
               : formatToday();
 
             setPortfolioStatement(
-              `${portfolioStatementBase} ${data.totalPortfolioValue.displayText} as of ${asOfDate}.`,
+              `${portfolioStatementBase} ${data.totalPortfolioValue.displayText} as of ${asOfDate}.`
             );
           }
 
@@ -114,12 +139,13 @@ const LearnAboutUs = () => {
   }, []);
 
   return (
-    <section className="py-16 lg:py-24 bg-gray-50">
+    <section className="py-16 bg-gray-50 lg:py-24">
       <style>{`
         @keyframes shimmer {
           0% {
             background-position: -1000px 0;
           }
+
           100% {
             background-position: 1000px 0;
           }
@@ -142,16 +168,23 @@ const LearnAboutUs = () => {
 
         <div className="col-span-12 lg:col-span-10">
           <div className="px-4 sm:px-6 lg:px-8">
+
+            {/* ================================
+                INTRO
+            ================================= */}
             <div className="mb-12">
               <h2 className="mb-6 text-3xl font-bold text-gray-900 sm:text-4xl lg:text-7xl">
                 {heading}
               </h2>
 
-              <p className="mb-8 text-lg leading-relaxed text-gray-700 max-w-7xl text-justify">
+              <p className="mb-8 text-lg leading-relaxed text-justify text-gray-700 max-w-7xl">
                 {intro}
               </p>
             </div>
 
+            {/* ================================
+                CLUSTERS
+            ================================= */}
             <div className="mb-12 lg:mb-16">
               <div
                 className="flex flex-col lg:flex-row h-auto lg:h-[500px] gap-4 lg:gap-0 overflow-hidden rounded-lg"
@@ -180,10 +213,19 @@ const LearnAboutUs = () => {
 
                     const widthStyle =
                       window.innerWidth < 1024
-                        ? { width: "100%", height: "300px" }
+                        ? {
+                            width: "100%",
+                            height: "300px",
+                          }
                         : anyHovered
-                          ? { flex: isHovered ? "0 0 45%" : "0 0 11%" }
-                          : { flex: "1 1 0%" };
+                        ? {
+                            flex: isHovered
+                              ? "0 0 45%"
+                              : "0 0 11%",
+                          }
+                        : {
+                            flex: "1 1 0%",
+                          };
 
                     return (
                       <div
@@ -191,7 +233,9 @@ const LearnAboutUs = () => {
                         className="relative w-full overflow-hidden transition-all duration-700 ease-in-out cursor-pointer lg:w-auto"
                         style={widthStyle}
                         onMouseEnter={() => setHoveredId(item.id)}
-                        onClick={() => navigate(`/cluster/${item.clusterId}`)}
+                        onClick={() =>
+                          navigate(`/cluster/${item.clusterId}`)
+                        }
                       >
                         <div className="relative w-full h-full">
                           <img
@@ -199,7 +243,7 @@ const LearnAboutUs = () => {
                             alt={item.title}
                             className="object-cover w-full h-full"
                             onError={(e) => {
-                              e.target.src =
+                              e.currentTarget.src =
                                 "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2070&q=80";
                             }}
                           />
@@ -213,6 +257,7 @@ const LearnAboutUs = () => {
                           />
                         </div>
 
+                        {/* Mobile Content */}
                         <div className="absolute inset-0 flex items-end p-4 lg:hidden">
                           <div className="w-full">
                             <div className="mb-1 text-xs font-semibold tracking-wider text-white uppercase">
@@ -229,6 +274,7 @@ const LearnAboutUs = () => {
                           </div>
                         </div>
 
+                        {/* Desktop Content */}
                         <div className="absolute inset-0 items-end hidden p-6 lg:flex lg:p-8">
                           <div
                             className={`transition-all duration-700 ${
@@ -247,7 +293,9 @@ const LearnAboutUs = () => {
 
                             <p
                               className={`max-w-md text-sm lg:text-base leading-relaxed text-gray-200 transition-all duration-700 ${
-                                isHovered ? "opacity-100" : "opacity-0"
+                                isHovered
+                                  ? "opacity-100"
+                                  : "opacity-0"
                               }`}
                             >
                               {item.description}
@@ -255,9 +303,12 @@ const LearnAboutUs = () => {
                           </div>
                         </div>
 
+                        {/* Collapsed Vertical Title */}
                         <div
                           className={`absolute transition-all duration-700 transform -translate-x-1/2 -translate-y-1/2 hidden lg:block ${
-                            isHovered ? "opacity-0" : "opacity-100"
+                            isHovered
+                              ? "opacity-0"
+                              : "opacity-100"
                           } top-1/2 left-1/2`}
                         >
                           <div className="text-xl font-bold text-white transform -rotate-90 whitespace-nowrap">
@@ -275,27 +326,43 @@ const LearnAboutUs = () => {
               </div>
             </div>
 
+            {/* ================================
+                EXPLORE PORTFOLIO
+            ================================= */}
             <div className="mb-12 text-center lg:mb-16">
-              <button className="bg-[#0A2540] hover:bg-[#003852] text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+              <button
+                onClick={() => navigate("/portfolio")}
+                className="bg-[#0A2540] hover:bg-[#003852] text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+              >
                 {exploreButtonLabel}
               </button>
             </div>
 
+            {/* ================================
+                PORTFOLIO VALUE + STATS
+            ================================= */}
             <div className="text-center">
               <h3 className="max-w-4xl mx-auto mb-8 text-2xl font-bold text-gray-900 lg:text-3xl">
                 {portfolioLoading ? (
                   <span className="block max-w-3xl mx-auto">
-                    <span className="block h-7 mx-auto mb-3 rounded-md skeleton-shimmer w-11/12" />
-                    <span className="block h-7 mx-auto rounded-md skeleton-shimmer w-7/12" />
+                    <span className="block w-11/12 mx-auto mb-3 rounded-md h-7 skeleton-shimmer" />
+                    <span className="block w-7/12 mx-auto rounded-md h-7 skeleton-shimmer" />
                   </span>
                 ) : (
                   portfolioStatement
                 )}
               </h3>
 
-              <div className="grid grid-cols-2 gap-4 mt-8 sm:gap-8 sm:mt-16 sm:grid-cols-3 lg:grid-cols-5">
+              {/* ================================
+                  STATS
+                  4 ITEMS — NO CONTINENTS
+              ================================= */}
+              <div className="grid grid-cols-2 gap-4 mt-8 sm:gap-8 sm:mt-16 sm:grid-cols-4">
                 {stats.map((stat, idx) => (
-                  <div key={idx} className="relative text-center">
+                  <div
+                    key={idx}
+                    className="relative text-center"
+                  >
                     {statsLoading ? (
                       <>
                         <div className="w-24 h-12 mx-auto mb-2 rounded-md sm:w-32 sm:h-14 lg:w-40 lg:h-16 sm:mb-4 skeleton-shimmer" />
@@ -321,6 +388,7 @@ const LearnAboutUs = () => {
                 ))}
               </div>
             </div>
+
           </div>
         </div>
 
