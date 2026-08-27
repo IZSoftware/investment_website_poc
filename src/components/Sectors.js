@@ -68,7 +68,7 @@ const Sectors = () => {
         <div className="col-span-12 lg:col-span-10">
           <div className="px-4 sm:px-6 lg:px-8">
             {/* PAGE HEADER */}
-            <div className="mb-8 text-center">
+            <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
                 Our Clusters
               </h1>
