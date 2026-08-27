@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -118,8 +120,6 @@ const PortfolioPage = () => {
       try {
         const res = await getSiteInfoPortfolio();
 
-        console.log("Performance API Response:", res);
-
         if (isMounted && res?.data) {
           setPerformanceData(res.data);
 
@@ -139,8 +139,6 @@ const PortfolioPage = () => {
         const res = await getSiteInfoPortfolioHistory({
           granularity: "YEARLY",
         });
-
-        console.log("Portfolio History API Response:", res);
 
         if (isMounted && Array.isArray(res?.data?.points)) {
           setHistoryPoints(res.data.points);
@@ -182,7 +180,7 @@ const PortfolioPage = () => {
     };
   }, []);
 
-// KEY FACTS
+  // KEY FACTS
 
   const getKeyFacts = () => {
     if (!performanceData) {
@@ -306,7 +304,7 @@ const PortfolioPage = () => {
 
   const kf = getKeyFacts()[activeCurrency];
 
-//  PORTFOLIO PIE CHART
+  //  PORTFOLIO PIE CHART
 
   const pieChartSectors = portfolioItems.map((item, idx) => ({
     name: item.name,
@@ -362,14 +360,17 @@ const PortfolioPage = () => {
         }
 
         /*
-         * Net Share
-         *
-         * The current API response does NOT contain
-         * a netShare field, so we deliberately do
-         * not invent one.
+         * Debt (was "Net Share" — renamed to match what the Admin
+         * actually saves; groupConsolidatedDebt is a real field on
+         * every point, so this now has data instead of always being
+         * empty.)
          */
-        if (activeKPI === "netShare") {
-          value = null;
+        if (activeKPI === "debt") {
+          const usdValue = point.groupConsolidatedDebt;
+
+          if (usdValue !== undefined && usdValue !== null) {
+            value = activeCurrency === "kes" ? usdValue * rate : usdValue;
+          }
         }
 
         /*
@@ -396,8 +397,8 @@ const PortfolioPage = () => {
       case "rev":
         return "Revenue";
 
-      case "netShare":
-        return "Net Share";
+      case "debt":
+        return "Debt";
 
       case "gearing":
         return "Gearing";
@@ -410,18 +411,6 @@ const PortfolioPage = () => {
   const formatYAxisValue = (value) => {
     if (activeKPI === "gearing") {
       return `${value}%`;
-    }
-
-    if (activeCurrency === "kes") {
-      if (value >= 1000000000) {
-        return `${(value / 1000000000).toFixed(1)}B`;
-      }
-
-      if (value >= 1000000) {
-        return `${(value / 1000000).toFixed(1)}M`;
-      }
-
-      return value.toLocaleString();
     }
 
     if (value >= 1000000000) {
@@ -457,13 +446,13 @@ const PortfolioPage = () => {
     ];
   };
 
-//  RENDER KPI CHART
+  //  RENDER KPI CHART
 
   const renderChart = () => {
     if (historyLoading) {
       return (
         <div className="flex flex-col items-center justify-center h-[300px]">
-          <div className="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-gray-200 rounded-full border-t-black animate-spin" />
 
           <p className="mt-4 text-sm font-medium text-gray-500">
             Loading historical data...
@@ -480,9 +469,9 @@ const PortfolioPage = () => {
     if (chartData.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center h-[300px] text-gray-400">
-          <div className="flex items-center justify-center w-14 h-14 mb-4 bg-gray-100 rounded-full">
+          <div className="flex items-center justify-center mb-4 bg-gray-100 rounded-full w-14 h-14">
             <svg
-              className="w-7 h-7 text-gray-400"
+              className="text-gray-400 w-7 h-7"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -504,6 +493,48 @@ const PortfolioPage = () => {
             Historical {getChartTitle().toLowerCase()} data is not available
             yet.
           </p>
+        </div>
+      );
+    }
+
+    // Revenue and Debt render as a bar/histogram; Gearing stays a trend line.
+    if (activeKPI === "rev" || activeKPI === "debt") {
+      return (
+        <div className="w-full h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 12, fill: "#6b7280" }}
+                axisLine={{ stroke: "#d1d5db" }}
+                tickLine={false}
+              />
+
+              <YAxis
+                tickFormatter={formatYAxisValue}
+                tick={{ fontSize: 12, fill: "#6b7280" }}
+                axisLine={false}
+                tickLine={false}
+              />
+
+              <Tooltip
+                formatter={formatTooltipValue}
+                labelFormatter={(label) => `Year: ${label}`}
+                contentStyle={{
+                  borderRadius: "8px",
+                  border: "1px solid #e5e7eb",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                }}
+              />
+
+              <Bar dataKey="value" fill="#012060" radius={[4, 4, 0, 0]} barSize={36} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       );
     }
@@ -582,7 +613,7 @@ const PortfolioPage = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-        <div className="w-12 h-12 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-gray-200 rounded-full border-t-black animate-spin" />
 
         <p className="mt-4 text-sm font-medium text-gray-500">
           Loading portfolio...
@@ -846,8 +877,8 @@ const PortfolioPage = () => {
                         label: "REVENUE",
                       },
                       {
-                        key: "netShare",
-                        label: "NET SHARE",
+                        key: "debt",
+                        label: "DEBT",
                       },
                       {
                         key: "gearing",
