@@ -35,6 +35,7 @@ import InvestmentApproach from "./page/InvestmentApproach";
 import TermsConditions from "./page/TermsConditions";
 import AboutUs from "./page/Aboutpage";
 import PortfolioPerformance from "./page/PortfolioPerformance";
+import NotFound from "./page/Notfound";
 
 // Admin imports
 import AdminDashboard from "./page/admin/AdminDashboard";
@@ -454,6 +455,10 @@ function AppContent() {
               </AdminProtectedRoute>
             }
           />
+
+          {/* Catch-all — any route that doesn't exist gets a normal 404
+              instead of a blank page or a crash. Must stay last. */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 

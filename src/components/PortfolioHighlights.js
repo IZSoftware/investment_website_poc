@@ -304,7 +304,7 @@ const PortfolioHighlights = () => {
                         )
                       : error
                       ? (
-                        <div className="col-span-full py-6 text-gray-500">
+                        <div className="py-6 text-gray-500 col-span-full">
                           Unable to load portfolio statistics.
                         </div>
                       )
@@ -341,8 +341,14 @@ const PortfolioHighlights = () => {
           <div className="col-span-12 lg:col-span-10">
             <div className="px-4 sm:px-6 lg:px-8">
 
-              <div className="max-w-4xl mx-auto mb-8 lg:mb-12">
-                <div className="h-[300px] sm:h-[400px] lg:h-[500px]">
+              {/* Big pie was rendering at up to 500px tall inside a
+                  max-w-4xl (896px) box — far larger than the mini charts
+                  below it (max 128px), and with a lot of dead space around
+                  it. Sized down to a medium diameter that stays roughly
+                  2-3x the mini charts at every breakpoint:
+                  mobile 180/80=2.25x, sm 240/96=2.5x, lg 320/112=2.86x. */}
+              <div className="max-w-2xl mx-auto mb-8 lg:mb-12">
+                <div className="h-[180px] sm:h-[240px] lg:h-[320px]">
 
                   {loading ? (
                     <div className="flex items-center justify-center w-full h-full">
@@ -374,7 +380,7 @@ const PortfolioHighlights = () => {
                       key={index}
                       className="flex flex-col items-center"
                     >
-                      <div className="w-20 h-20 mb-3 border-8 border-gray-100 border-t-gray-300 rounded-full animate-spin sm:w-24 sm:h-24 lg:w-28 lg:h-28" />
+                      <div className="w-20 h-20 mb-3 border-8 border-gray-100 rounded-full border-t-gray-300 animate-spin sm:w-24 sm:h-24 lg:w-28 lg:h-28" />
                       <div className="w-20 h-3 bg-gray-200 rounded animate-pulse" />
                     </div>
                   ))}

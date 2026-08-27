@@ -842,7 +842,7 @@ const PortfolioPage = () => {
           <section className="py-8 sm:py-12 lg:py-16">
             <div className="flex flex-col gap-6 sm:gap-8 lg:flex-row">
               {/* LEFT — KPI CHART */}
-              <div className="lg:w-2/3">
+              <div className="lg:w-1/2">
                 {/* Currency */}
                 <div className="flex justify-end mb-3 sm:mb-4">
                   <ul className="flex p-1 bg-white rounded-lg shadow-sm">
@@ -906,7 +906,7 @@ const PortfolioPage = () => {
               </div>
 
               {/* RIGHT — PORTFOLIO PIE CHART */}
-              <div className="lg:w-1/3">
+              <div className="lg:w-1/2">
                 <div className="mb-3 sm:mb-4">
                   <h3 className="text-xl font-bold text-black sm:text-2xl">
                     Investment{" "}
@@ -927,7 +927,7 @@ const PortfolioPage = () => {
                 <div
                   style={{
                     width: "100%",
-                    height: 300,
+                    height: 320,
                   }}
                 >
                   <ResponsiveContainer width="100%" height="100%">
@@ -937,7 +937,7 @@ const PortfolioPage = () => {
                         cx="50%"
                         cy="50%"
                         innerRadius={40}
-                        outerRadius={100}
+                        outerRadius={110}
                         paddingAngle={2}
                         dataKey="value"
                         label={({ name, value }) => `${name} ${value}%`}
@@ -946,7 +946,6 @@ const PortfolioPage = () => {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-
                       <Tooltip />
                     </PieChart>
                   </ResponsiveContainer>
