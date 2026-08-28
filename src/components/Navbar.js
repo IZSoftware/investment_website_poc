@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const Navbar = () => {
+const Navbar = ({ minimal = false }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -30,37 +30,41 @@ const Navbar = () => {
                 </Link>
               </div>
 
-              {/* Desktop nav */}
-              <div className="items-center hidden space-x-6 md:flex lg:space-x-8">
-                {navItems.map((item, index) => (
-                  <Link
-                    key={index}
-                    to={item.path}
-                    className="relative text-sm font-bold text-[#0A2540] transition-colors duration-300 hover:text-[#1C1F26] lg:text-xl group"
-                  >
-                    {item.name}
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#0A2540] group-hover:w-full transition-all duration-300" />
-                  </Link>
-                ))}
-              </div>
+              {!minimal && (
+                <>
+                  {/* Desktop nav */}
+                  <div className="items-center hidden space-x-6 md:flex lg:space-x-8">
+                    {navItems.map((item, index) => (
+                      <Link
+                        key={index}
+                        to={item.path}
+                        className="relative text-sm font-bold text-[#0A2540] transition-colors duration-300 hover:text-[#1C1F26] lg:text-xl group"
+                      >
+                        {item.name}
+                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#0A2540] group-hover:w-full transition-all duration-300" />
+                      </Link>
+                    ))}
+                  </div>
 
-              {/* Hamburger — mobile only */}
-              <div className="flex items-center md:hidden">
-                <button
-                  className="flex items-center p-2 text-gray-700 transition-colors rounded-md hover:bg-gray-100"
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-                >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
-                    />
-                  </svg>
-                </button>
-              </div>
+                  {/* Hamburger — mobile only */}
+                  <div className="flex items-center md:hidden">
+                    <button
+                      className="flex items-center p-2 text-gray-700 transition-colors rounded-md hover:bg-gray-100"
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                      aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                    >
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </>
+              )}
 
             </div>
           </div>
@@ -69,7 +73,7 @@ const Navbar = () => {
       </nav>
 
       {/* ── Full-page mobile menu overlay ── */}
-      {isMenuOpen && (
+      {!minimal && isMenuOpen && (
         <div
           className="fixed inset-0 z-40 flex flex-col bg-white md:hidden"
           style={{ top: 0 }}

@@ -36,12 +36,6 @@ const InvestorPortal = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const isDirectNavigation = !document.referrer;
-    if (!isDirectNavigation) {
-      navigate('/');
-      return;
-    }
-
     const fetchCluster = async () => {
       try {
         setLoading(true);
@@ -60,7 +54,7 @@ const InvestorPortal = () => {
     };
 
     fetchCluster();
-  }, [navigate]);
+  }, []);
 
   const handleManageClick = (path) => {
     navigate(`/investor-portal/${path}`);
