@@ -42,6 +42,14 @@ export default function HoldingCompanyLogin() {
   const [cooldownSecondsLeft, setCooldownSecondsLeft] = useState(0);
   const [locked, setLocked] = useState(false);
 
+  // ── Math captcha (client-side, pre-auth gate) ──
+  const [captchaA, setCaptchaA] = useState(0);
+  const [captchaB, setCaptchaB] = useState(0);
+  const [captchaOp, setCaptchaOp] = useState('+');
+  const [captchaAnswer, setCaptchaAnswer] = useState(0);
+  const [captchaInput, setCaptchaInput] = useState('');
+  const [captchaError, setCaptchaError] = useState('');
+
   // ── Site stats for the left panel ──
   const [siteStats, setSiteStats] = useState({
     netAssets: null,
@@ -72,6 +80,23 @@ export default function HoldingCompanyLogin() {
     return () => { isMounted = false; };
   }, []);
 
+  const generateCaptcha = () => {
+    const a = Math.floor(Math.random() * 10);
+    const b = Math.floor(Math.random() * 10);
+    const op = Math.random() < 0.5 ? '+' : '-';
+    setCaptchaA(a);
+    setCaptchaB(b);
+    setCaptchaOp(op);
+    setCaptchaAnswer(op === '+' ? a + b : a - b);
+    setCaptchaInput('');
+    setCaptchaError('');
+  };
+
+  // Generate the first captcha on mount
+  useEffect(() => {
+    generateCaptcha();
+  }, []);
+
   useEffect(() => {
     if (step !== 'challenge' || cooldownSecondsLeft > 0 || locked) return;
     if (challengeSecondsLeft <= 0) {
@@ -80,6 +105,7 @@ export default function HoldingCompanyLogin() {
       setLetters([]);
       setAnswers({});
       setChallengeId('');
+      generateCaptcha();
       return;
     }
     const t = setTimeout(() => setChallengeSecondsLeft((s) => s - 1), 1000);
@@ -92,9 +118,31 @@ export default function HoldingCompanyLogin() {
     return () => clearTimeout(t);
   }, [cooldownSecondsLeft]);
 
+  const handleCaptchaChange = (e) => {
+    const value = e.target.value;
+    if (!/^-?[0-9]*$/.test(value)) return;
+    setCaptchaInput(value);
+
+    if (value === '' || value === '-') {
+      setCaptchaError('');
+      return;
+    }
+
+    if (parseInt(value, 10) === captchaAnswer) {
+      setCaptchaError('');
+    } else {
+      setCaptchaError('Incorrect answer, please try again');
+    }
+  };
+
+  const isCaptchaCorrect =
+    captchaInput !== '' && parseInt(captchaInput, 10) === captchaAnswer;
+
   // Phase 1 – call API directly
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
+    if (!isCaptchaCorrect) return;
+
     setError('');
     setIsLoading(true);
 
@@ -118,6 +166,7 @@ export default function HoldingCompanyLogin() {
       setStep('challenge');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
+      generateCaptcha();
     } finally {
       setIsLoading(false);
     }
@@ -168,6 +217,7 @@ export default function HoldingCompanyLogin() {
         setLetters([]);
         setAnswers({});
         setChallengeId('');
+        generateCaptcha();
       } else if (nextFail === 2) {
         setError('');
         setCooldownSecondsLeft(COOLDOWN_SECONDS);
@@ -202,6 +252,7 @@ export default function HoldingCompanyLogin() {
               setStep('email');
               setLocked(false);
               setFailedAttempts(0);
+              generateCaptcha();
             }}
             className="text-sm text-[#1D1D1F] font-medium underline underline-offset-2 hover:text-[#6E6E73]"
           >
@@ -354,9 +405,27 @@ export default function HoldingCompanyLogin() {
                               </div>
                             </div>
 
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-[#1D1D1F] block">
+                                What is {captchaA} {captchaOp} {captchaB}?
+                              </label>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                autoComplete="off"
+                                value={captchaInput}
+                                onChange={handleCaptchaChange}
+                                placeholder="Your answer"
+                                className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-4 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all duration-200"
+                              />
+                              {captchaError && (
+                                <p className="text-xs text-red-600">{captchaError}</p>
+                              )}
+                            </div>
+
                             <button
                               type="submit"
-                              disabled={isLoading}
+                              disabled={isLoading || !isCaptchaCorrect}
                               className="w-full bg-[#1D1D1F] text-white font-medium py-4 rounded-xl hover:bg-[#2D2D2F] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md group"
                             >
                               {isLoading ? (
@@ -464,6 +533,7 @@ export default function HoldingCompanyLogin() {
                                 setLetters([]);
                                 setAnswers({});
                                 setChallengeId('');
+                                generateCaptcha();
                               }}
                               className="text-sm text-[#6E6E73] hover:text-[#1D1D1F] transition-colors font-medium"
                             >
