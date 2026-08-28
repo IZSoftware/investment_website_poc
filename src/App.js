@@ -156,7 +156,12 @@ function AppContent() {
         />
       )}
 
-      {!isAdminPortal && (showInvestorNavbar ? <InvestorNavbar /> : <Navbar />)}
+      {!isAdminPortal &&
+        (showInvestorNavbar ? (
+          <InvestorNavbar />
+        ) : (
+          <Navbar minimal={isLoginPage} />
+        ))}
 
       <main className="flex-grow">
         <Routes>

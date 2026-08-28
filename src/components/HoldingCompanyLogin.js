@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Eye, EyeOff, ArrowRight, ShieldAlert, Clock, Lock } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ShieldAlert, Clock, Lock, ShieldCheck, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ForgotPasswordModal from '../components/InvestorPortal/ForgotPasswordModal';
@@ -405,21 +405,85 @@ export default function HoldingCompanyLogin() {
                               </div>
                             </div>
 
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium text-[#1D1D1F] block">
-                                What is {captchaA} {captchaOp} {captchaB}?
-                              </label>
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                autoComplete="off"
-                                value={captchaInput}
-                                onChange={handleCaptchaChange}
-                                placeholder="Your answer"
-                                className="w-full bg-white border border-[#D2D2D7] rounded-xl px-4 py-4 text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#1D1D1F] focus:border-transparent transition-all duration-200"
-                              />
-                              {captchaError && (
-                                <p className="text-xs text-red-600">{captchaError}</p>
+                            <div className="relative py-2">
+                              <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-[#D2D2D7]" />
+                              </div>
+                              <div className="relative flex justify-center">
+                                <span className="px-4 bg-white text-xs text-[#6E6E73] uppercase tracking-wider font-medium">
+                                  SECURE ACCESS
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="p-5 space-y-4 bg-[#F5F5F7] border border-[#E5E5EA] rounded-xl">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex items-center justify-center rounded-full w-7 h-7 bg-[#1D1D1F]/5">
+                                    <ShieldCheck size={15} className="text-[#1D1D1F]" />
+                                  </div>
+                                  <span className="text-xs font-semibold tracking-wide text-[#1D1D1F] uppercase">
+                                    Quick Security Check
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={generateCaptcha}
+                                  aria-label="Get a new question"
+                                  className="flex items-center justify-center transition-colors rounded-full w-8 h-8 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-white"
+                                >
+                                  <RefreshCw size={15} />
+                                </button>
+                              </div>
+
+                              <div className="flex items-center justify-center gap-3">
+                                <div className="flex items-center justify-center w-12 h-12 text-lg font-bold bg-white border border-[#D2D2D7] rounded-lg text-[#1D1D1F]">
+                                  {captchaA}
+                                </div>
+                                <span className="text-lg font-semibold text-[#6E6E73]">{captchaOp}</span>
+                                <div className="flex items-center justify-center w-12 h-12 text-lg font-bold bg-white border border-[#D2D2D7] rounded-lg text-[#1D1D1F]">
+                                  {captchaB}
+                                </div>
+                                <span className="text-lg font-semibold text-[#6E6E73]">=</span>
+
+                                <div className="relative">
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    autoComplete="off"
+                                    value={captchaInput}
+                                    onChange={handleCaptchaChange}
+                                    placeholder="?"
+                                    aria-label={`What is ${captchaA} ${captchaOp} ${captchaB}?`}
+                                    className={`w-16 h-12 text-center text-lg font-semibold rounded-lg border-2 bg-white placeholder:text-[#C7C7CC] focus:outline-none transition-colors duration-200 ${
+                                      isCaptchaCorrect
+                                        ? 'border-emerald-500 text-emerald-600 focus:ring-2 focus:ring-emerald-200'
+                                        : captchaError
+                                        ? 'border-red-400 text-red-600 focus:ring-2 focus:ring-red-100'
+                                        : 'border-[#D2D2D7] text-[#1D1D1F] focus:ring-2 focus:ring-[#1D1D1F]/20 focus:border-[#1D1D1F]'
+                                    }`}
+                                  />
+                                  {isCaptchaCorrect && (
+                                    <CheckCircle2
+                                      size={16}
+                                      className="absolute text-emerald-500 -top-1.5 -right-1.5 bg-white rounded-full"
+                                    />
+                                  )}
+                                  {!isCaptchaCorrect && captchaError && (
+                                    <XCircle
+                                      size={16}
+                                      className="absolute text-red-500 -top-1.5 -right-1.5 bg-white rounded-full"
+                                    />
+                                  )}
+                                </div>
+                              </div>
+
+                              {captchaError ? (
+                                <p className="text-xs text-center text-red-600">{captchaError}</p>
+                              ) : (
+                                <p className="text-xs text-center text-[#6E6E73]">
+                                  Solve this to enable sign in
+                                </p>
                               )}
                             </div>
 
@@ -438,17 +502,6 @@ export default function HoldingCompanyLogin() {
                               )}
                             </button>
                           </form>
-
-                          <div className="relative py-2">
-                            <div className="absolute inset-0 flex items-center">
-                              <div className="w-full border-t border-[#D2D2D7]" />
-                            </div>
-                            <div className="relative flex justify-center">
-                              <span className="px-4 bg-white text-xs text-[#6E6E73] uppercase tracking-wider font-medium">
-                                SECURE ACCESS
-                              </span>
-                            </div>
-                          </div>
                         </div>
                       )}
 
